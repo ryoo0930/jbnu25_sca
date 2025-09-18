@@ -4,7 +4,7 @@ import org.junit.Test;
 
 public class GameTest {
     @Test
-    public void test() {
-
+    public void testMainMenu() {
+        new MainMenu();
     }
 }
