@@ -140,6 +140,8 @@ public class Game extends Canvas
 		initEntities();
 		
 		// blank out any keyboard settings we might currently have
+		upPressed = false;
+		downPressed = false;
 		leftPressed = false;
 		rightPressed = false;
 		firePressed = false;
@@ -345,6 +347,7 @@ public class Game extends Canvas
 			// isn't moving. If either cursor key is pressed then
 			// update the movement appropraitely
 			ship.setHorizontalMovement(0);
+			ship.setVerticalMovement(0);
 			
 			if ((upPressed) && (!downPressed)) {
 				ship.setVerticalMovement(-moveSpeed);
@@ -429,6 +432,12 @@ public class Game extends Canvas
 				return;
 			}
 			
+			if (e.getKeyCode() == KeyEvent.VK_UP) {
+				upPressed = false;
+			}
+			if (e.getKeyCode() == KeyEvent.VK_DOWN) {
+				downPressed = false;
+			}
 			if (e.getKeyCode() == KeyEvent.VK_LEFT) {
 				leftPressed = false;
 			}
