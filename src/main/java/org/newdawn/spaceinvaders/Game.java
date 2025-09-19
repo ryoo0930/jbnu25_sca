@@ -346,6 +346,11 @@ public class Game extends Canvas
 			// update the movement appropraitely
 			ship.setHorizontalMovement(0);
 			
+			if ((upPressed) && (!downPressed)) {
+				ship.setVerticalMovement(-moveSpeed);
+			} else if ((downPressed) && (!upPressed)) {
+				ship.setVerticalMovement(moveSpeed);
+			}
 			if ((leftPressed) && (!rightPressed)) {
 				ship.setHorizontalMovement(-moveSpeed);
 			} else if ((rightPressed) && (!leftPressed)) {
@@ -395,7 +400,12 @@ public class Game extends Canvas
 				return;
 			}
 			
-			
+			if(e.getKeyCode() == KeyEvent.VK_UP){
+				upPressed = true;
+			}
+			if(e.getKeyCode() == KeyEvent.VK_DOWN){
+				downPressed = true;
+			}
 			if (e.getKeyCode() == KeyEvent.VK_LEFT) {
 				leftPressed = true;
 			}
