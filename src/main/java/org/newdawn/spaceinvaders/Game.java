@@ -59,6 +59,10 @@ public class Game extends Canvas
 	private String message = "";
 	/** True if we're holding up game play until a key has been pressed */
 	private boolean waitingForKeyPress = true;
+	/** Ture if the up cursor key is currently pressed */
+	private boolean upPressed = false;
+	/** Ture if the down cursor key is currently pressed */
+	private boolean downPressed = false;
 	/** True if the left cursor key is currently pressed */
 	private boolean leftPressed = false;
 	/** True if the right cursor key is currently pressed */
