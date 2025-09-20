@@ -141,9 +141,9 @@ public class Game extends Canvas {
 			gamePlay.notifyWin();
 	}
 
-	public void notifyAlienKilled() {
+	public void notifyAlienKilled(Entity alien) {
 		if (gamePlay != null)
-			gamePlay.notifyAlienKilled();
+			gamePlay.notifyAlienKilled(alien);
 	}
 
 	public void tryToFire() {
@@ -352,7 +352,6 @@ public class Game extends Canvas {
 					// event we can mark it as such and start
 					// our new game
 					waitingForKeyPress = false;
-					// <====================================================================
 					// gameStart();
 					pressCount = 0;
 				} else {
