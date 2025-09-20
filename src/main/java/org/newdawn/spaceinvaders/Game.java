@@ -13,6 +13,8 @@ import java.awt.image.BufferStrategy;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 
+import org.newdawn.spaceinvaders.entity.Entity;
+
 
 /**
  * The main hook of our game. This class with both act as a manager
@@ -68,6 +70,8 @@ public class Game extends Canvas {
 
 	/** 메인 메뉴 */
 	private MainMenu mainMenu;
+	/** 게임 플레이 */
+	private GamePlay gamePlay;
 
 	/** 게임 시작 시 처음으로 보여줄 화면 */
 	private GameState currentGameState = GameState.MAIN_MENU;
@@ -121,12 +125,12 @@ public class Game extends Canvas {
 	}
 
 
-	public void updateLogic() { }
-	public void removeEntity(Object entity) { }
-	public void notifyDeath() { }
-	public void notifyWin() { }
-	public void notifyAlienKilled() { }
-	public void tryToFire() { }
+	public void updateLogic() { if(gamePlay != null) gamePlay.updateLogic(); }
+	public void removeEntity(Object entity) { if(gamePlay != null) gamePlay.removeEntity((Entity)entity); }
+	public void notifyDeath() { if(gamePlay != null) gamePlay.notifyDeath(); }
+	public void notifyWin() { if(gamePlay != null) gamePlay.notifyWin(); }
+	public void notifyAlienKilled() { if(gamePlay != null) gamePlay.notifyAlienKilled(); }
+	public void tryToFire() { if(gamePlay != null) gamePlay.tryToFire(); }
 
 
 	/**
@@ -175,6 +179,19 @@ public class Game extends Canvas {
 					mainMenu.update();
 					mainMenu.draw(g);
 					break;
+				case GAME_PLAY:
+					if(gamePlay == null) break;
+					gamePlay.update(delta);
+					gamePlay.draw(g);
+
+					if(gamePlay.isWaitingForKeyPress()){
+						String message = gamePlay.getMessage();
+						g.setColor(Color.white);
+						g.drawString(message, (800 - g.getFontMetrics().stringWidth(message)) / 2, 250);
+						g.drawString("Press Any Key", (800 - g.getFontMetrics().stringWidth("Press Any Key")) / 2, 300);
+					}
+					gamePlay.handleInput(upPressed, downPressed, leftPressed, rightPressed, firePressed);
+					break;
 
 			}
 
@@ -196,7 +213,8 @@ public class Game extends Canvas {
 		int selection = mainMenu.getSelection();
 		switch (selection) {
 			case 0:
-				System.out.println("start");
+				gamePlay = new GamePlay(this);
+				gamePlay.startGame();
 				currentGameState = GameState.GAME_PLAY;
 				break;
 			case 1:
