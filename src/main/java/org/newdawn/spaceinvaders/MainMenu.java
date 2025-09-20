@@ -7,7 +7,7 @@ import java.awt.Graphics2D;
 public class MainMenu {
     /** 메인 메뉴에서 선택 할 수 있는 항목들 */
     private final String[] options = { "Start", "Score", "Option", "Quit" };
-    /** 초기 선택된 항목 */
+    /** 초기 선택 항목 */
     private int currentSelection = 0;
 
     public MainMenu() {
@@ -39,15 +39,21 @@ public class MainMenu {
     /** 위로 이동하기 */
     public void moveUp() {
         currentSelection--;
-        if (currentSelection < 0) { currentSelection = options.length - 1; }
+        if (currentSelection < 0) {
+            currentSelection = options.length - 1;
+        }
     }
 
     /** 아래로 이동하기 */
     public void moveDown() {
         currentSelection++;
-        if (currentSelection >= options.length) { currentSelection = 0; }
+        if (currentSelection >= options.length) {
+            currentSelection = 0;
+        }
     }
 
     /** 선택 */
-    public int getSelection() { return currentSelection; }
+    public int getSelection() {
+        return currentSelection;
+    }
 }

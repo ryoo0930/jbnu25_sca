@@ -15,7 +15,6 @@ import javax.swing.JPanel;
 
 import org.newdawn.spaceinvaders.entity.Entity;
 
-
 /**
  * The main hook of our game. This class with both act as a manager
  * for the display and central mediator for the game logic.
@@ -68,9 +67,7 @@ public class Game extends Canvas {
 	/** The game window that we'll update with the frame count */
 	private JFrame container;
 
-	/** 메인 메뉴 */
 	private MainMenu mainMenu;
-	/** 게임 플레이 */
 	private GamePlay gamePlay;
 
 	/** 게임 시작 시 처음으로 보여줄 화면 */
@@ -124,14 +121,35 @@ public class Game extends Canvas {
 		mainMenu = new MainMenu();
 	}
 
+	public void updateLogic() {
+		if (gamePlay != null)
+			gamePlay.updateLogic();
+	}
 
-	public void updateLogic() { if(gamePlay != null) gamePlay.updateLogic(); }
-	public void removeEntity(Object entity) { if(gamePlay != null) gamePlay.removeEntity((Entity)entity); }
-	public void notifyDeath() { if(gamePlay != null) gamePlay.notifyDeath(); }
-	public void notifyWin() { if(gamePlay != null) gamePlay.notifyWin(); }
-	public void notifyAlienKilled() { if(gamePlay != null) gamePlay.notifyAlienKilled(); }
-	public void tryToFire() { if(gamePlay != null) gamePlay.tryToFire(); }
+	public void removeEntity(Object entity) {
+		if (gamePlay != null)
+			gamePlay.removeEntity((Entity) entity);
+	}
 
+	public void notifyDeath() {
+		if (gamePlay != null)
+			gamePlay.notifyDeath();
+	}
+
+	public void notifyWin() {
+		if (gamePlay != null)
+			gamePlay.notifyWin();
+	}
+
+	public void notifyAlienKilled() {
+		if (gamePlay != null)
+			gamePlay.notifyAlienKilled();
+	}
+
+	public void tryToFire() {
+		if (gamePlay != null)
+			gamePlay.tryToFire();
+	}
 
 	/**
 	 * The main game loop. This loop is running during all game
@@ -180,11 +198,12 @@ public class Game extends Canvas {
 					mainMenu.draw(g);
 					break;
 				case GAME_PLAY:
-					if(gamePlay == null) break;
+					if (gamePlay == null)
+						break;
 					gamePlay.update(delta);
 					gamePlay.draw(g);
 
-					if(gamePlay.isWaitingForKeyPress()){
+					if (gamePlay.isWaitingForKeyPress()) {
 						String message = gamePlay.getMessage();
 						g.setColor(Color.white);
 						g.drawString(message, (800 - g.getFontMetrics().stringWidth(message)) / 2, 250);
