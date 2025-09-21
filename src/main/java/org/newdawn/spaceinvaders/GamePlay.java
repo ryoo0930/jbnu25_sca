@@ -28,6 +28,7 @@ public class GamePlay {
     private long firingInterval = 90;
     /** The number of aliens left on the screen */
     private int alienCount;
+    private int score = 0;
 
     /** The message to display which waiting for a key press */
     private String message = "";
@@ -142,6 +143,7 @@ public class GamePlay {
     public void notifyAlienKilled(Entity alien) {
         if(removeList.contains(alien)) return;
 
+        this.score += 100;
 
         // reduce the alient count, if there are none left, the player has won!
         alienCount--;
@@ -245,5 +247,8 @@ public class GamePlay {
         for (Entity entity : entities) {
             entity.draw(g);
         }
+
+        g.setColor(java.awt.Color.WHITE);
+        g.drawString("Score: " + this.score, 700, 50);
     }
 }
