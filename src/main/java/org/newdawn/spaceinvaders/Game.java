@@ -33,7 +33,7 @@ import org.newdawn.spaceinvaders.entity.Entity;
 public class Game extends Canvas {
 	/** 게임 상태. 현재 Game class는 화면만 보여줄 뿐, GameState를 통해 화면의 구성을 변경시킵니다. */
 	private enum GameState {
-		MAIN_MENU, GAME_PLAY, SCORE, OPTION, EXIT
+		MAIN_MENU, DIFFICULTY_MENU, GAME_PLAY, SCORE, OPTION, EXIT
 	}
 
 	/** The stragey that allows us to use accelerate page flipping */
@@ -68,6 +68,7 @@ public class Game extends Canvas {
 	private JFrame container;
 
 	private MainMenu mainMenu;
+	private DifficultyMenu difficultyMenu;
 	private GamePlay gamePlay;
 
 	/** 게임 시작 시 처음으로 보여줄 화면 */
@@ -119,6 +120,7 @@ public class Game extends Canvas {
 		strategy = getBufferStrategy();
 
 		mainMenu = new MainMenu();
+		difficultyMenu = new DifficultyMenu();
 	}
 
 	public void updateLogic() {
@@ -197,6 +199,9 @@ public class Game extends Canvas {
 					mainMenu.update();
 					mainMenu.draw(g);
 					break;
+				case DIFFICULTY_MENU:
+					difficultyMenu.draw(g);
+					break;
 				case GAME_PLAY:
 					if (gamePlay == null)
 						break;
@@ -232,10 +237,14 @@ public class Game extends Canvas {
 		int selection = mainMenu.getSelection();
 		switch (selection) {
 			case 0:
-				gamePlay = new GamePlay(this);
-				gamePlay.startGame();
-				currentGameState = GameState.GAME_PLAY;
+				currentGameState = GameState.DIFFICULTY_MENU;
+				/**
+				 * gamePlay = new GamePlay(this);
+				 * gamePlay.startGame();
+				 * currentGameState = GameState.GAME_PLAY;
+				 */
 				break;
+
 			case 1:
 				System.out.println("score");
 				currentGameState = GameState.SCORE;
@@ -248,6 +257,19 @@ public class Game extends Canvas {
 				System.exit(0);
 				break;
 		}
+	}
+
+	/** 난이도 선택 로직 추가 */
+	private void selectDifficultyOption() {
+		int difficulty = difficultyMenu.getSelection();
+		startGameWithDifficulty(difficulty);
+	}
+
+	/** 난이도에 따른 게임 실행 로직 추가 */
+	private void startGameWithDifficulty(int difficulty) {
+		gamePlay = new GamePlay(this, difficulty);
+		gamePlay.startGame();
+		currentGameState = GameState.GAME_PLAY;
 	}
 
 	/**
@@ -285,6 +307,18 @@ public class Game extends Canvas {
 				}
 				if (e.getKeyCode() == KeyEvent.VK_ENTER) {
 					selectMenuOption();
+				}
+			}
+			/** 난이도 선택 키보드 처리 */
+			if (currentGameState == GameState.DIFFICULTY_MENU) {
+				if (e.getKeyCode() == KeyEvent.VK_UP) {
+					difficultyMenu.moveUp();
+				}
+				if (e.getKeyCode() == KeyEvent.VK_DOWN) {
+					difficultyMenu.moveDown();
+				}
+				if (e.getKeyCode() == KeyEvent.VK_ENTER) {
+					selectDifficultyOption();
 				}
 			}
 
