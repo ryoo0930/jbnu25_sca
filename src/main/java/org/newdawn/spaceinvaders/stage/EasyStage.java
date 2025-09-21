@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import org.newdawn.spaceinvaders.Game;
 import org.newdawn.spaceinvaders.entity.AlienEntity;
 import org.newdawn.spaceinvaders.entity.Entity;
-import org.newdawn.spaceinvaders.entity.strategy.PatrolMovementStrategy;
+import org.newdawn.spaceinvaders.entity.movementStrategy.PatrolMovementStrategy;
 
 public class EasyStage implements Stage {
     private int alienCount;
