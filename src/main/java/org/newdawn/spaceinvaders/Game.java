@@ -77,6 +77,7 @@ public class Game extends Canvas {
 	private DifficultyMenu difficultyMenu;
 	private GamePlay gamePlay;
 	private NicknameInputScreen nicknameInputScreen;
+	private ScoreScreen scoreScreen;
 
 	private int scoreToSave;
 
@@ -130,10 +131,11 @@ public class Game extends Canvas {
 
 		mainMenu = new MainMenu();
 		difficultyMenu = new DifficultyMenu();
+		scoreScreen = new ScoreScreen();
 	}
 
-	public void endGame(){
-		if (gamePlay != null){
+	public void endGame() {
+		if (gamePlay != null) {
 			this.scoreToSave = gamePlay.getScore();
 
 			nicknameInputScreen = new NicknameInputScreen();
@@ -248,6 +250,9 @@ public class Game extends Canvas {
 					if (nicknameInputScreen != null) {
 						nicknameInputScreen.draw(g);
 					}
+					break;
+				case SCORE:
+					scoreScreen.draw(g);
 					break;
 
 			}
@@ -368,21 +373,30 @@ public class Game extends Canvas {
 					}
 					break;
 				case NICKNAME_INPUT:
-					if(nicknameInputScreen == null) break;
-					if(e.getKeyCode() == KeyEvent.VK_UP) nicknameInputScreen.moveUp();
-					else if (e.getKeyCode() == KeyEvent.VK_DOWN) nicknameInputScreen.moveDown();
-					else if (e.getKeyCode() == KeyEvent.VK_LEFT) nicknameInputScreen.moveLeft();
-					else if (e.getKeyCode() == KeyEvent.VK_RIGHT) nicknameInputScreen.moveRight();
-					else if (e.getKeyCode() == KeyEvent.VK_Z){
+					if (nicknameInputScreen == null)
+						break;
+					if (e.getKeyCode() == KeyEvent.VK_UP)
+						nicknameInputScreen.moveUp();
+					else if (e.getKeyCode() == KeyEvent.VK_DOWN)
+						nicknameInputScreen.moveDown();
+					else if (e.getKeyCode() == KeyEvent.VK_LEFT)
+						nicknameInputScreen.moveLeft();
+					else if (e.getKeyCode() == KeyEvent.VK_RIGHT)
+						nicknameInputScreen.moveRight();
+					else if (e.getKeyCode() == KeyEvent.VK_Z) {
 						boolean isDone = nicknameInputScreen.processSelection();
-						if(isDone) {
+						if (isDone) {
 							String finalNickname = nicknameInputScreen.getNickname();
 
-							//점수 저장 로직 추가.
-							System.out.println(finalNickname + scoreToSave);
+							ScoreManager.addScore(finalNickname, scoreToSave);
 
 							currentGameState = GameState.MAIN_MENU;
 						}
+					}
+					break;
+				case SCORE:
+					if (e.getKeyCode() == KeyEvent.VK_Z || e.getKeyCode() == KeyEvent.VK_SPACE) {
+						currentGameState = GameState.MAIN_MENU;
 					}
 					break;
 			}
