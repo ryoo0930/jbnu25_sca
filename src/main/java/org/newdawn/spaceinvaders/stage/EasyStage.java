@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import org.newdawn.spaceinvaders.Game;
 import org.newdawn.spaceinvaders.entity.AlienEntity;
 import org.newdawn.spaceinvaders.entity.Entity;
+import org.newdawn.spaceinvaders.entity.strategy.DownThenRightMovementStrategy;
 
 public class EasyStage implements Stage {
     private int alienCount;
@@ -11,13 +12,11 @@ public class EasyStage implements Stage {
     @Override
     public void initEntities(Game game, ArrayList<Entity> entities) {
         alienCount = 0;
-        for (int row = 0; row < 3; row++) {
-            for (int x = 0; x < 10; x++) {
-                Entity alien = new AlienEntity(game, 100 + (x * 60), (50) + row * 40);
-                entities.add(alien);
-                alienCount++;
-            }
-        }
+
+        DownThenRightMovementStrategy downThenRightMove = new DownThenRightMovementStrategy(100);
+        Entity alien = new AlienEntity(game, 300 , 50, downThenRightMove);
+        entities.add(alien);
+        alienCount++;
     }
 
     @Override

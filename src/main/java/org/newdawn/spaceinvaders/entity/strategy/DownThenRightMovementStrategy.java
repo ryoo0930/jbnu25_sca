@@ -36,6 +36,5 @@ public class DownThenRightMovementStrategy implements InnerMovementStrategy {
                 }
                 break;
         }
-        entity.move(delta);
     }
 }
