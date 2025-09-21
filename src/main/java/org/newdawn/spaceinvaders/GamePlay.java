@@ -214,9 +214,9 @@ public class GamePlay {
     }
 
     /**
-     * Game 클래스에서 키 입력 상태를 받아와 처리합니다.
+     * Game 클래스에서 키 입력 상태를 받아와 처리.
      */
-    public void handleInput(boolean up, boolean down, boolean left, boolean right, boolean space, boolean z) {
+    public void handleInput(boolean up, boolean down, boolean left, boolean right, boolean space, boolean shift, boolean z, boolean x) {
         if (!waitingForKeyPress) {
             ship.setHorizontalMovement(0);
             ship.setVerticalMovement(0);
@@ -228,6 +228,10 @@ public class GamePlay {
                 ship.setHorizontalMovement(-moveSpeed);
             if ((right) && (!left))
                 ship.setHorizontalMovement(moveSpeed);
+            if(shift)
+                moveSpeed = 150;
+            if(!shift)
+                moveSpeed = 300;
             if (z) {
                 tryToFire();
             }
@@ -235,7 +239,7 @@ public class GamePlay {
     }
 
     /**
-     * Game 클래스에서 호출되어 모든 엔티티를 화면에 그립니다.
+     * Game 클래스에서 호출되어 모든 엔티티를 화면에 그리기.
      */
     public void draw(Graphics2D g) {
         for (Entity entity : entities) {
