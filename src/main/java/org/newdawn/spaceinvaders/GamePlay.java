@@ -216,7 +216,7 @@ public class GamePlay {
     /**
      * Game 클래스에서 키 입력 상태를 받아와 처리합니다.
      */
-    public void handleInput(boolean up, boolean down, boolean left, boolean right, boolean fire) {
+    public void handleInput(boolean up, boolean down, boolean left, boolean right, boolean space, boolean z) {
         if (!waitingForKeyPress) {
             ship.setHorizontalMovement(0);
             ship.setVerticalMovement(0);
@@ -228,7 +228,7 @@ public class GamePlay {
                 ship.setHorizontalMovement(-moveSpeed);
             if ((right) && (!left))
                 ship.setHorizontalMovement(moveSpeed);
-            if (fire) {
+            if (z) {
                 tryToFire();
             }
         }

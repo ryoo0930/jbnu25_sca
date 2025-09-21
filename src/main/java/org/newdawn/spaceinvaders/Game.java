@@ -51,8 +51,11 @@ public class Game extends Canvas {
 	private boolean leftPressed = false;
 	/** True if the right cursor key is currently pressed */
 	private boolean rightPressed = false;
-	/** True if we are firing */
-	private boolean firePressed = false;
+	/** True if the space cursor key is currently pressed */
+	private boolean spacePressed = false;
+	/** True if the Z cursor key is currently pressed */
+	private boolean zPressed = false;
+
 	/**
 	 * True if game logic needs to be applied this loop, normally as a result of a
 	 * game event
@@ -214,7 +217,7 @@ public class Game extends Canvas {
 						g.drawString(message, (800 - g.getFontMetrics().stringWidth(message)) / 2, 250);
 						g.drawString("Press Any Key", (800 - g.getFontMetrics().stringWidth("Press Any Key")) / 2, 300);
 					}
-					gamePlay.handleInput(upPressed, downPressed, leftPressed, rightPressed, firePressed);
+					gamePlay.handleInput(upPressed, downPressed, leftPressed, rightPressed, spacePressed, zPressed);
 					break;
 
 			}
@@ -238,13 +241,7 @@ public class Game extends Canvas {
 		switch (selection) {
 			case 0:
 				currentGameState = GameState.DIFFICULTY_MENU;
-				/**
-				 * gamePlay = new GamePlay(this);
-				 * gamePlay.startGame();
-				 * currentGameState = GameState.GAME_PLAY;
-				 */
 				break;
-
 			case 1:
 				System.out.println("score");
 				currentGameState = GameState.SCORE;
@@ -302,7 +299,7 @@ public class Game extends Canvas {
 						mainMenu.moveUp();
 					} else if (e.getKeyCode() == KeyEvent.VK_DOWN) {
 						mainMenu.moveDown();
-					} else if (e.getKeyCode() == KeyEvent.VK_ENTER) {
+					} else if (e.getKeyCode() == KeyEvent.VK_ENTER || e.getKeyCode() == KeyEvent.VK_Z) {
 						selectMenuOption();
 					}
 					break;
@@ -311,7 +308,7 @@ public class Game extends Canvas {
 						difficultyMenu.moveUp();
 					} else if (e.getKeyCode() == KeyEvent.VK_DOWN) {
 						difficultyMenu.moveDown();
-					} else if (e.getKeyCode() == KeyEvent.VK_ENTER) {
+					} else if (e.getKeyCode() == KeyEvent.VK_ENTER || e.getKeyCode() == KeyEvent.VK_Z) {
 						selectDifficultyOption();
 					}
 					break;
@@ -325,7 +322,9 @@ public class Game extends Canvas {
 					} else if (e.getKeyCode() == KeyEvent.VK_RIGHT) {
 						rightPressed = true;
 					} else if (e.getKeyCode() == KeyEvent.VK_SPACE) {
-						firePressed = true;
+						spacePressed = true;
+					} else if (e.getKeyCode() == KeyEvent.VK_Z) {
+						zPressed = true;
 					}
 					break;
 			}
@@ -356,7 +355,10 @@ public class Game extends Canvas {
 				rightPressed = false;
 			}
 			if (e.getKeyCode() == KeyEvent.VK_SPACE) {
-				firePressed = false;
+				spacePressed = false;
+			}
+			if (e.getKeyCode() == KeyEvent.VK_Z) {
+				zPressed = false;
 			}
 		}
 
