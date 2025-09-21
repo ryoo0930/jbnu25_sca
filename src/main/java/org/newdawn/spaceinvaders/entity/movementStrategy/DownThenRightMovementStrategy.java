@@ -1,4 +1,4 @@
-package org.newdawn.spaceinvaders.entity.strategy;
+package org.newdawn.spaceinvaders.entity.movementStrategy;
 
 import org.newdawn.spaceinvaders.entity.Entity;
 
