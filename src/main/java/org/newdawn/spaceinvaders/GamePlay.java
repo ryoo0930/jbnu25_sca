@@ -76,6 +76,9 @@ public class GamePlay {
     public String getMessage() {
         return message;
     }
+    public int getScore() {
+        return this.score;
+    }
 
     /**
      * Start a fresh game, this should clear out any old data and

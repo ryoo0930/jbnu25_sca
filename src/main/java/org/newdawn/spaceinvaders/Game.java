@@ -33,7 +33,7 @@ import org.newdawn.spaceinvaders.entity.Entity;
 public class Game extends Canvas {
 	/** 게임 상태. 현재 Game class는 화면만 보여줄 뿐, GameState를 통해 화면의 구성을 변경시킵니다. */
 	private enum GameState {
-		MAIN_MENU, DIFFICULTY_MENU, GAME_PLAY, SCORE, OPTION, EXIT
+		MAIN_MENU, DIFFICULTY_MENU, GAME_PLAY, NICKNAME_INPUT, SCORE, OPTION, EXIT
 	}
 
 	/** The stragey that allows us to use accelerate page flipping */
@@ -76,6 +76,9 @@ public class Game extends Canvas {
 	private MainMenu mainMenu;
 	private DifficultyMenu difficultyMenu;
 	private GamePlay gamePlay;
+	private NicknameInputScreen nicknameInputScreen;
+
+	private int scoreToSave;
 
 	/** 게임 시작 시 처음으로 보여줄 화면 */
 	private GameState currentGameState = GameState.MAIN_MENU;
@@ -127,6 +130,16 @@ public class Game extends Canvas {
 
 		mainMenu = new MainMenu();
 		difficultyMenu = new DifficultyMenu();
+	}
+
+	public void endGame(){
+		if (gamePlay != null){
+			this.scoreToSave = gamePlay.getScore();
+
+			nicknameInputScreen = new NicknameInputScreen();
+			currentGameState = GameState.NICKNAME_INPUT;
+			gamePlay = null;
+		}
 	}
 
 	public void returnToMainMenu() {
@@ -231,6 +244,11 @@ public class Game extends Canvas {
 					gamePlay.handleInput(upPressed, downPressed, leftPressed, rightPressed, spacePressed, shiftPressed,
 							zPressed, xPressed); // gamePlay에게 넘겨줄 키보드 키
 					break;
+				case NICKNAME_INPUT:
+					if (nicknameInputScreen != null) {
+						nicknameInputScreen.draw(g);
+					}
+					break;
 
 			}
 
@@ -327,7 +345,7 @@ public class Game extends Canvas {
 				case GAME_PLAY:
 					if (gamePlay != null && gamePlay.isWaitingForKeyPress()) {
 						if (e.getKeyCode() == KeyEvent.VK_Z || e.getKeyCode() == KeyEvent.VK_SPACE) {
-							returnToMainMenu();
+							endGame();
 						}
 					} else {
 						if (e.getKeyCode() == KeyEvent.VK_UP) {
@@ -348,7 +366,24 @@ public class Game extends Canvas {
 							xPressed = true;
 						}
 					}
+					break;
+				case NICKNAME_INPUT:
+					if(nicknameInputScreen == null) break;
+					if(e.getKeyCode() == KeyEvent.VK_UP) nicknameInputScreen.moveUp();
+					else if (e.getKeyCode() == KeyEvent.VK_DOWN) nicknameInputScreen.moveDown();
+					else if (e.getKeyCode() == KeyEvent.VK_LEFT) nicknameInputScreen.moveLeft();
+					else if (e.getKeyCode() == KeyEvent.VK_RIGHT) nicknameInputScreen.moveRight();
+					else if (e.getKeyCode() == KeyEvent.VK_Z){
+						boolean isDone = nicknameInputScreen.processSelection();
+						if(isDone) {
+							String finalNickname = nicknameInputScreen.getNickname();
 
+							//점수 저장 로직 추가.
+							System.out.println(finalNickname + scoreToSave);
+
+							currentGameState = GameState.MAIN_MENU;
+						}
+					}
 					break;
 			}
 		}
