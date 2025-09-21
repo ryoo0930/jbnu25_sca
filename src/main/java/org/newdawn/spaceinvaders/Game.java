@@ -296,46 +296,38 @@ public class Game extends Canvas {
 		 * @param e The details of the key that was pressed
 		 */
 		public void keyPressed(KeyEvent e) {
-
-			/** 메인 메뉴 키보드 처리 */
-			if (currentGameState == GameState.MAIN_MENU) {
-				if (e.getKeyCode() == KeyEvent.VK_UP) {
-					mainMenu.moveUp();
-				}
-				if (e.getKeyCode() == KeyEvent.VK_DOWN) {
-					mainMenu.moveDown();
-				}
-				if (e.getKeyCode() == KeyEvent.VK_ENTER) {
-					selectMenuOption();
-				}
-			}
-			/** 난이도 선택 키보드 처리 */
-			if (currentGameState == GameState.DIFFICULTY_MENU) {
-				if (e.getKeyCode() == KeyEvent.VK_UP) {
-					difficultyMenu.moveUp();
-				}
-				if (e.getKeyCode() == KeyEvent.VK_DOWN) {
-					difficultyMenu.moveDown();
-				}
-				if (e.getKeyCode() == KeyEvent.VK_ENTER) {
-					selectDifficultyOption();
-				}
-			}
-
-			if (e.getKeyCode() == KeyEvent.VK_UP) {
-				upPressed = true;
-			}
-			if (e.getKeyCode() == KeyEvent.VK_DOWN) {
-				downPressed = true;
-			}
-			if (e.getKeyCode() == KeyEvent.VK_LEFT) {
-				leftPressed = true;
-			}
-			if (e.getKeyCode() == KeyEvent.VK_RIGHT) {
-				rightPressed = true;
-			}
-			if (e.getKeyCode() == KeyEvent.VK_SPACE) {
-				firePressed = true;
+			switch (currentGameState) {
+				case MAIN_MENU:
+					if (e.getKeyCode() == KeyEvent.VK_UP) {
+						mainMenu.moveUp();
+					} else if (e.getKeyCode() == KeyEvent.VK_DOWN) {
+						mainMenu.moveDown();
+					} else if (e.getKeyCode() == KeyEvent.VK_ENTER) {
+						selectMenuOption();
+					}
+					break;
+				case DIFFICULTY_MENU:
+					if (e.getKeyCode() == KeyEvent.VK_UP) {
+						difficultyMenu.moveUp();
+					} else if (e.getKeyCode() == KeyEvent.VK_DOWN) {
+						difficultyMenu.moveDown();
+					} else if (e.getKeyCode() == KeyEvent.VK_ENTER) {
+						selectDifficultyOption();
+					}
+					break;
+				case GAME_PLAY:
+					if (e.getKeyCode() == KeyEvent.VK_UP) {
+						upPressed = true;
+					} else if (e.getKeyCode() == KeyEvent.VK_DOWN) {
+						downPressed = true;
+					} else if (e.getKeyCode() == KeyEvent.VK_LEFT) {
+						leftPressed = true;
+					} else if (e.getKeyCode() == KeyEvent.VK_RIGHT) {
+						rightPressed = true;
+					} else if (e.getKeyCode() == KeyEvent.VK_SPACE) {
+						firePressed = true;
+					}
+					break;
 			}
 		}
 

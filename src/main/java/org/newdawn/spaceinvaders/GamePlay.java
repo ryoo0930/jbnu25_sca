@@ -8,6 +8,7 @@ import org.newdawn.spaceinvaders.entity.ShipEntity;
 import org.newdawn.spaceinvaders.entity.ShotEntity;
 import org.newdawn.spaceinvaders.stage.EasyStage;
 import org.newdawn.spaceinvaders.stage.HardStage;
+import org.newdawn.spaceinvaders.stage.LunaticStage;
 import org.newdawn.spaceinvaders.stage.NormalStage;
 import org.newdawn.spaceinvaders.stage.Stage;
 
@@ -59,8 +60,8 @@ public class GamePlay {
             case 2: // Hard
                 this.stage = new HardStage();
                 break;
-            default:
-                this.stage = new NormalStage(); // Default to Normal
+            case 3: // Lunatic
+                this.stage = new LunaticStage();
                 break;
         }
     }
