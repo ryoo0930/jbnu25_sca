@@ -39,6 +39,7 @@ public class GamePlay {
      * game event
      */
     private boolean logicRequiredThisLoop = false;
+    private boolean gameWon = false;
 
     // Entity 생성 시 필요.
     private Game game;
@@ -86,6 +87,7 @@ public class GamePlay {
         initEntities();
 
         waitingForKeyPress = false;
+        gameWon = false;
     }
 
     /**
@@ -135,6 +137,7 @@ public class GamePlay {
     public void notifyWin() {
         message = "Well done! You Win!";
         waitingForKeyPress = true;
+        gameWon = true;
     }
 
     /**

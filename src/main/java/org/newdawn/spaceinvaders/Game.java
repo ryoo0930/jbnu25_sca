@@ -129,6 +129,11 @@ public class Game extends Canvas {
 		difficultyMenu = new DifficultyMenu();
 	}
 
+	public void returnToMainMenu() {
+		currentGameState = GameState.MAIN_MENU;
+		gamePlay = null;
+	}
+
 	public void updateLogic() {
 		if (gamePlay != null)
 			gamePlay.updateLogic();
@@ -214,7 +219,17 @@ public class Game extends Canvas {
 					gamePlay.update(delta);
 					gamePlay.draw(g);
 
-					gamePlay.handleInput(upPressed, downPressed, leftPressed, rightPressed, spacePressed, shiftPressed, zPressed, xPressed); // gamePlay에게 넘겨줄 키보드 키
+					if (gamePlay.isWaitingForKeyPress()) {
+						g.setColor(Color.white);
+						String msg = gamePlay.getMessage();
+						String prompt = "Press Z or Space to return to the main menu";
+						g.drawString(msg, (800 - g.getFontMetrics().stringWidth(msg)) / 2, 250);
+						g.drawString(prompt, (800 - g.getFontMetrics().stringWidth(prompt)) / 2, 300);
+
+					}
+
+					gamePlay.handleInput(upPressed, downPressed, leftPressed, rightPressed, spacePressed, shiftPressed,
+							zPressed, xPressed); // gamePlay에게 넘겨줄 키보드 키
 					break;
 
 			}
@@ -310,23 +325,30 @@ public class Game extends Canvas {
 					}
 					break;
 				case GAME_PLAY:
-					if (e.getKeyCode() == KeyEvent.VK_UP) {
-						upPressed = true;
-					} else if (e.getKeyCode() == KeyEvent.VK_DOWN) {
-						downPressed = true;
-					} else if (e.getKeyCode() == KeyEvent.VK_LEFT) {
-						leftPressed = true;
-					} else if (e.getKeyCode() == KeyEvent.VK_RIGHT) {
-						rightPressed = true;
-					} else if (e.getKeyCode() == KeyEvent.VK_SPACE) {
-						spacePressed = true;
-					} else if (e.getKeyCode() == KeyEvent.VK_SHIFT) {
-						shiftPressed = true;
-					} else if (e.getKeyCode() == KeyEvent.VK_Z) {
-						zPressed = true;
-					} else if (e.getKeyCode() == KeyEvent.VK_X) {
-						xPressed = true;
+					if (gamePlay != null && gamePlay.isWaitingForKeyPress()) {
+						if (e.getKeyCode() == KeyEvent.VK_Z || e.getKeyCode() == KeyEvent.VK_SPACE) {
+							returnToMainMenu();
+						}
+					} else {
+						if (e.getKeyCode() == KeyEvent.VK_UP) {
+							upPressed = true;
+						} else if (e.getKeyCode() == KeyEvent.VK_DOWN) {
+							downPressed = true;
+						} else if (e.getKeyCode() == KeyEvent.VK_LEFT) {
+							leftPressed = true;
+						} else if (e.getKeyCode() == KeyEvent.VK_RIGHT) {
+							rightPressed = true;
+						} else if (e.getKeyCode() == KeyEvent.VK_SPACE) {
+							spacePressed = true;
+						} else if (e.getKeyCode() == KeyEvent.VK_SHIFT) {
+							shiftPressed = true;
+						} else if (e.getKeyCode() == KeyEvent.VK_Z) {
+							zPressed = true;
+						} else if (e.getKeyCode() == KeyEvent.VK_X) {
+							xPressed = true;
+						}
 					}
+
 					break;
 			}
 		}
@@ -358,7 +380,7 @@ public class Game extends Canvas {
 			if (e.getKeyCode() == KeyEvent.VK_SPACE) {
 				spacePressed = false;
 			}
-			if (e. getKeyCode() == KeyEvent.VK_SHIFT) {
+			if (e.getKeyCode() == KeyEvent.VK_SHIFT) {
 				shiftPressed = false;
 			}
 			if (e.getKeyCode() == KeyEvent.VK_Z) {
