@@ -21,7 +21,7 @@ public class DifficultyMenu {
                 g.setColor(Color.gray);
             }
             String optionText = options[current];
-            g.drawString(optionText, (800 - g.getFontMetrics().stringWidth(optionText)) / 2, 300 + current * 50);
+            g.drawString(optionText, (800 - g.getFontMetrics().stringWidth(optionText)) / 2, 250 + current * 50);
         }
     }
 
