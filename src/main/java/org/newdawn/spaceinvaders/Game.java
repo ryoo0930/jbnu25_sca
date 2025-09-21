@@ -278,7 +278,6 @@ public class Game extends Canvas {
 				currentGameState = GameState.DIFFICULTY_MENU;
 				break;
 			case 1:
-				System.out.println("score");
 				currentGameState = GameState.SCORE;
 				break;
 			case 2:
