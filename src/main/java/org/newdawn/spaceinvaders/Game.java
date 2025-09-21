@@ -53,8 +53,11 @@ public class Game extends Canvas {
 	private boolean rightPressed = false;
 	/** True if the space cursor key is currently pressed */
 	private boolean spacePressed = false;
+	/** True if the shift cursor key is currently pressed */
+	private boolean shiftPressed = false;
 	/** True if the Z cursor key is currently pressed */
 	private boolean zPressed = false;
+	private boolean xPressed = false;
 
 	/**
 	 * True if game logic needs to be applied this loop, normally as a result of a
@@ -211,13 +214,7 @@ public class Game extends Canvas {
 					gamePlay.update(delta);
 					gamePlay.draw(g);
 
-					if (gamePlay.isWaitingForKeyPress()) {
-						String message = gamePlay.getMessage();
-						g.setColor(Color.white);
-						g.drawString(message, (800 - g.getFontMetrics().stringWidth(message)) / 2, 250);
-						g.drawString("Press Any Key", (800 - g.getFontMetrics().stringWidth("Press Any Key")) / 2, 300);
-					}
-					gamePlay.handleInput(upPressed, downPressed, leftPressed, rightPressed, spacePressed, zPressed);
+					gamePlay.handleInput(upPressed, downPressed, leftPressed, rightPressed, spacePressed, shiftPressed, zPressed, xPressed); // gamePlay에게 넘겨줄 키보드 키
 					break;
 
 			}
@@ -323,8 +320,12 @@ public class Game extends Canvas {
 						rightPressed = true;
 					} else if (e.getKeyCode() == KeyEvent.VK_SPACE) {
 						spacePressed = true;
+					} else if (e.getKeyCode() == KeyEvent.VK_SHIFT) {
+						shiftPressed = true;
 					} else if (e.getKeyCode() == KeyEvent.VK_Z) {
 						zPressed = true;
+					} else if (e.getKeyCode() == KeyEvent.VK_X) {
+						xPressed = true;
 					}
 					break;
 			}
@@ -357,8 +358,14 @@ public class Game extends Canvas {
 			if (e.getKeyCode() == KeyEvent.VK_SPACE) {
 				spacePressed = false;
 			}
+			if (e. getKeyCode() == KeyEvent.VK_SHIFT) {
+				shiftPressed = false;
+			}
 			if (e.getKeyCode() == KeyEvent.VK_Z) {
 				zPressed = false;
+			}
+			if (e.getKeyCode() == KeyEvent.VK_X) {
+				xPressed = false;
 			}
 		}
 
