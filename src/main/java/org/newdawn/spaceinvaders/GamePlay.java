@@ -6,6 +6,10 @@ import org.newdawn.spaceinvaders.entity.AlienEntity;
 import org.newdawn.spaceinvaders.entity.Entity;
 import org.newdawn.spaceinvaders.entity.ShipEntity;
 import org.newdawn.spaceinvaders.entity.ShotEntity;
+import org.newdawn.spaceinvaders.stage.EasyStage;
+import org.newdawn.spaceinvaders.stage.HardStage;
+import org.newdawn.spaceinvaders.stage.NormalStage;
+import org.newdawn.spaceinvaders.stage.Stage;
 
 public class GamePlay {
 
@@ -36,10 +40,29 @@ public class GamePlay {
 
     // Entity 생성 시 필요.
     private Game game;
+    private Stage stage;
 
-    public GamePlay(Game game) {
+    public GamePlay(Game game, int difficulty) {
         this.game = game;
+        setStage(difficulty);
         initEntities();
+    }
+
+    private void setStage(int difficulty) {
+        switch (difficulty) {
+            case 0: // Easy
+                this.stage = new EasyStage();
+                break;
+            case 1: // Normal
+                this.stage = new NormalStage();
+                break;
+            case 2: // Hard
+                this.stage = new HardStage();
+                break;
+            default:
+                this.stage = new NormalStage(); // Default to Normal
+                break;
+        }
     }
 
     // Game 클래스가 상태를 조회할 수 있도록 메서드 제공
@@ -72,15 +95,8 @@ public class GamePlay {
         ship = new ShipEntity(game, "sprites/ship.gif", 370, 550);
         entities.add(ship);
 
-        // create a block of aliens (5 rows, by 12 aliens, spaced evenly)
-        alienCount = 0;
-        for (int row = 0; row < 5; row++) {
-            for (int x = 0; x < 12; x++) {
-                Entity alien = new AlienEntity(game, 100 + (x * 50), (50) + row * 30);
-                entities.add(alien);
-                alienCount++;
-            }
-        }
+        stage.initEntities(game, entities);
+        alienCount = stage.getAlienCount();
     }
 
     /**
