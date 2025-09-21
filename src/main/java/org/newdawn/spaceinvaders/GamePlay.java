@@ -34,7 +34,7 @@ public class GamePlay {
      */
     private boolean logicRequiredThisLoop = false;
 
-    // Game 객체에 대한 참조. Entity 생성 시 필요.
+    // Entity 생성 시 필요.
     private Game game;
 
     public GamePlay(Game game) {
@@ -42,7 +42,7 @@ public class GamePlay {
         initEntities();
     }
 
-    // Game 클래스가 상태를 조회할 수 있도록 getter 메서드 제공
+    // Game 클래스가 상태를 조회할 수 있도록 메서드 제공
     public boolean isWaitingForKeyPress() {
         return waitingForKeyPress;
     }
