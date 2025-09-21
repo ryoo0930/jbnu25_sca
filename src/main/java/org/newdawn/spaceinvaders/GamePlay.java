@@ -93,7 +93,7 @@ public class GamePlay {
      */
     private void initEntities() {
         // create the player ship and place it roughly in the center of the screen
-        ship = new ShipEntity(game, "sprites/ship.gif", 370, 550);
+        ship = new ShipEntity(game, "sprites/ship.gif", 370, 500);
         entities.add(ship);
 
         stage.initEntities(game, entities);

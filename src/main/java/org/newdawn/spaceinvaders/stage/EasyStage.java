@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import org.newdawn.spaceinvaders.Game;
 import org.newdawn.spaceinvaders.entity.AlienEntity;
 import org.newdawn.spaceinvaders.entity.Entity;
-import org.newdawn.spaceinvaders.entity.strategy.DownThenRightMovementStrategy;
+import org.newdawn.spaceinvaders.entity.strategy.PatrolMovementStrategy;
 
 public class EasyStage implements Stage {
     private int alienCount;
@@ -13,8 +13,8 @@ public class EasyStage implements Stage {
     public void initEntities(Game game, ArrayList<Entity> entities) {
         alienCount = 0;
 
-        DownThenRightMovementStrategy downThenRightMove = new DownThenRightMovementStrategy(100);
-        Entity alien = new AlienEntity(game, 300 , 50, downThenRightMove);
+        PatrolMovementStrategy patrolMovementStrategy = new PatrolMovementStrategy(500);
+        Entity alien = new AlienEntity(game, 400 , 80, patrolMovementStrategy);
         entities.add(alien);
         alienCount++;
     }

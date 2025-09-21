@@ -11,8 +11,6 @@ import org.newdawn.spaceinvaders.entity.strategy.InnerMovementStrategy;
  * @author Kevin Glass
  */
 public class AlienEntity extends Entity {
-	/** The speed at which the alient moves horizontally */
-	private double moveSpeed = 75;
 	/** The game in which the entity exists */
 	private Game game;
 	/** The animation frames */

@@ -59,11 +59,6 @@ public class Game extends Canvas {
 	private boolean zPressed = false;
 	private boolean xPressed = false;
 
-	/**
-	 * True if game logic needs to be applied this loop, normally as a result of a
-	 * game event
-	 */
-	private boolean logicRequiredThisLoop = false;
 	/** The last time at which we recorded the frame rate */
 	private long lastFpsTime;
 	/** The current number of frames recorded */
