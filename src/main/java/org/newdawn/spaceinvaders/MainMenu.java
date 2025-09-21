@@ -6,7 +6,7 @@ import java.awt.Graphics2D;
 
 public class MainMenu {
     /** 메인 메뉴에서 선택 할 수 있는 항목들 */
-    private final String[] options = { "Game Start", "Player Data", "Option", "Quit" };
+    private final String[] options = { "Game Start", "Score", "Option", "Quit" };
     /** 초기 선택 항목 */
     private int currentSelection = 0;
 
