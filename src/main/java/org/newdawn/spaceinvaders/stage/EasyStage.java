@@ -5,6 +5,7 @@ import org.newdawn.spaceinvaders.Game;
 import org.newdawn.spaceinvaders.entity.AlienEntity;
 import org.newdawn.spaceinvaders.entity.Entity;
 import org.newdawn.spaceinvaders.entity.movementStrategy.PatrolMovementStrategy;
+import org.newdawn.spaceinvaders.entity.shotStrategy.DefaultShotStrategy;
 
 public class EasyStage implements Stage {
     private int alienCount;
@@ -14,7 +15,8 @@ public class EasyStage implements Stage {
         alienCount = 0;
 
         PatrolMovementStrategy patrolMovementStrategy = new PatrolMovementStrategy(500);
-        Entity alien = new AlienEntity(game, 400 , 80, patrolMovementStrategy);
+        DefaultShotStrategy defaultShotStrategy = new DefaultShotStrategy(game, 2000);
+        Entity alien = new AlienEntity(game, 400 , 80, patrolMovementStrategy, defaultShotStrategy);
         entities.add(alien);
         alienCount++;
     }

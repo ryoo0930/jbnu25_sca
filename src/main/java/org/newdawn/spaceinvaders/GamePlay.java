@@ -18,6 +18,8 @@ public class GamePlay {
     private ArrayList<Entity> entities = new ArrayList<>();
     /** The list of entities that need to be removed from the game this loop */
     private ArrayList<Entity> removeList = new ArrayList<>();
+    /** The list of entities that need to be add from the game this loop */
+    private ArrayList<Entity> addList = new ArrayList<>();
     /** The entity representing the player */
     private Entity ship;
     /** The speed at which the player's ship should move (pixels/sec) */
@@ -73,6 +75,10 @@ public class GamePlay {
 
     public String getMessage() {
         return message;
+    }
+
+    public Entity getShip() {
+        return ship;
     }
 
     /**
@@ -140,8 +146,8 @@ public class GamePlay {
      * Notification that an alien has been killed
      */
     public void notifyAlienKilled(Entity alien) {
-        if(removeList.contains(alien)) return;
-
+        if (removeList.contains(alien))
+            return;
 
         // reduce the alient count, if there are none left, the player has won!
         alienCount--;
@@ -172,7 +178,11 @@ public class GamePlay {
         // if we waited long enough, create the shot entity, and record the time.
         lastFire = System.currentTimeMillis();
         ShotEntity shot = new ShotEntity(game, "sprites/shot.gif", ship.getX() + 10, ship.getY() - 30);
-        entities.add(shot);
+        addList.add(shot);
+    }
+
+    public void addEntity(Entity entity) {
+        addList.add(entity);
     }
 
     /**
@@ -198,11 +208,13 @@ public class GamePlay {
                     }
                 }
             }
-        }
 
-        // 제거할 엔티티 정리
+        }
         entities.removeAll(removeList);
         removeList.clear();
+
+        entities.addAll(addList);
+        addList.clear();
 
         // 추가 로직 실행
         if (logicRequiredThisLoop) {
@@ -216,7 +228,8 @@ public class GamePlay {
     /**
      * Game 클래스에서 키 입력 상태를 받아와 처리.
      */
-    public void handleInput(boolean up, boolean down, boolean left, boolean right, boolean space, boolean shift, boolean z, boolean x) {
+    public void handleInput(boolean up, boolean down, boolean left, boolean right, boolean space, boolean shift,
+            boolean z, boolean x) {
         if (!waitingForKeyPress) {
             ship.setHorizontalMovement(0);
             ship.setVerticalMovement(0);
@@ -228,9 +241,9 @@ public class GamePlay {
                 ship.setHorizontalMovement(-moveSpeed);
             if ((right) && (!left))
                 ship.setHorizontalMovement(moveSpeed);
-            if(shift)
+            if (shift)
                 moveSpeed = 150;
-            if(!shift)
+            if (!shift)
                 moveSpeed = 300;
             if (z) {
                 tryToFire();

@@ -124,9 +124,21 @@ public class Game extends Canvas {
 		difficultyMenu = new DifficultyMenu();
 	}
 
+	public Entity getShip() {
+		if (gamePlay != null) {
+			return gamePlay.getShip();
+		}
+		return null;
+	}
+
 	public void updateLogic() {
 		if (gamePlay != null)
 			gamePlay.updateLogic();
+	}
+
+	public void addEntity(Object entity){
+		if(gamePlay != null)
+			gamePlay.addEntity((Entity) entity);
 	}
 
 	public void removeEntity(Object entity) {
@@ -209,7 +221,8 @@ public class Game extends Canvas {
 					gamePlay.update(delta);
 					gamePlay.draw(g);
 
-					gamePlay.handleInput(upPressed, downPressed, leftPressed, rightPressed, spacePressed, shiftPressed, zPressed, xPressed); // gamePlay에게 넘겨줄 키보드 키
+					gamePlay.handleInput(upPressed, downPressed, leftPressed, rightPressed, spacePressed, shiftPressed,
+							zPressed, xPressed); // gamePlay에게 넘겨줄 키보드 키
 					break;
 
 			}
@@ -353,7 +366,7 @@ public class Game extends Canvas {
 			if (e.getKeyCode() == KeyEvent.VK_SPACE) {
 				spacePressed = false;
 			}
-			if (e. getKeyCode() == KeyEvent.VK_SHIFT) {
+			if (e.getKeyCode() == KeyEvent.VK_SHIFT) {
 				shiftPressed = false;
 			}
 			if (e.getKeyCode() == KeyEvent.VK_Z) {

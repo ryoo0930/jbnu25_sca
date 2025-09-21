@@ -4,6 +4,7 @@ import org.newdawn.spaceinvaders.Game;
 import org.newdawn.spaceinvaders.Sprite;
 import org.newdawn.spaceinvaders.SpriteStore;
 import org.newdawn.spaceinvaders.entity.movementStrategy.InnerMovementStrategy;
+import org.newdawn.spaceinvaders.entity.shotStrategy.InnerShotStrategy;
 
 /**
  * An entity which represents one of our space invader aliens.
@@ -26,6 +27,7 @@ public class AlienEntity extends Entity {
 	private int frameNumber;
 	
 	private InnerMovementStrategy movementStrategy;
+	private InnerShotStrategy shotStrategy;
 
 	/**
 	 * Create a new alien entity
@@ -34,7 +36,7 @@ public class AlienEntity extends Entity {
 	 * @param x    The intial x location of this alien
 	 * @param y    The intial y location of this alient
 	 */
-	public AlienEntity(Game game, int x, int y, InnerMovementStrategy movementStrategy) {
+	public AlienEntity(Game game, int x, int y, InnerMovementStrategy movementStrategy, InnerShotStrategy shotStrategy) {
 		super("sprites/alien.gif", x, y);
 
 		// setup the animatin frames
@@ -45,6 +47,7 @@ public class AlienEntity extends Entity {
 
 		this.game = game;
 		this.movementStrategy = movementStrategy;
+		this.shotStrategy = shotStrategy;
 	}
 
 	/**
@@ -61,6 +64,7 @@ public class AlienEntity extends Entity {
 			sprite = frames[frameNumber];
 		}
 		movementStrategy.move(this, delta);
+		shotStrategy.tryToFire(this);
 		super.move(delta);
 	}
 
