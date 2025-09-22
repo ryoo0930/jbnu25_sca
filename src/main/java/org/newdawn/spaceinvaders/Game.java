@@ -135,10 +135,10 @@ public class Game extends Canvas {
 		scoreScreen = new ScoreScreen();
 	}
 
-    public void endGame(){
-        if (gamePlay != null){
-            this.scoreToSave = gamePlay.getScore();
-            this.lastDifficulty = gamePlay.getDifficulty();
+	public void endGame() {
+		if (gamePlay != null) {
+			this.scoreToSave = gamePlay.getScore();
+			this.lastDifficulty = gamePlay.getDifficulty();
 
 			nicknameInputScreen = new NicknameInputScreen();
 			currentGameState = GameState.NICKNAME_INPUT;
@@ -162,8 +162,12 @@ public class Game extends Canvas {
 	}
 
 	public void notifyDeath() {
-		if (gamePlay != null)
-			gamePlay.notifyDeath();
+		if (gamePlay != null) {
+			gamePlay.loseLifeAndRespawn();
+			if (gamePlay.getLifes() <= 0) {
+				endGame();
+			}
+		}
 	}
 
 	public void notifyWin() {

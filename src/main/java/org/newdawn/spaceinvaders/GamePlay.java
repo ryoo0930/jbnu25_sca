@@ -30,6 +30,13 @@ public class GamePlay {
     private int alienCount;
     private int score = 0;
 
+    /** Extra Life 추가 */
+    private int lifes = 3;
+    private boolean invincible = false;
+    private long invincibilityEndTime = 0;
+
+
+
     /** The message to display which waiting for a key press */
     private String message = "";
     /** True if we're holding up game play until a key has been pressed */
@@ -85,6 +92,21 @@ public class GamePlay {
 
     public int getDifficulty() {
         return this.difficulty;
+    }
+
+    public void loseLifeAndRespawn() {
+        if (invincible) return; // Already invincible, do nothing
+
+        lifes--;
+        if (lifes > 0) {
+            ship.setPosition(370, 550);
+            invincible = true;
+            invincibilityEndTime = System.currentTimeMillis() + 1000; // 1 second of invincibility
+        }
+    }
+
+    public int getLifes() {
+        return lifes;
     }
 
     /**
@@ -196,6 +218,10 @@ public class GamePlay {
      * @param delta 마지막 프레임 이후 경과 시간
      */
     public void update(long delta) {
+        if (invincible && System.currentTimeMillis() > invincibilityEndTime) {
+            invincible = false;
+        }
+
         if (!waitingForKeyPress) {
             // 엔티티 이동
             for (Entity entity : entities) {
@@ -207,6 +233,12 @@ public class GamePlay {
                 for (int s = p + 1; s < entities.size(); s++) {
                     Entity me = entities.get(p);
                     Entity him = entities.get(s);
+
+                    // if ship is invincible, skip collision with it
+                    if ((me instanceof ShipEntity && invincible) || (him instanceof ShipEntity && invincible)) {
+                        continue;
+                    }
+
                     if (me.collidesWith(him)) {
                         me.collidedWith(him);
                         him.collidedWith(me);
@@ -258,10 +290,19 @@ public class GamePlay {
      */
     public void draw(Graphics2D g) {
         for (Entity entity : entities) {
+            if (entity instanceof ShipEntity) {
+                if (invincible) {
+                    // Blink the ship every 100ms
+                    if ((System.currentTimeMillis() / 100) % 2 == 0) {
+                        continue;
+                    }
+                }
+            }
             entity.draw(g);
         }
 
         g.setColor(java.awt.Color.WHITE);
         g.drawString("Score: " + this.score, 700, 50);
+        g.drawString("Lives: " + (this.lifes > 0 ? this.lifes -1 : 0), 10, 50);
     }
 }
