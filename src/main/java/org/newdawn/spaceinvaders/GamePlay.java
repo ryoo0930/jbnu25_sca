@@ -101,7 +101,7 @@ public class GamePlay {
         if (lifes > 0) {
             ship.setPosition(370, 550);
             invincible = true;
-            invincibilityEndTime = System.currentTimeMillis() + 1000; // 1 second of invincibility
+            invincibilityEndTime = System.currentTimeMillis() + 2000; // 1 second of invincibility
         }
     }
 
