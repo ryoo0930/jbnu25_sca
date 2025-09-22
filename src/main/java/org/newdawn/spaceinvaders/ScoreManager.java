@@ -16,9 +16,9 @@ public class ScoreManager {
         return scores;
     }
 
-    public static void addScore(String playerName, int score) {
+    public static void addScore(String playerName, int score, int difficulty) {
         List<Score> scores = loadScores();
-        scores.add(new Score(playerName, score));
+        scores.add(new Score(playerName, score, difficulty));
         sortScores(scores);
 
         if (scores.size() > MAX_SCORES) {

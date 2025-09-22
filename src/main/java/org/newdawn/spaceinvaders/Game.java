@@ -80,6 +80,7 @@ public class Game extends Canvas {
 	private ScoreScreen scoreScreen;
 
 	private int scoreToSave;
+	private int lastDifficulty;
 
 	/** 게임 시작 시 처음으로 보여줄 화면 */
 	private GameState currentGameState = GameState.MAIN_MENU;
@@ -134,9 +135,10 @@ public class Game extends Canvas {
 		scoreScreen = new ScoreScreen();
 	}
 
-	public void endGame() {
-		if (gamePlay != null) {
-			this.scoreToSave = gamePlay.getScore();
+    public void endGame(){
+        if (gamePlay != null){
+            this.scoreToSave = gamePlay.getScore();
+            this.lastDifficulty = gamePlay.getDifficulty();
 
 			nicknameInputScreen = new NicknameInputScreen();
 			currentGameState = GameState.NICKNAME_INPUT;
@@ -387,7 +389,7 @@ public class Game extends Canvas {
 						if (isDone) {
 							String finalNickname = nicknameInputScreen.getNickname();
 
-							ScoreManager.addScore(finalNickname, scoreToSave);
+							ScoreManager.addScore(finalNickname, scoreToSave, lastDifficulty);
 
 							currentGameState = GameState.MAIN_MENU;
 						}

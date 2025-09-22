@@ -45,8 +45,11 @@ public class GamePlay {
     private Game game;
     private Stage stage;
 
+    private int difficulty;
+
     public GamePlay(Game game, int difficulty) {
         this.game = game;
+        this.difficulty = difficulty;
         setStage(difficulty);
         initEntities();
     }
@@ -78,6 +81,10 @@ public class GamePlay {
     }
     public int getScore() {
         return this.score;
+    }
+
+    public int getDifficulty() {
+        return this.difficulty;
     }
 
     /**
