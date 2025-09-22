@@ -31,22 +31,24 @@ public class ShipEntity extends Entity {
 	 * 
 	 * @param delta The time that has elapsed since last move (ms)
 	 */
-	public void move(long delta) {
-		// if we're moving left and have reached the left hand side
-		// of the screen, don't move
-		if ((dx < 0) && (x < 10)) {
-			return;
-		}
-		// if we're moving right and have reached the right hand side
-		// of the screen, don't move
-		if ((dx > 0) && (x > 750)) {
-			return;
-		}
-		
-		super.move(delta);
-	}
-	
-	/**
+	        public void move(long delta) {
+	            // apply the movement
+	            super.move(delta);
+	    
+	            // check boundaries and clamp position
+	            if (x < 10) {
+	                x = 10;
+	            }
+	            if (x > 750) {
+	                x = 750;
+	            }
+	            if (y < 10) {
+	                y = 10;
+	            }
+	            if (y > 550) {
+	                y = 550;
+	            }
+	        }	/**
 	 * Notification that the player's ship has collided with something
 	 * 
 	 * @param other The entity with which the ship has collided

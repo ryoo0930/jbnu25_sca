@@ -235,22 +235,25 @@ public class Game extends Canvas {
 					difficultyMenu.draw(g);
 					break;
 				case GAME_PLAY:
-					if (gamePlay == null)
-						break;
-					gamePlay.update(delta);
-					gamePlay.draw(g);
-
-					if (gamePlay.isWaitingForKeyPress()) {
-						g.setColor(Color.white);
-						String msg = gamePlay.getMessage();
-						String prompt = "Press Z or Space to return to the main menu";
-						g.drawString(msg, (800 - g.getFontMetrics().stringWidth(msg)) / 2, 250);
-						g.drawString(prompt, (800 - g.getFontMetrics().stringWidth(prompt)) / 2, 300);
-
+					if (gamePlay != null) {
+						gamePlay.update(delta);
 					}
+					// After update, gamePlay might be null, so we check again before drawing.
+					if (gamePlay != null) {
+						gamePlay.draw(g);
 
-					gamePlay.handleInput(upPressed, downPressed, leftPressed, rightPressed, spacePressed, shiftPressed,
-							zPressed, xPressed); // gamePlay에게 넘겨줄 키보드 키
+						if (gamePlay.isWaitingForKeyPress()) {
+							g.setColor(Color.white);
+							String msg = gamePlay.getMessage();
+							String prompt = "Press Z or Space to return to the main menu";
+							g.drawString(msg, (800 - g.getFontMetrics().stringWidth(msg)) / 2, 250);
+							g.drawString(prompt, (800 - g.getFontMetrics().stringWidth(prompt)) / 2, 300);
+						}
+
+						gamePlay.handleInput(upPressed, downPressed, leftPressed, rightPressed, spacePressed,
+								shiftPressed,
+								zPressed, xPressed); // gamePlay에게 넘겨줄 키보드 키
+					}
 					break;
 				case NICKNAME_INPUT:
 					if (nicknameInputScreen != null) {
