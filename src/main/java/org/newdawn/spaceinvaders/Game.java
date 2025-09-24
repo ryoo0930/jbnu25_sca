@@ -158,8 +158,9 @@ public class Game extends Canvas {
 
 	public void removeEntity(Object entity) {
 		if (gamePlay != null)
-			gamePlay.removeEntity((Entity) entity);
+            gamePlay.removeEntity((Entity) entity);
 	}
+
 
 	public void notifyDeath() {
 		if (gamePlay != null) {
