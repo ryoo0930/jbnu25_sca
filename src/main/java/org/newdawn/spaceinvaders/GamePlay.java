@@ -54,6 +54,11 @@ public class GamePlay {
 
     private int difficulty;
 
+    // Laser 관리
+    private org.newdawn.spaceinvaders.entity.LaserEntity laser;
+    private final long LASER_DURATION = 3000;
+    private boolean laserButtonLatched = false; // 중첩방지
+
     public GamePlay(Game game, int difficulty) {
         this.game = game;
         this.difficulty = difficulty;
@@ -228,6 +233,29 @@ public class GamePlay {
                 entity.move(delta);
             }
 
+            // 레이저 우선 타격 단계: 레이저와 겹치는 Alien 중 'y가 가장 큰' 1기만 타격
+            if (laser != null && !waitingForKeyPress) {
+                Entity target = null;
+                double bestY = -1;
+                for (Entity e : entities) {
+                    if (e instanceof AlienEntity) {
+                        // LaserEntity의 collidesWith를 이용해 레이저-잡몹 겹침 판정
+                        if (laser.collidesWith(e)) {
+                            if (e.getY() > bestY) {   // y가 클수록 아래쪽 = Ship에 더 가까움
+                                bestY = e.getY();
+                                target = e;
+                            }
+                        }
+                    }
+                }
+
+                if (target != null) {
+                    laser.collidedWith(target);
+                    target.collidedWith(laser);
+                }
+            }
+
+
             // 충돌 검사
             for (int p = 0; p < entities.size(); p++) {
                 for (int s = p + 1; s < entities.size(); s++) {
@@ -239,7 +267,12 @@ public class GamePlay {
                         continue;
                     }
 
-                    if (me.collidesWith(him)) {
+                    if (me instanceof org.newdawn.spaceinvaders.entity.LaserEntity ||
+                            him instanceof org.newdawn.spaceinvaders.entity.LaserEntity) {
+                        continue;
+                    }
+
+                    if (me.collidesWith(him) || him.collidesWith(me)) {
                         me.collidedWith(him);
                         him.collidedWith(me);
                     }
@@ -250,6 +283,12 @@ public class GamePlay {
         // 제거할 엔티티 정리
         entities.removeAll(removeList);
         removeList.clear();
+
+        // 레이저 수명 확인 및 정리
+        if (laser != null && laser.isExpired()) {
+            removeEntity(laser);
+            laser = null;
+        }
 
         // 추가 로직 실행
         if (logicRequiredThisLoop) {
@@ -282,6 +321,19 @@ public class GamePlay {
             if (z) {
                 tryToFire();
             }
+            // 레이저 발사 트리거: X키 누르면 3초 지속
+            if (x && !laserButtonLatched && laser == null) {
+                laser = new org.newdawn.spaceinvaders.entity.LaserEntity(
+                        game,
+                        (org.newdawn.spaceinvaders.entity.ShipEntity) ship,
+                        LASER_DURATION
+                );
+                entities.add(laser); // 엔티티 리스트에 추가
+                laserButtonLatched = true;
+            }
+            if (!x) {
+                laserButtonLatched = false;
+            }
         }
     }
 
@@ -290,6 +342,10 @@ public class GamePlay {
      */
     public void draw(Graphics2D g) {
         for (Entity entity : entities) {
+            //
+            if (entity instanceof org.newdawn.spaceinvaders.entity.LaserEntity) {
+                continue;
+            }
             if (entity instanceof ShipEntity) {
                 if (invincible) {
                     // Blink the ship every 100ms
@@ -299,6 +355,10 @@ public class GamePlay {
                 }
             }
             entity.draw(g);
+        }
+        // 레이저는 최상단 위에 한 번에 그리기
+        if (laser != null) {
+            laser.draw(g);
         }
 
         g.setColor(java.awt.Color.WHITE);
