@@ -95,7 +95,7 @@ public class AlienEntity extends Entity {
 		}
 		
 		// proceed with normal move
-		super.move(delta);
+		// super.move(delta); // 적 이동 패턴 제거.
 	}
 	
 	/**
