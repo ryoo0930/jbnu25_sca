@@ -111,11 +111,15 @@ public class LaserEntity extends Entity {
         long now = System.currentTimeMillis();
         if (now - lastHitTime < hitCooldown) return;
         lastHitTime = now;
-        game.notifyAlienKilled(other);
-        game.removeEntity(other);
 
-        // ShotEntity와 동일한 처치 흐름을 따르도록 게임에 통지
-        game.notifyAlienKilled(other);
-        game.removeEntity(other);
+
+        // 적 체력 추가에 따른 수정된 적 제거 로직
+        AlienEntity alien = (AlienEntity)other;
+        alien.takeDamage(100);
+
+        if(alien.getHealth() <= 0) {
+            game.notifyAlienKilled(other);
+            game.removeEntity(other);
+        }
     }
 }
