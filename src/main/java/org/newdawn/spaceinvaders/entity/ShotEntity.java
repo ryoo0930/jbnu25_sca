@@ -68,7 +68,7 @@ public class ShotEntity extends Entity {
 			game.removeEntity(this);
 
 			AlienEntity alien = (AlienEntity) other;
-			alien.takeDamage(10);
+			alien.takeDamage(30);
 
 			if(alien.getHealth() <= 0) {
 				game.notifyAlienKilled(other);
