@@ -1,4 +1,4 @@
-package org.newdawn.spaceinvaders;
+package org.newdawn.spaceinvaders.ui;
 
 import java.awt.Color;
 import java.awt.Font;

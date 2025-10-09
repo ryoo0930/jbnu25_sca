@@ -1,8 +1,10 @@
-package org.newdawn.spaceinvaders;
+package org.newdawn.spaceinvaders.ui;
 
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics2D;
+
+import org.newdawn.spaceinvaders.SoundStore;
 
 public class OptionScreen {
     private final String[] options = { "Music Volume", "Effects Volume", "Back" };

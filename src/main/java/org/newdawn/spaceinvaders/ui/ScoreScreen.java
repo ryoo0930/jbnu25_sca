@@ -1,9 +1,12 @@
-package org.newdawn.spaceinvaders;
+package org.newdawn.spaceinvaders.ui;
 
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics2D;
 import java.util.List;
+
+import org.newdawn.spaceinvaders.Score;
+import org.newdawn.spaceinvaders.ScoreManager;
 
 public class ScoreScreen {
 
