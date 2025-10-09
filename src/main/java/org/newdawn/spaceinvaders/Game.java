@@ -80,7 +80,7 @@ public class Game extends Canvas {
 	private GamePlay gamePlay;
 	private NicknameInputScreen nicknameInputScreen;
 	private ScoreScreen scoreScreen;
-
+	private OptionScreen optionScreen;
 	private int scoreToSave;
 	private int lastDifficulty;
 
@@ -138,8 +138,9 @@ public class Game extends Canvas {
 		mainMenu = new MainMenu();
 		difficultyMenu = new DifficultyMenu();
 		scoreScreen = new ScoreScreen();
+		optionScreen = new OptionScreen();
 
-		mainMenuSound = SoundStore.get().getSound("sounds/mainMenuSound.wav");
+		mainMenuSound = SoundStore.get().getMusic("sounds/mainMenuSound.wav");
 	}
 
 	public void endGame() {
@@ -282,7 +283,9 @@ public class Game extends Canvas {
 				case SCORE:
 					scoreScreen.draw(g);
 					break;
-
+				case OPTION:
+					optionScreen.draw(g);
+					break;
 			}
 
 			// finally, we've completed drawing so clear up the graphics
@@ -424,6 +427,21 @@ public class Game extends Canvas {
 				case SCORE:
 					if (e.getKeyCode() == KeyEvent.VK_Z || e.getKeyCode() == KeyEvent.VK_SPACE) {
 						currentGameState = GameState.MAIN_MENU;
+					}
+					break;
+				case OPTION:
+					if (e.getKeyCode() == KeyEvent.VK_UP) {
+						optionScreen.moveUp();
+					} else if (e.getKeyCode() == KeyEvent.VK_DOWN) {
+						optionScreen.moveDown();
+					} else if (e.getKeyCode() == KeyEvent.VK_LEFT) {
+						optionScreen.decreaseVolume();
+					} else if (e.getKeyCode() == KeyEvent.VK_RIGHT) {
+						optionScreen.increaseVolume();
+					} else if (e.getKeyCode() == KeyEvent.VK_ENTER || e.getKeyCode() == KeyEvent.VK_Z) {
+						if (optionScreen.getSelection() == 2) { // Back
+							currentGameState = GameState.MAIN_MENU;
+						}
 					}
 					break;
 			}
