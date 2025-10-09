@@ -1,5 +1,7 @@
 package org.newdawn.spaceinvaders.entity;
 
+import java.awt.Rectangle;
+
 import org.newdawn.spaceinvaders.Game;
 
 public class BossShotEntity extends Entity {
@@ -22,9 +24,16 @@ public class BossShotEntity extends Entity {
 
     @Override
     public void collidedWith(Entity other) {
+        // 충돌한 대상이 ShipEntity인지 확인합니다.
         if (other instanceof ShipEntity) {
-            game.removeEntity(this);
-            game.notifyDeath();
+            ShipEntity ship = (ShipEntity) other;
+            // 이제 기체 전체가 아닌, ShipEntity의 작은 히트박스와 충돌했는지 검사합니다.
+            Rectangle myBounds = new Rectangle((int) this.x, (int) this.y, this.sprite.getWidth(), this.sprite.getHeight());
+
+            if (myBounds.intersects(ship.getHitbox())) {
+                game.removeEntity(this);
+                game.notifyDeath();
+            }
         }
     }
 }
