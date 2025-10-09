@@ -1,4 +1,4 @@
-package org.newdawn.spaceinvaders.entity;
+package org.newdawn.spaceinvaders.entity.skill;
 
 import java.awt.Graphics;
 import java.awt.Rectangle;
@@ -6,6 +6,9 @@ import java.awt.Rectangle;
 import org.newdawn.spaceinvaders.Game;
 import org.newdawn.spaceinvaders.Sprite;
 import org.newdawn.spaceinvaders.SpriteStore;
+import org.newdawn.spaceinvaders.entity.AlienEntity;
+import org.newdawn.spaceinvaders.entity.Entity;
+import org.newdawn.spaceinvaders.entity.ShipEntity;
 
 /**
  * 레이저(지속형): X키로 3초간 유지되며 Ship 앞에서 위로 뻗는 공격.
@@ -51,7 +54,7 @@ public class LaserEntity extends Entity {
 
     // Ship 위치를 따라가도록 좌표만 갱신
     public void move(long delta) {
-        int shipW = (ship.sprite != null ? ship.sprite.getWidth() : 0);
+        int shipW = (ship.getSprite() != null ? ship.getSprite().getWidth() : 0);
         int laserW = (this.tileSprite != null ? this.tileSprite.getWidth() : 0);
         int centerOffset = (shipW - laserW) / 2;
 
@@ -77,7 +80,7 @@ public class LaserEntity extends Entity {
         int bx = (int) this.x;
 
         // ship 중앙 정렬을 위해 오프셋 적용
-        int shipW = (ship.sprite != null ? ship.sprite.getWidth() : 0);
+        int shipW = (ship.getSprite() != null ? ship.getSprite().getWidth() : 0);
         int laserW = (this.tileSprite != null ? this.tileSprite.getWidth() : 0);
         int centerOffset = (shipW - laserW) / 2;
         bx = (int) ship.getX() + centerOffset;
@@ -97,8 +100,8 @@ public class LaserEntity extends Entity {
 
         Rectangle beam = getBeamRect();
 
-        int w = (other.sprite != null ? other.sprite.getWidth() : 1);
-        int h = (other.sprite != null ? other.sprite.getHeight() : 1);
+        int w = (other.getSprite() != null ? other.getSprite().getWidth() : 1);
+        int h = (other.getSprite() != null ? other.getSprite().getHeight() : 1);
         Rectangle r = new Rectangle((int) other.getX(), (int) other.getY(), w, h);
 
         return beam.intersects(r);

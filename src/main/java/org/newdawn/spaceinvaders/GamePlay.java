@@ -6,7 +6,7 @@ import org.newdawn.spaceinvaders.entity.AlienEntity;
 import org.newdawn.spaceinvaders.entity.Entity;
 import org.newdawn.spaceinvaders.entity.ShipEntity;
 import org.newdawn.spaceinvaders.entity.ShotEntity;
-import org.newdawn.spaceinvaders.entity.BombEntity;
+import org.newdawn.spaceinvaders.entity.skill.BombEntity;
 import org.newdawn.spaceinvaders.stage.EasyStage;
 import org.newdawn.spaceinvaders.stage.HardStage;
 import org.newdawn.spaceinvaders.stage.LunaticStage;
@@ -60,7 +60,7 @@ public class GamePlay {
     private int difficulty;
 
     // Laser 관리
-    private org.newdawn.spaceinvaders.entity.LaserEntity laser;
+    private org.newdawn.spaceinvaders.entity.skill.LaserEntity laser;
     private final long LASER_DURATION = 3000;
     private boolean laserButtonLatched = false; // 중첩방지
 
@@ -287,8 +287,8 @@ public class GamePlay {
                         continue;
                     }
 
-                    if (me instanceof org.newdawn.spaceinvaders.entity.LaserEntity ||
-                            him instanceof org.newdawn.spaceinvaders.entity.LaserEntity) {
+                    if (me instanceof org.newdawn.spaceinvaders.entity.skill.LaserEntity ||
+                            him instanceof org.newdawn.spaceinvaders.entity.skill.LaserEntity) {
                         continue;
                     }
 
@@ -346,7 +346,7 @@ public class GamePlay {
             }
             // 레이저 발사 트리거: X키 누르면 3초 지속
             if (x && !laserButtonLatched && laser == null) {
-                laser = new org.newdawn.spaceinvaders.entity.LaserEntity(
+                laser = new org.newdawn.spaceinvaders.entity.skill.LaserEntity(
                         game,
                         (org.newdawn.spaceinvaders.entity.ShipEntity) ship,
                         LASER_DURATION
@@ -366,7 +366,7 @@ public class GamePlay {
     public void draw(Graphics2D g) {
         for (Entity entity : entities) {
             //
-            if (entity instanceof org.newdawn.spaceinvaders.entity.LaserEntity) {
+            if (entity instanceof org.newdawn.spaceinvaders.entity.skill.LaserEntity) {
                 continue;
             }
             if (entity instanceof ShipEntity) {
