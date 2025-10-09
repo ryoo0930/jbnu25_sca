@@ -13,7 +13,14 @@ import java.awt.image.BufferStrategy;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 
+import javax.sound.sampled.Clip;
+
 import org.newdawn.spaceinvaders.entity.Entity;
+import org.newdawn.spaceinvaders.ui.DifficultyMenu;
+import org.newdawn.spaceinvaders.ui.MainMenu;
+import org.newdawn.spaceinvaders.ui.NicknameInputScreen;
+import org.newdawn.spaceinvaders.ui.OptionScreen;
+import org.newdawn.spaceinvaders.ui.ScoreScreen;
 
 /**
  * The main hook of our game. This class with both act as a manager
@@ -79,9 +86,12 @@ public class Game extends Canvas {
 	private GamePlay gamePlay;
 	private NicknameInputScreen nicknameInputScreen;
 	private ScoreScreen scoreScreen;
-
+	private OptionScreen optionScreen;
 	private int scoreToSave;
 	private int lastDifficulty;
+
+	private Clip mainMenuSound;
+	private boolean soundLoop = false;
 
 	/** 게임 시작 시 처음으로 보여줄 화면 */
 	private GameState currentGameState = GameState.MAIN_MENU;
@@ -134,6 +144,9 @@ public class Game extends Canvas {
 		mainMenu = new MainMenu();
 		difficultyMenu = new DifficultyMenu();
 		scoreScreen = new ScoreScreen();
+		optionScreen = new OptionScreen();
+
+		mainMenuSound = SoundStore.get().getMusic("sounds/mainMenuSound.wav");
 	}
 
 	public void endGame() {
@@ -235,6 +248,18 @@ public class Game extends Canvas {
 			g.setColor(Color.black);
 			g.fillRect(0, 0, 800, 600);
 
+			if (currentGameState != GameState.GAME_PLAY && currentGameState != GameState.NICKNAME_INPUT) {
+				if (!soundLoop) {
+					mainMenuSound.loop(Clip.LOOP_CONTINUOUSLY);
+					soundLoop = true;
+				}
+			} else {
+				if (soundLoop) {
+					mainMenuSound.stop();
+					soundLoop = false;
+				}
+			}
+
 			// 화면 상태 변경
 			switch (currentGameState) {
 				case MAIN_MENU:
@@ -273,7 +298,9 @@ public class Game extends Canvas {
 				case SCORE:
 					scoreScreen.draw(g);
 					break;
-
+				case OPTION:
+					optionScreen.draw(g);
+					break;
 			}
 
 			// finally, we've completed drawing so clear up the graphics
@@ -417,6 +444,21 @@ public class Game extends Canvas {
 				case SCORE:
 					if (e.getKeyCode() == KeyEvent.VK_Z || e.getKeyCode() == KeyEvent.VK_SPACE) {
 						currentGameState = GameState.MAIN_MENU;
+					}
+					break;
+				case OPTION:
+					if (e.getKeyCode() == KeyEvent.VK_UP) {
+						optionScreen.moveUp();
+					} else if (e.getKeyCode() == KeyEvent.VK_DOWN) {
+						optionScreen.moveDown();
+					} else if (e.getKeyCode() == KeyEvent.VK_LEFT) {
+						optionScreen.decreaseVolume();
+					} else if (e.getKeyCode() == KeyEvent.VK_RIGHT) {
+						optionScreen.increaseVolume();
+					} else if (e.getKeyCode() == KeyEvent.VK_ENTER || e.getKeyCode() == KeyEvent.VK_Z) {
+						if (optionScreen.getSelection() == 2) { // Back
+							currentGameState = GameState.MAIN_MENU;
+						}
 					}
 					break;
 			}

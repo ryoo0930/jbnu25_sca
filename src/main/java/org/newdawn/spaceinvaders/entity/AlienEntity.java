@@ -22,6 +22,9 @@ public class AlienEntity extends Entity {
 	private long frameDuration = 250;
 	/** The current frame of animation being displayed */
 	private int frameNumber;
+
+	/** 적 체력 추가 */
+	private int health;
 	
 	/**
 	 * Create a new alien entity
@@ -41,7 +44,18 @@ public class AlienEntity extends Entity {
 		
 		this.game = game;
 		dx = -moveSpeed;
+		this.health = 100; // 체력 초기화
 	}
+
+	/** 데미지 관련 메서드 */
+	public void takeDamage(int damage) {
+		this.health -= damage;
+	}
+	
+	public int getHealth() {
+		return health;
+	}
+
 
 	/**
 	 * Request that this alien moved based on time elapsed
@@ -81,7 +95,7 @@ public class AlienEntity extends Entity {
 		}
 		
 		// proceed with normal move
-		super.move(delta);
+		// super.move(delta); // 적 이동 패턴 제거.
 	}
 	
 	/**

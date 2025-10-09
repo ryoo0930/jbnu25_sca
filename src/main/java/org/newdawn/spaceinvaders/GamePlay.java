@@ -228,6 +228,7 @@ public class GamePlay {
         lastFire = System.currentTimeMillis();
         ShotEntity shot = new ShotEntity(game, "sprites/shot.gif", ship.getX() + 10, ship.getY() - 30);
         entities.add(shot);
+        SoundStore.get().playSound("sounds/alienshoot2.wav");
     }
     private void fireBombIfReady() {
         long now = System.currentTimeMillis();
