@@ -13,6 +13,8 @@ import java.awt.image.BufferStrategy;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 
+import javax.sound.sampled.Clip;
+
 import org.newdawn.spaceinvaders.entity.Entity;
 
 /**
@@ -82,6 +84,9 @@ public class Game extends Canvas {
 	private int scoreToSave;
 	private int lastDifficulty;
 
+	private Clip mainMenuSound;
+	private boolean soundLoop = false;
+
 	/** 게임 시작 시 처음으로 보여줄 화면 */
 	private GameState currentGameState = GameState.MAIN_MENU;
 
@@ -133,6 +138,8 @@ public class Game extends Canvas {
 		mainMenu = new MainMenu();
 		difficultyMenu = new DifficultyMenu();
 		scoreScreen = new ScoreScreen();
+
+		mainMenuSound = SoundStore.get().getSound("sounds/mainMenuSound.wav");
 	}
 
 	public void endGame() {
@@ -158,9 +165,8 @@ public class Game extends Canvas {
 
 	public void removeEntity(Object entity) {
 		if (gamePlay != null)
-            gamePlay.removeEntity((Entity) entity);
+			gamePlay.removeEntity((Entity) entity);
 	}
-
 
 	public void notifyDeath() {
 		if (gamePlay != null) {
@@ -225,6 +231,18 @@ public class Game extends Canvas {
 			Graphics2D g = (Graphics2D) strategy.getDrawGraphics();
 			g.setColor(Color.black);
 			g.fillRect(0, 0, 800, 600);
+
+			if (currentGameState != GameState.GAME_PLAY && currentGameState != GameState.NICKNAME_INPUT) {
+				if (!soundLoop) {
+					mainMenuSound.loop(Clip.LOOP_CONTINUOUSLY);
+					soundLoop = true;
+				}
+			} else {
+				if (soundLoop) {
+					mainMenuSound.stop();
+					soundLoop = false;
+				}
+			}
 
 			// 화면 상태 변경
 			switch (currentGameState) {
