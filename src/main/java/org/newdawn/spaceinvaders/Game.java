@@ -23,6 +23,7 @@ import org.newdawn.spaceinvaders.ui.OptionScreen;
 import org.newdawn.spaceinvaders.ui.ScoreScreen;
 import org.newdawn.spaceinvaders.utility.ScoreManager;
 import org.newdawn.spaceinvaders.utility.SoundManager;
+import org.newdawn.spaceinvaders.utility.SpriteStore;
 
 /**
  * The main hook of our game. This class with both act as a manager
@@ -94,6 +95,7 @@ public class Game extends Canvas {
 
 	private Clip mainMenuSound;
 	private boolean soundLoop = false;
+	private SpriteStore spriteStore;
 
 	/** 게임 시작 시 처음으로 보여줄 화면 */
 	private GameState currentGameState = GameState.MAIN_MENU;
@@ -149,6 +151,7 @@ public class Game extends Canvas {
 		optionScreen = new OptionScreen();
 
 		mainMenuSound = SoundManager.get().getMusic("sounds/mainMenuSound.wav");
+		spriteStore = spriteStore.get();
 	}
 
 	public void endGame() {
@@ -209,6 +212,10 @@ public class Game extends Canvas {
 		if (gamePlay != null)
 			gamePlay.tryToFire();
 	}
+
+	public SpriteStore getSpriteStore(){
+        return this.spriteStore;
+    }
 
 	/**
 	 * The main game loop. This loop is running during all game

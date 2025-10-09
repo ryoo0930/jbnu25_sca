@@ -2,7 +2,7 @@ package org.newdawn.spaceinvaders.stage;
 
 import java.util.ArrayList;
 import org.newdawn.spaceinvaders.Game;
-import org.newdawn.spaceinvaders.entity.AlienEntity;
+import org.newdawn.spaceinvaders.entity.boss.HardBossEntity;
 import org.newdawn.spaceinvaders.entity.Entity;
 
 public class HardStage implements Stage {
@@ -11,13 +11,10 @@ public class HardStage implements Stage {
     @Override
     public void initEntities(Game game, ArrayList<Entity> entities) {
         alienCount = 0;
-        for (int row = 0; row < 6; row++) {
-            for (int x = 0; x < 15; x++) {
-                Entity alien = new AlienEntity(game, 50 + (x * 45), (50) + row * 25);
-                entities.add(alien);
-                alienCount++;
-            }
-        }
+        // 기존 외계인 생성 코드 대신 보스 생성
+        Entity boss = new HardBossEntity(game, 400, 100);
+        entities.add(boss);
+        alienCount++;
     }
 
     @Override

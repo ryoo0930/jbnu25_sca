@@ -21,6 +21,8 @@ public class GamePlay {
     private ArrayList<Entity> entities = new ArrayList<>();
     /** The list of entities that need to be removed from the game this loop */
     private ArrayList<Entity> removeList = new ArrayList<>();
+    /** The list of entities that need to be added to the game this loop */
+    private ArrayList<Entity> addList = new ArrayList<>(); // 새로 추가된 엔티티를 위한 리스트
     /** The entity representing the player */
     private Entity ship;
     /** The speed at which the player's ship should move (pixels/sec) */
@@ -158,7 +160,7 @@ public class GamePlay {
     /**
      * Remove an entity from the game. The entity removed will
      * no longer move or be drawn.
-     * 
+     *
      * @param entity The entity that should be removed
      */
     public void removeEntity(Entity entity) {
@@ -166,7 +168,7 @@ public class GamePlay {
     }
 
     public void addEntity(Entity entity) {
-        entities.add(entity);
+        addList.add(entity); // entities.add(entity) 대신 addList에 추가
     }
 
     public java.util.List getEntities() {
@@ -243,13 +245,13 @@ public class GamePlay {
         Entity bomb = new BombEntity(
                 game,"sprites/Boom.gif",
                 startX, startY, 0, -250);
-        entities.add(bomb);
+        addEntity(bomb); // addEntity 사용
     }
 
 
     /**
      * Game 클래스의 메인 루프에서 호출되어 게임 상태를 업데이트합니다.
-     * 
+     *
      * @param delta 마지막 프레임 이후 경과 시간
      */
     public void update(long delta) {
@@ -305,6 +307,10 @@ public class GamePlay {
         entities.removeAll(removeList);
         removeList.clear();
 
+        // 추가할 엔티티 정리
+        entities.addAll(addList);
+        addList.clear();
+
         // 레이저 수명 확인 및 정리
         if (laser != null && laser.isExpired()) {
             removeEntity(laser);
@@ -352,7 +358,7 @@ public class GamePlay {
                         (org.newdawn.spaceinvaders.entity.ShipEntity) ship,
                         LASER_DURATION
                 );
-                entities.add(laser); // 엔티티 리스트에 추가
+                addEntity(laser); // addEntity 사용
                 laserButtonLatched = true;
             }
             if (!x) {
