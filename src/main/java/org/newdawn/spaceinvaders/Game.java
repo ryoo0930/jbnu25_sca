@@ -16,6 +16,11 @@ import javax.swing.JPanel;
 import javax.sound.sampled.Clip;
 
 import org.newdawn.spaceinvaders.entity.Entity;
+import org.newdawn.spaceinvaders.ui.DifficultyMenu;
+import org.newdawn.spaceinvaders.ui.MainMenu;
+import org.newdawn.spaceinvaders.ui.NicknameInputScreen;
+import org.newdawn.spaceinvaders.ui.OptionScreen;
+import org.newdawn.spaceinvaders.ui.ScoreScreen;
 
 /**
  * The main hook of our game. This class with both act as a manager
