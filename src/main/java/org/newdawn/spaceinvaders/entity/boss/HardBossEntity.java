@@ -92,7 +92,7 @@ public class HardBossEntity extends AlienEntity {
             double speed = 150;
             double shotDx = Math.cos(angle) * speed;
             double shotDy = Math.sin(angle) * speed;
-            game.addEntity(new BossShotEntity(game, "sprites/shot2.gif", (int) x, (int) y, shotDx, shotDy));
+            game.addEntity(new BossShotEntity(game, "sprites/bossShot.gif", (int) x, (int) y, shotDx, shotDy));
         }
     }
 
@@ -104,7 +104,7 @@ public class HardBossEntity extends AlienEntity {
             double speed = 150 + i * 5;
             double shotDx = Math.cos(angle) * speed;
             double shotDy = Math.sin(angle) * speed;
-            game.addEntity(new BossShotEntity(game, "sprites/shot2.gif", (int) x, (int) y, shotDx, shotDy));
+            game.addEntity(new BossShotEntity(game, "sprites/bossShot.gif", (int) x, (int) y, shotDx, shotDy));
         }
     }
 
@@ -128,7 +128,7 @@ public class HardBossEntity extends AlienEntity {
                 double adjustedAngle = angle + (i * 0.1);
                 double shotDx = Math.cos(adjustedAngle) * speed;
                 double shotDy = Math.sin(adjustedAngle) * speed;
-                game.addEntity(new BossShotEntity(game, "sprites/shot2.gif", (int) x, (int) y, shotDx, shotDy));
+                game.addEntity(new BossShotEntity(game, "sprites/bossShot.gif", (int) x, (int) y, shotDx, shotDy));
             }
         }
     }
