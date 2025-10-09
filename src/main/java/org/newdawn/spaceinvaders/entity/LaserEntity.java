@@ -10,7 +10,7 @@ import org.newdawn.spaceinvaders.SpriteStore;
 /**
  * 레이저(지속형): X키로 3초간 유지되며 Ship 앞에서 위로 뻗는 공격.
  * - Ship을 따라다님
- * - 비관통(동시에 한 기만 타격)
+ * - 비관통(동시에 한 기만 타격) (관통으로 바꿀 예정)
  * - ShotEntity와 동일한 효과로 적 처치
  */
 public class LaserEntity extends Entity {
@@ -76,7 +76,7 @@ public class LaserEntity extends Entity {
         // 화면 위쪽부터 ship 코앞까지 직사각형
         int bx = (int) this.x;
 
-        // 🔑 ship 중앙 정렬을 위해 오프셋 적용
+        // ship 중앙 정렬을 위해 오프셋 적용
         int shipW = (ship.sprite != null ? ship.sprite.getWidth() : 0);
         int laserW = (this.tileSprite != null ? this.tileSprite.getWidth() : 0);
         int centerOffset = (shipW - laserW) / 2;
@@ -104,22 +104,12 @@ public class LaserEntity extends Entity {
         return beam.intersects(r);
     }
 
-    // 적에 적중시 한 기만 처리
+    // 적에 적중시관통
     public void collidedWith(Entity other) {
         if (!(other instanceof AlienEntity)) return;
 
-        long now = System.currentTimeMillis();
-        if (now - lastHitTime < hitCooldown) return;
-        lastHitTime = now;
-
-
-        // 적 체력 추가에 따른 수정된 적 제거 로직
-        AlienEntity alien = (AlienEntity)other;
-        alien.takeDamage(100);
-
-        if(alien.getHealth() <= 0) {
-            game.notifyAlienKilled(other);
-            game.removeEntity(other);
-        }
+        // ShotEntity와 동일한 처치 흐름을 따르도록 게임에 통지
+        game.notifyAlienKilled(other);
+        game.removeEntity(other);
     }
 }

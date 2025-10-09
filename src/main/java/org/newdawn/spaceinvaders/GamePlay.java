@@ -6,11 +6,13 @@ import org.newdawn.spaceinvaders.entity.AlienEntity;
 import org.newdawn.spaceinvaders.entity.Entity;
 import org.newdawn.spaceinvaders.entity.ShipEntity;
 import org.newdawn.spaceinvaders.entity.ShotEntity;
+import org.newdawn.spaceinvaders.entity.BombEntity;
 import org.newdawn.spaceinvaders.stage.EasyStage;
 import org.newdawn.spaceinvaders.stage.HardStage;
 import org.newdawn.spaceinvaders.stage.LunaticStage;
 import org.newdawn.spaceinvaders.stage.NormalStage;
 import org.newdawn.spaceinvaders.stage.Stage;
+
 
 public class GamePlay {
 
@@ -34,6 +36,9 @@ public class GamePlay {
     private int lifes = 3;
     private boolean invincible = false;
     private long invincibilityEndTime = 0;
+
+    private long lastBombTime = 0L;
+    private static final long BOMB_COOLDOWN_MS = 1500L;
 
 
 
@@ -159,6 +164,14 @@ public class GamePlay {
         removeList.add(entity);
     }
 
+    public void addEntity(Entity entity) {
+        entities.add(entity);
+    }
+
+    public java.util.List getEntities() {
+        return entities;
+    }
+
     /**
      * Notification that the player has died.
      */
@@ -217,6 +230,21 @@ public class GamePlay {
         entities.add(shot);
         SoundStore.get().playSound("sounds/alienshoot2.wav");
     }
+    private void fireBombIfReady() {
+        long now = System.currentTimeMillis();
+        if (now - lastBombTime < BOMB_COOLDOWN_MS) return; //연속발사 방지
+        lastBombTime = now;
+
+        int sx = (int) ship.getX();
+        int sy = (int) ship.getY();
+        int startX = (int)(ship.getX() + 3);
+        int startY = (int)(ship.getY() - 30);
+        Entity bomb = new BombEntity(
+                game,"sprites/Boom.gif",
+                startX, startY, 0, -250);
+        entities.add(bomb);
+    }
+
 
     /**
      * Game 클래스의 메인 루프에서 호출되어 게임 상태를 업데이트합니다.
@@ -234,25 +262,16 @@ public class GamePlay {
                 entity.move(delta);
             }
 
-            // 레이저 우선 타격 단계: 레이저와 겹치는 Alien 중 'y가 가장 큰' 1기만 타격
+            // 레이저 관통 타격: 레이저와 겹치는 모든 Alien에 타격
             if (laser != null && !waitingForKeyPress) {
-                Entity target = null;
-                double bestY = -1;
-                for (Entity e : entities) {
+                for (int i = 0; i < entities.size(); i++) {
+                    Entity e = entities.get(i);
                     if (e instanceof AlienEntity) {
-                        // LaserEntity의 collidesWith를 이용해 레이저-잡몹 겹침 판정
                         if (laser.collidesWith(e)) {
-                            if (e.getY() > bestY) {   // y가 클수록 아래쪽 = Ship에 더 가까움
-                                bestY = e.getY();
-                                target = e;
-                            }
+                            laser.collidedWith(e);
+                            e.collidedWith(laser);
                         }
                     }
-                }
-
-                if (target != null) {
-                    laser.collidedWith(target);
-                    target.collidedWith(laser);
                 }
             }
 
@@ -303,7 +322,7 @@ public class GamePlay {
     /**
      * Game 클래스에서 키 입력 상태를 받아와 처리.
      */
-    public void handleInput(boolean up, boolean down, boolean left, boolean right, boolean space, boolean shift, boolean z, boolean x) {
+    public void handleInput(boolean up, boolean down, boolean left, boolean right, boolean space, boolean shift, boolean z, boolean x, boolean c) {
         if (!waitingForKeyPress) {
             ship.setHorizontalMovement(0);
             ship.setVerticalMovement(0);
@@ -321,6 +340,9 @@ public class GamePlay {
                 moveSpeed = 300;
             if (z) {
                 tryToFire();
+            }
+            if (c) {
+                fireBombIfReady();
             }
             // 레이저 발사 트리거: X키 누르면 3초 지속
             if (x && !laserButtonLatched && laser == null) {
