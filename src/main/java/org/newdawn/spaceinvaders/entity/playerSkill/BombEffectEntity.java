@@ -1,6 +1,9 @@
-package org.newdawn.spaceinvaders.entity;
+package org.newdawn.spaceinvaders.entity.playerSkill;
 
 import org.newdawn.spaceinvaders.Game;
+import org.newdawn.spaceinvaders.entity.AlienEntity;
+import org.newdawn.spaceinvaders.entity.Entity;
+
 import java.util.HashMap;
 import java.util.Map;
 import java.awt.Graphics;
@@ -71,8 +74,8 @@ public class BombEffectEntity extends Entity {
             Entity e = (Entity) list.get(i);
             if (!(e instanceof AlienEntity)) continue;
 
-            int ex = (int) (e.getX() + (e.sprite != null ? e.sprite.getWidth() : 0) / 2.0);
-            int ey = (int) (e.getY() + (e.sprite != null ? e.sprite.getHeight() : 0) / 2.0);
+            int ex = (int) (e.getX() + (e.getSprite() != null ? e.getSprite().getWidth() : 0) / 2.0);
+            int ey = (int) (e.getY() + (e.getSprite() != null ? e.getSprite().getHeight() : 0) / 2.0);
 
             int dx = ex - cx;
             int dy = ey - cy;

@@ -6,12 +6,13 @@ import org.newdawn.spaceinvaders.entity.AlienEntity;
 import org.newdawn.spaceinvaders.entity.Entity;
 import org.newdawn.spaceinvaders.entity.ShipEntity;
 import org.newdawn.spaceinvaders.entity.ShotEntity;
-import org.newdawn.spaceinvaders.entity.BombEntity;
+import org.newdawn.spaceinvaders.entity.playerSkill.BombEntity;
 import org.newdawn.spaceinvaders.stage.EasyStage;
 import org.newdawn.spaceinvaders.stage.HardStage;
 import org.newdawn.spaceinvaders.stage.LunaticStage;
 import org.newdawn.spaceinvaders.stage.NormalStage;
 import org.newdawn.spaceinvaders.stage.Stage;
+import org.newdawn.spaceinvaders.utility.SoundManager;
 
 
 public class GamePlay {
@@ -60,7 +61,7 @@ public class GamePlay {
     private int difficulty;
 
     // Laser 관리
-    private org.newdawn.spaceinvaders.entity.LaserEntity laser;
+    private org.newdawn.spaceinvaders.entity.playerSkill.LaserEntity laser;
     private final long LASER_DURATION = 3000;
     private boolean laserButtonLatched = false; // 중첩방지
 
@@ -228,7 +229,7 @@ public class GamePlay {
         lastFire = System.currentTimeMillis();
         ShotEntity shot = new ShotEntity(game, "sprites/shot.gif", ship.getX() + 10, ship.getY() - 30);
         entities.add(shot);
-        SoundStore.get().playSound("sounds/alienshoot2.wav");
+        SoundManager.get().playSound("sounds/alienshoot2.wav");
     }
     private void fireBombIfReady() {
         long now = System.currentTimeMillis();
@@ -287,8 +288,8 @@ public class GamePlay {
                         continue;
                     }
 
-                    if (me instanceof org.newdawn.spaceinvaders.entity.LaserEntity ||
-                            him instanceof org.newdawn.spaceinvaders.entity.LaserEntity) {
+                    if (me instanceof org.newdawn.spaceinvaders.entity.playerSkill.LaserEntity ||
+                            him instanceof org.newdawn.spaceinvaders.entity.playerSkill.LaserEntity) {
                         continue;
                     }
 
@@ -346,7 +347,7 @@ public class GamePlay {
             }
             // 레이저 발사 트리거: X키 누르면 3초 지속
             if (x && !laserButtonLatched && laser == null) {
-                laser = new org.newdawn.spaceinvaders.entity.LaserEntity(
+                laser = new org.newdawn.spaceinvaders.entity.playerSkill.LaserEntity(
                         game,
                         (org.newdawn.spaceinvaders.entity.ShipEntity) ship,
                         LASER_DURATION
@@ -366,7 +367,7 @@ public class GamePlay {
     public void draw(Graphics2D g) {
         for (Entity entity : entities) {
             //
-            if (entity instanceof org.newdawn.spaceinvaders.entity.LaserEntity) {
+            if (entity instanceof org.newdawn.spaceinvaders.entity.playerSkill.LaserEntity) {
                 continue;
             }
             if (entity instanceof ShipEntity) {

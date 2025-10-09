@@ -1,4 +1,4 @@
-package org.newdawn.spaceinvaders;
+package org.newdawn.spaceinvaders.utility;
 
 import java.io.IOException;
 import java.net.URL;
@@ -10,10 +10,10 @@ import javax.sound.sampled.FloatControl;
 import javax.sound.sampled.LineUnavailableException;
 import javax.sound.sampled.UnsupportedAudioFileException;
 
-public class SoundStore {
-    private static SoundStore single = new SoundStore();
+public class SoundManager {
+    private static SoundManager single = new SoundManager();
 
-    public static SoundStore get() {
+    public static SoundManager get() {
         return single;
     }
 

@@ -4,7 +4,7 @@ import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics2D;
 
-import org.newdawn.spaceinvaders.SoundStore;
+import org.newdawn.spaceinvaders.utility.SoundManager;
 
 public class OptionScreen {
     private final String[] options = { "Music Volume", "Effects Volume", "Back" };
@@ -55,13 +55,13 @@ public class OptionScreen {
             if (musicVolume > 1.0f) {
                 musicVolume = 1.0f;
             }
-            SoundStore.get().setMusicVolume(musicVolume);
+            SoundManager.get().setMusicVolume(musicVolume);
         } else if (currentSelection == 1) {
             effectsVolume += 0.1f;
             if (effectsVolume > 1.0f) {
                 effectsVolume = 1.0f;
             }
-            SoundStore.get().setEffectsVolume(effectsVolume);
+            SoundManager.get().setEffectsVolume(effectsVolume);
         }
     }
 
@@ -71,13 +71,13 @@ public class OptionScreen {
             if (musicVolume < 0.0f) {
                 musicVolume = 0.0f;
             }
-            SoundStore.get().setMusicVolume(musicVolume);
+            SoundManager.get().setMusicVolume(musicVolume);
         } else if (currentSelection == 1) {
             effectsVolume -= 0.1f;
             if (effectsVolume < 0.0f) {
                 effectsVolume = 0.0f;
             }
-            SoundStore.get().setEffectsVolume(effectsVolume);
+            SoundManager.get().setEffectsVolume(effectsVolume);
         }
     }
 

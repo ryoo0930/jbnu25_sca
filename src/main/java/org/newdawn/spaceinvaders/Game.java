@@ -21,6 +21,8 @@ import org.newdawn.spaceinvaders.ui.MainMenu;
 import org.newdawn.spaceinvaders.ui.NicknameInputScreen;
 import org.newdawn.spaceinvaders.ui.OptionScreen;
 import org.newdawn.spaceinvaders.ui.ScoreScreen;
+import org.newdawn.spaceinvaders.utility.ScoreManager;
+import org.newdawn.spaceinvaders.utility.SoundManager;
 
 /**
  * The main hook of our game. This class with both act as a manager
@@ -146,7 +148,7 @@ public class Game extends Canvas {
 		scoreScreen = new ScoreScreen();
 		optionScreen = new OptionScreen();
 
-		mainMenuSound = SoundStore.get().getMusic("sounds/mainMenuSound.wav");
+		mainMenuSound = SoundManager.get().getMusic("sounds/mainMenuSound.wav");
 	}
 
 	public void endGame() {

@@ -5,8 +5,8 @@ import java.awt.Font;
 import java.awt.Graphics2D;
 import java.util.List;
 
-import org.newdawn.spaceinvaders.Score;
-import org.newdawn.spaceinvaders.ScoreManager;
+import org.newdawn.spaceinvaders.utility.Score;
+import org.newdawn.spaceinvaders.utility.ScoreManager;
 
 public class ScoreScreen {
 

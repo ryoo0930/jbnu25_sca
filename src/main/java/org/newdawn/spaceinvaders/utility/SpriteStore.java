@@ -1,4 +1,4 @@
-package org.newdawn.spaceinvaders;
+package org.newdawn.spaceinvaders.utility;
 
 import java.awt.GraphicsConfiguration;
 import java.awt.GraphicsEnvironment;
@@ -10,6 +10,8 @@ import java.net.URL;
 import java.util.HashMap;
 
 import javax.imageio.ImageIO;
+
+import org.newdawn.spaceinvaders.Sprite;
 
 /**
  * A resource manager for sprites in the game. Its often quite important
