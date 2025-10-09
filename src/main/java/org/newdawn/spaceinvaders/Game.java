@@ -58,6 +58,7 @@ public class Game extends Canvas {
 	/** True if the Z cursor key is currently pressed */
 	private boolean zPressed = false;
 	private boolean xPressed = false;
+    private boolean cPressed = false;
 
 	/**
 	 * True if game logic needs to be applied this loop, normally as a result of a
@@ -161,6 +162,14 @@ public class Game extends Canvas {
             gamePlay.removeEntity((Entity) entity);
 	}
 
+    public void addEntity(Entity entity) {
+        if (gamePlay != null) gamePlay.addEntity(entity);
+    }
+    public java.util.List getEntities() {
+        if (gamePlay != null) return gamePlay.getEntities();
+        return java.util.Collections.emptyList();
+    }
+
 
 	public void notifyDeath() {
 		if (gamePlay != null) {
@@ -253,7 +262,7 @@ public class Game extends Canvas {
 
 						gamePlay.handleInput(upPressed, downPressed, leftPressed, rightPressed, spacePressed,
 								shiftPressed,
-								zPressed, xPressed); // gamePlay에게 넘겨줄 키보드 키
+								zPressed, xPressed, cPressed); // gamePlay에게 넘겨줄 키보드 키
 					}
 					break;
 				case NICKNAME_INPUT:
@@ -378,7 +387,9 @@ public class Game extends Canvas {
 							zPressed = true;
 						} else if (e.getKeyCode() == KeyEvent.VK_X) {
 							xPressed = true;
-						}
+						} else if (e.getKeyCode() == KeyEvent.VK_C) {
+                            cPressed = true;
+                        }
 					}
 					break;
 				case NICKNAME_INPUT:
@@ -447,6 +458,9 @@ public class Game extends Canvas {
 			if (e.getKeyCode() == KeyEvent.VK_X) {
 				xPressed = false;
 			}
+            if (e.getKeyCode() == KeyEvent.VK_C) {
+                cPressed = false;
+            }
 		}
 
 		/**
