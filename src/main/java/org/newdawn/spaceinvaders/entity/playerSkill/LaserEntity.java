@@ -1,14 +1,14 @@
-package org.newdawn.spaceinvaders.entity.skill;
+package org.newdawn.spaceinvaders.entity.playerSkill;
 
 import java.awt.Graphics;
 import java.awt.Rectangle;
 
 import org.newdawn.spaceinvaders.Game;
 import org.newdawn.spaceinvaders.Sprite;
-import org.newdawn.spaceinvaders.SpriteStore;
 import org.newdawn.spaceinvaders.entity.AlienEntity;
 import org.newdawn.spaceinvaders.entity.Entity;
 import org.newdawn.spaceinvaders.entity.ShipEntity;
+import org.newdawn.spaceinvaders.utility.SpriteStore;
 
 /**
  * 레이저(지속형): X키로 3초간 유지되며 Ship 앞에서 위로 뻗는 공격.

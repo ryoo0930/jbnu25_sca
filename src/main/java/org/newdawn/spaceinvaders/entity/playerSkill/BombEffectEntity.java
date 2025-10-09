@@ -1,4 +1,4 @@
-package org.newdawn.spaceinvaders.entity.skill;
+package org.newdawn.spaceinvaders.entity.playerSkill;
 
 import org.newdawn.spaceinvaders.Game;
 import org.newdawn.spaceinvaders.entity.AlienEntity;
