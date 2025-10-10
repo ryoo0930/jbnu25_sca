@@ -1,17 +1,20 @@
 package org.newdawn.spaceinvaders.entity.boss;
 
 import org.newdawn.spaceinvaders.Game;
-import org.newdawn.spaceinvaders.entity.AlienEntity;
-import org.newdawn.spaceinvaders.entity.GuidedBossShotEntity;
+import org.newdawn.spaceinvaders.entity.BossSkill.BossLaserChargerEntity;
+import org.newdawn.spaceinvaders.entity.BossSkill.GuidedBossShotEntity;
 import org.newdawn.spaceinvaders.entity.Entity;
 import org.newdawn.spaceinvaders.entity.ShipEntity;
 import org.newdawn.spaceinvaders.entity.ShotEntity;
+
 
 import org.newdawn.spaceinvaders.entity.playerSkill.LaserEntity;
 
 import java.util.Random;
 
 import java.awt.Rectangle;
+
+import org.newdawn.spaceinvaders.entity.BossSkill.BossLaserEntity;
 
 public class HardBossEntity extends Entity {
     private Game game;
@@ -44,6 +47,16 @@ public class HardBossEntity extends Entity {
     private long moveDuration = 1000; // 1 second
     private long attackDuration = 4000; // 4 seconds, enough for one attack sequence
     private double targetX;
+
+    // BossLaser
+    private long bossLaserChargeMillis   = 1000;  // 차지 시간
+    private long bossLaserDurationMillis = 1000;  // 발사 지속 시간
+    private long bossLaserDamageInterval = 1000;  // 1초에 1틱
+    private int  bossLaserDamagePerTick  = 1;     // 틱당 1데미지
+    private long lastBossLaserTime = 0;           // 마지막 시퀀스 시작 시간
+    private long bossLaserCooldown  = 5000;       // 시퀀스 쿨다운
+    private boolean bossLaserActive = false;      // 발사 진행 여부
+
 
     public HardBossEntity(Game game, int x, int y) {
         super("sprites/Boss1.gif", x, 100); // Set fixed Y position
@@ -106,7 +119,7 @@ public class HardBossEntity extends Entity {
                         phase2Attack(currentTime);
                         break;
                     case 3:
-                        // No attacks in phase 3
+                        phase3Attack(currentTime);
                         break;
                 }
 
@@ -149,6 +162,10 @@ public class HardBossEntity extends Entity {
             currentState = BossState.ATTACKING;
             stateChangeTime = currentTime;
             this.dx = 0;
+
+            // 보스 레이자 상태 초기화
+            bossLaserActive = false;
+            lastBossLaserTime = currentTime;
         }
     }
 
@@ -266,8 +283,37 @@ public class HardBossEntity extends Entity {
             game.addEntity(new GuidedBossShotEntity(game, "sprites/GuidedShot.gif", fireX, fireY, shotDx, shotDy));
         }
     }
+    //  3페이지 보스 레이저
+    private void phase3Attack(long currentTime) {
+        if (bossLaserActive) {
+            boolean anyAlive = false;
+            for (Object o : game.getEntities()) {
+                if (o instanceof BossLaserChargerEntity || o instanceof BossLaserEntity) {
+                    anyAlive = true; break;
+                }
+            }
+            if (!anyAlive) {
+                bossLaserActive = false;
+                lastBossLaserTime = currentTime;
+            }
+            return;
+        }
+        BossLaserChargerEntity charger = new BossLaserChargerEntity(
+                game,
+                this,
+                "sprites/BossLaser1.gif",
+                bossLaserChargeMillis,
+                "sprites/BossLaser2.gif",
+                bossLaserDurationMillis,
+                bossLaserDamageInterval,
+                bossLaserDamagePerTick
+        );
+        game.addEntity(charger);
+        bossLaserActive = true;
+    }
 
-    public void takeDamage(int damage) {
+
+        public void takeDamage(int damage) {
         health -= damage;
         if (health <= 0) {
             game.removeEntity(this);

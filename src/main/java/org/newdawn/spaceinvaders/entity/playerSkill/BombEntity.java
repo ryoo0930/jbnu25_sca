@@ -3,16 +3,18 @@ package org.newdawn.spaceinvaders.entity.playerSkill;
 import org.newdawn.spaceinvaders.Game;
 import org.newdawn.spaceinvaders.entity.AlienEntity;
 import org.newdawn.spaceinvaders.entity.Entity;
+import org.newdawn.spaceinvaders.entity.boss.HardBossEntity;
+import org.newdawn.spaceinvaders.entity.boss.NormalBossEntity;
+import org.newdawn.spaceinvaders.entity.boss.EasyBossEntity;
 
-/**
- * C 키로 발사되는 폭탄 투사체.
- * - 위로 직진
- * - 적과 충돌하면 사라지고 BombEffectEntity(범위 폭발)를 생성
- * - @Override 사용하지 않음 (수업 수준)
- */
 public class BombEntity extends Entity {
     private Game game;
     private boolean exploded;
+
+    // 폭발 이펙트에 넘길 데미지
+    private int   effectDamagePerHit = 5000;  // 수치당 데미지
+    private long  effectDurationMs   = 100;  //  지속시간
+    private long  effectIntervalMs   = 100;  // 판전 간격
 
     public BombEntity(Game game, String spriteRef, int x, int y, double vx, double vy) {
         super(spriteRef, x, y);
@@ -22,7 +24,7 @@ public class BombEntity extends Entity {
         this.exploded = false;
     }
 
-    /** 이동 처리 */
+    // 이동 처리
     public void move(long delta) {
         if (exploded) return;
 
@@ -35,17 +37,23 @@ public class BombEntity extends Entity {
         }
     }
 
-    /** 충돌 처리 */
+    // 충돌처리
     public void collidedWith(Entity other) {
         if (exploded) return;
 
         // 적과 충돌 시 폭발 생성
         if (other instanceof AlienEntity) {
             explode();
+            return;
+        }
+        if (other instanceof HardBossEntity
+                || other instanceof NormalBossEntity
+                || other instanceof EasyBossEntity) {
+            explode();
+            return;
         }
     }
-
-    /** 폭발 생성 */
+    // 폭발 생성 (BombEffect로 변경, Bomb제거)
     private void explode() {
         exploded = true;
 
@@ -57,14 +65,13 @@ public class BombEntity extends Entity {
                 game,
                 "sprites/BoomEffect.gif",
                 centerX, centerY,
-                100L,   // 지속(ms): 0.1초
-                4,      // 대상별 최대 히트 수
-                25L    // 대상별 히트 간격(ms):
+                effectDurationMs,  // 지속시간
+                effectDamagePerHit,    // 데미지
+                effectIntervalMs   // 판정 간격
         );
 
         // Game → GamePlay에 추가 위임 (Game.addEntity 필요)
         game.addEntity(boom);
-
         // 자신 제거
         game.removeEntity(this);
     }

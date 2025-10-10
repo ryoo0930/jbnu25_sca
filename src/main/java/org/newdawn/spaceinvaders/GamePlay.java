@@ -5,7 +5,7 @@ import java.util.ArrayList;
 import org.newdawn.spaceinvaders.entity.AlienEntity;
 import org.newdawn.spaceinvaders.entity.BossShotEntity;
 import org.newdawn.spaceinvaders.entity.Entity;
-import org.newdawn.spaceinvaders.entity.GuidedBossShotEntity;
+import org.newdawn.spaceinvaders.entity.BossSkill.GuidedBossShotEntity;
 import org.newdawn.spaceinvaders.entity.ShipEntity;
 import org.newdawn.spaceinvaders.entity.ShotEntity;
 import org.newdawn.spaceinvaders.entity.playerSkill.BombEntity;

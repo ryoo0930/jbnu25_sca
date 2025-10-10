@@ -1,8 +1,7 @@
 package org.newdawn.spaceinvaders.entity.boss;
 
 import org.newdawn.spaceinvaders.Game;
-import org.newdawn.spaceinvaders.entity.AlienEntity;
-import org.newdawn.spaceinvaders.entity.GuidedBossShotEntity;
+import org.newdawn.spaceinvaders.entity.BossSkill.GuidedBossShotEntity;
 import org.newdawn.spaceinvaders.entity.Entity;
 import org.newdawn.spaceinvaders.entity.ShipEntity;
 import org.newdawn.spaceinvaders.entity.ShotEntity;

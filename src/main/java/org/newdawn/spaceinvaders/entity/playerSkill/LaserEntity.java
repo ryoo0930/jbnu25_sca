@@ -9,14 +9,10 @@ import org.newdawn.spaceinvaders.entity.AlienEntity;
 import org.newdawn.spaceinvaders.entity.Entity;
 import org.newdawn.spaceinvaders.entity.ShipEntity;
 import org.newdawn.spaceinvaders.entity.boss.HardBossEntity;
+import org.newdawn.spaceinvaders.entity.boss.NormalBossEntity;
+import org.newdawn.spaceinvaders.entity.boss.EasyBossEntity;
 import org.newdawn.spaceinvaders.utility.SpriteStore;
 
-/**
- * 레이저(지속형): X키로 3초간 유지되며 Ship 앞에서 위로 뻗는 공격.
- * - Ship을 따라다님
- * - 비관통(동시에 한 기만 타격) (관통으로 바꿀 예정)
- * - ShotEntity와 동일한 효과로 적 처치
- */
 public class LaserEntity extends Entity {
     private Game game;
     private ShipEntity ship;
@@ -31,9 +27,15 @@ public class LaserEntity extends Entity {
     private int xOffset = 10;
     private int yOffset = -30;
 
-    // 과다 타격 방지(비관통): 짧은 쿨타임
+    // 과다 타격 방지: 짧은 쿨타임 생성
     private long lastHitTime = 0L;
     private long hitCooldown = 120L; // ms
+
+    // 레이저 지속시간/판정시간/데미지 제어
+    private long lastDamageTick;               // 마지막으로 피해를 준 시간
+
+    private long damageIntervalMillis = 100L;  // 판정 0.1초에 1번만 피해 적용
+    private int damagePerTick = 100;          // 틱당 피해량: 현재 100
 
     public LaserEntity(Game game, ShipEntity ship, long durationMillis) {
         super("sprites/laser.gif", (int) ship.getX(), (int) ship.getY());
@@ -44,7 +46,7 @@ public class LaserEntity extends Entity {
         this.tileSprite = SpriteStore.get().getSprite("sprites/laser.gif");
         this.tileW = tileSprite.getWidth();
         this.tileH = tileSprite.getHeight();
-
+        this.lastDamageTick = 0L;
         this.dx = 0;
         this.dy = 0;
     }
@@ -62,16 +64,66 @@ public class LaserEntity extends Entity {
 
         this.x = ship.getX() + centerOffset;
         this.y = ship.getY() + yOffset;
+
+        // 지속시간 종료 시 제거
+        if(isExpired()) {
+            game.removeEntity(this);
+            return;
+        }
+
+        // 데미지는 프레임마다가 아니라 주기적으로만 적용
+        long now = System.currentTimeMillis();
+        if(now -lastDamageTick >=damageIntervalMillis) {
+            lastDamageTick = now;
+
+            // 기존 충돌 판정 그대로 사용
+            for (Object o : game.getEntities()) {
+                Entity e = (Entity) o;
+                if (e == this) continue;
+
+                if (e instanceof AlienEntity) {
+                    if (this.collidesWith(e)) {
+                        ((AlienEntity) e).takeDamage(damagePerTick); // 에일리언 HP 기반 피해
+                        AlienEntity a = (AlienEntity) e;
+                        if (a.getHealth() <= 0) {                    // 체력 0이하가 될 경우 처치
+                            game.notifyAlienKilled(a);               // 점수 상태 갱신
+                            game.removeEntity(a);                    // 엔티티 제거
+                            continue;                                // 제거된 엔티티는 이후 로직에서 생략
+                        }
+                    }
+                }
+
+                if (e instanceof HardBossEntity) {
+                    if (this.collidesWith(e)) {
+                        ((HardBossEntity) e).takeDamage(damagePerTick); // 보스 피해
+
+                    }
+                }
+                if (e instanceof NormalBossEntity) {
+                    if (this.collidesWith(e)) {
+                        ((NormalBossEntity) e).takeDamage(damagePerTick);
+                    }
+                }
+                if (e instanceof EasyBossEntity) {
+                    if (this.collidesWith(e)) {
+                        ((EasyBossEntity) e).takeDamage(damagePerTick);
+                    }
+                }
+            }
+        }
     }
 
     // Ship 앞에서 화면 상단까지 laser.gif를 세로로 이어 붙여서 그림
     public void draw(Graphics g) {
-        int startX = (int) this.x;
-        int startY = (int) this.y;
+        if (isExpired()) return;
 
-        // Ship 앞에서 위쪽(0)까지 타일링
-        for (int yy = startY; yy >= 0; yy -= tileH) {
-            tileSprite.draw(g, startX, yy);
+        int screenTop = 0;
+        int tileHeight = (tileSprite != null ? tileSprite.getHeight() : 0);
+        int yStart = (int) this.y;
+        for (int ty = yStart; ty >= screenTop - tileHeight; ty -= tileHeight) {
+            if (tileSprite != null) {
+                tileSprite.draw(g, (int) this.x, ty);
+            }
         }
     }
 
@@ -85,7 +137,7 @@ public class LaserEntity extends Entity {
         int laserW = (this.tileSprite != null ? this.tileSprite.getWidth() : 0);
         int centerOffset = (shipW - laserW) / 2;
         bx = (int) ship.getX() + centerOffset;
-        this.x = ship.getX() + centerOffset + 1;
+    //    this.x = ship.getX() + centerOffset + 1;
 
         int byTop = 0;
         int byBottom = (int) this.y + tileH;
@@ -110,13 +162,5 @@ public class LaserEntity extends Entity {
 
     // 적에 적중시관통
     public void collidedWith(Entity other) {
-        if (other instanceof HardBossEntity) {
-            return; // HardBossEntity는 자체적으로 데미지 처리
-        }
-        if (!(other instanceof AlienEntity)) return;
-
-        // ShotEntity와 동일한 처치 흐름을 따르도록 게임에 통지
-        game.notifyAlienKilled(other);
-        game.removeEntity(other);
     }
 }

@@ -1,6 +1,8 @@
-package org.newdawn.spaceinvaders.entity;
+package org.newdawn.spaceinvaders.entity.BossSkill;
 
 import org.newdawn.spaceinvaders.Game;
+import org.newdawn.spaceinvaders.entity.Entity;
+import org.newdawn.spaceinvaders.entity.ShipEntity;
 
 import java.awt.Graphics;
 import java.awt.Graphics2D;
