@@ -11,12 +11,20 @@ import org.newdawn.spaceinvaders.entity.playerSkill.LaserEntity;
 
 import java.util.Random;
 
-public class HardBossEntity extends AlienEntity {
+import java.awt.Rectangle;
+
+public class HardBossEntity extends Entity {
     private Game game;
     private Random random = new Random();
     private int health = 15000; // 보스 체력
     private int maxHealth = 15000;
     private long lastLaserHitTime = 0;
+
+    // Animation
+    private org.newdawn.spaceinvaders.Sprite[] sprites;
+    private int currentFrame = 0;
+    private long lastFrameChange = 0;
+    private long frameDuration = 150; // 150ms per frame
 
     private int phase = 1;
     private int phase1AttackStep = 0; // 0: ready, 1: guided shots, 2: circular shots
@@ -26,18 +34,30 @@ public class HardBossEntity extends AlienEntity {
     private long lastSubAttackTime = 0;
     private double phase1BurstAngle; // Angle for the aimed burst
 
-    // Movement
-    private long lastMoveTime = 0;
-    private long moveInterval = 1500; // 1.5 seconds to change movement
-    private double targetX, targetY;
+    // Movement & State
+    private enum BossState {
+        MOVING,
+        ATTACKING
+    }
+    private BossState currentState = BossState.MOVING;
+    private long stateChangeTime = 0;
+    private long moveDuration = 1000; // 1 second
+    private long attackDuration = 4000; // 4 seconds, enough for one attack sequence
+    private double targetX;
 
     public HardBossEntity(Game game, int x, int y) {
-        super(game, x, y);
+        super("sprites/Boss1.gif", x, 100); // Set fixed Y position
         this.game = game;
-        this.sprite = game.getSpriteStore().getSprite("sprites/alien2.gif"); // Temporary boss sprite
+        this.sprites = new org.newdawn.spaceinvaders.Sprite[3];
+        this.sprites[0] = sprite; // Use the one already loaded
+        this.sprites[1] = game.getSpriteStore().getSprite("sprites/Boss2.gif");
+        this.sprites[2] = game.getSpriteStore().getSprite("sprites/Boss3.gif");
         this.x = x;
-        this.y = y;
-        setRandomTargetPosition();
+        this.y = 100; // Ensure Y is fixed
+
+        // Start with moving
+        this.stateChangeTime = System.currentTimeMillis();
+        setNewTargetX();
     }
 
     public int getHealth() {
@@ -48,33 +68,66 @@ public class HardBossEntity extends AlienEntity {
         return maxHealth;
     }
 
-    private void setRandomTargetPosition() {
+    private void setNewTargetX() {
         targetX = 100 + random.nextInt(600);
-        targetY = 50 + random.nextInt(150);
     }
 
     @Override
     public void move(long delta) {
         long currentTime = System.currentTimeMillis();
 
-        // Movement
-        if (currentTime - lastMoveTime > moveInterval) {
-            lastMoveTime = currentTime;
-            setRandomTargetPosition();
+        // State machine logic
+        switch (currentState) {
+            case MOVING:
+                // Move towards targetX
+                double dx_vec = targetX - x;
+                double distance = Math.abs(dx_vec);
+                if (distance > 1) {
+                    this.dx = (dx_vec / distance) * 100; // Movement speed
+                } else {
+                    this.dx = 0; // Reached destination
+                }
+
+                // Check for state transition
+                if (currentTime - stateChangeTime > moveDuration) {
+                    currentState = BossState.ATTACKING;
+                    stateChangeTime = currentTime;
+                    this.dx = 0; // Stop
+                }
+                break;
+
+            case ATTACKING:
+                // Perform attack logic based on phase
+                switch (phase) {
+                    case 1:
+                        phase1Attack(currentTime);
+                        break;
+                    case 2:
+                        phase2Attack(currentTime);
+                        break;
+                    case 3:
+                        // No attacks in phase 3
+                        break;
+                }
+
+                // Check for state transition
+                if (currentTime - stateChangeTime > attackDuration) {
+                    currentState = BossState.MOVING;
+                    stateChangeTime = currentTime;
+                    setNewTargetX();
+                }
+                break;
         }
 
-        double dx = targetX - x;
-        double dy = targetY - y;
-        double distance = Math.sqrt(dx * dx + dy * dy);
-
-        if (distance > 1) {
-            this.dx = (dx / distance) * 100; // Movement speed
-            this.dy = (dy / distance) * 100;
-        } else {
-            this.dx = 0;
-            this.dy = 0;
+        // Common logic for animation, actual movement, and phase transition
+        // Animation
+        if (currentTime - lastFrameChange > frameDuration) {
+            lastFrameChange = currentTime;
+            currentFrame = (currentFrame + 1) % sprites.length;
+            this.sprite = sprites[currentFrame];
         }
 
+        // Update position
         super.move(delta);
 
         // Phase transition logic
@@ -91,20 +144,11 @@ public class HardBossEntity extends AlienEntity {
         if (phase != currentPhase) {
             phase1AttackStep = 0;
             attackCounter = 0;
-            lastAttackTime = currentTime; // Start cooldown for the new phase's attacks
-        }
-
-        // Execute attacks based on phase
-        switch (phase) {
-            case 1:
-                phase1Attack(currentTime);
-                break;
-            case 2:
-                phase2Attack(currentTime);
-                break;
-            case 3:
-                // No attacks in phase 3
-                break;
+            lastAttackTime = currentTime;
+            // Force transition to attacking state to start new phase attack
+            currentState = BossState.ATTACKING;
+            stateChangeTime = currentTime;
+            this.dx = 0;
         }
     }
 
@@ -181,18 +225,22 @@ public class HardBossEntity extends AlienEntity {
 
     private void patternAimedBurst(double angle) {
         double speed = 250;
+        int fireX = (int) (x + sprite.getWidth() / 2);
+        int fireY = (int) (y + sprite.getHeight() / 2);
 
         // Fire 5 shots in a fan shape
         for (int i = -2; i <= 2; i++) {
             double adjustedAngle = angle + (i * 0.1);
             double shotDx = Math.cos(adjustedAngle) * speed;
             double shotDy = Math.sin(adjustedAngle) * speed;
-            game.addEntity(new GuidedBossShotEntity(game, "sprites/GuidedShot.gif", (int) x, (int) y, shotDx, shotDy));
+            game.addEntity(new GuidedBossShotEntity(game, "sprites/GuidedShot.gif", fireX, fireY, shotDx, shotDy));
         }
     }
 
     private void patternCircleShot(int shotIndex) {
         int bulletCount = 28;
+        int fireX = (int) (x + sprite.getWidth() / 2);
+        int fireY = (int) (y + sprite.getHeight() / 2);
         // Each shot in the sequence rotates clockwise
         double rotationPerShot = Math.PI / 30.0; // Controls the speed of rotation
         double angleOffset = (20 - shotIndex) * rotationPerShot;
@@ -202,28 +250,43 @@ public class HardBossEntity extends AlienEntity {
             double speed = 150;
             double shotDx = Math.cos(angle) * speed;
             double shotDy = Math.sin(angle) * speed;
-            game.addEntity(new GuidedBossShotEntity(game, "sprites/GuidedShot.gif", (int) x, (int) y, shotDx, shotDy));
+            game.addEntity(new GuidedBossShotEntity(game, "sprites/GuidedShot.gif", fireX, fireY, shotDx, shotDy));
         }
     }
 
     private void patternSpiralShot() {
         int bulletCount = 30;
+        int fireX = (int) (x + sprite.getWidth() / 2);
+        int fireY = (int) (y + sprite.getHeight() / 2);
         for (int i = 0; i < bulletCount; i++) {
             double angle = 0.1 * i * Math.PI;
             double speed = 150 + i * 5;
             double shotDx = Math.cos(angle) * speed;
             double shotDy = Math.sin(angle) * speed;
-            game.addEntity(new GuidedBossShotEntity(game, "sprites/GuidedShot.gif", (int) x, (int) y, shotDx, shotDy));
+            game.addEntity(new GuidedBossShotEntity(game, "sprites/GuidedShot.gif", fireX, fireY, shotDx, shotDy));
         }
     }
 
-    @Override
     public void takeDamage(int damage) {
         health -= damage;
         if (health <= 0) {
             game.removeEntity(this);
             game.notifyWin(); // Notify game win when boss is defeated
         }
+    }
+
+    @Override
+    public boolean collidesWith(Entity other) {
+        // Define a smaller hitbox for the boss (e.g., 75% of the sprite size)
+        int hitboxWidth = (int) (sprite.getWidth() * 0.75);
+        int hitboxHeight = (int) (sprite.getHeight() * 0.75);
+        int hitboxX = (int) (x + (sprite.getWidth() - hitboxWidth) / 2);
+        int hitboxY = (int) (y + (sprite.getHeight() - hitboxHeight) / 2);
+
+        Rectangle me = new Rectangle(hitboxX, hitboxY, hitboxWidth, hitboxHeight);
+        Rectangle him = new Rectangle((int) other.getX(), (int) other.getY(), other.getSprite().getWidth(), other.getSprite().getHeight());
+
+        return me.intersects(him);
     }
 
     @Override
