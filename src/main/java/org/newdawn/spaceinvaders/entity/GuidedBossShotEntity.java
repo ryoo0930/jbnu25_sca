@@ -2,6 +2,7 @@ package org.newdawn.spaceinvaders.entity;
 
 import org.newdawn.spaceinvaders.Game;
 
+import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
 
@@ -27,7 +28,7 @@ public class GuidedBossShotEntity extends Entity {
     }
 
     @Override
-    public void draw(java.awt.Graphics g) {
+    public void draw(Graphics g) {
         if (g instanceof Graphics2D) {
             Graphics2D g2d = (Graphics2D) g.create(); // 그래픽 컨텍스트 복사
             // 회전의 중심을 엔티티의 중심으로 설정
