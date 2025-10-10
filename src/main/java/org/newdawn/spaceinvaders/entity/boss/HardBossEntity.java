@@ -7,6 +7,8 @@ import org.newdawn.spaceinvaders.entity.Entity;
 import org.newdawn.spaceinvaders.entity.ShipEntity;
 import org.newdawn.spaceinvaders.entity.ShotEntity;
 
+import org.newdawn.spaceinvaders.entity.playerSkill.LaserEntity;
+
 import java.util.Random;
 
 public class HardBossEntity extends AlienEntity {
@@ -14,6 +16,7 @@ public class HardBossEntity extends AlienEntity {
     private Random random = new Random();
     private int health = 15000; // 보스 체력
     private int maxHealth = 15000;
+    private long lastLaserHitTime = 0;
 
     private int phase = 1;
     private int phase1AttackStep = 0; // 0: ready, 1: guided shots, 2: circular shots
@@ -228,6 +231,12 @@ public class HardBossEntity extends AlienEntity {
         if (other instanceof ShotEntity) {
             takeDamage(30); // Damage when hit by player's shot
             game.removeEntity(other);
+        } else if (other instanceof LaserEntity) {
+            long currentTime = System.currentTimeMillis();
+            if (currentTime - lastLaserHitTime > 100) { // 100ms 간격으로 데미지
+                takeDamage(100);
+                lastLaserHitTime = currentTime;
+            }
         }
     }
 }

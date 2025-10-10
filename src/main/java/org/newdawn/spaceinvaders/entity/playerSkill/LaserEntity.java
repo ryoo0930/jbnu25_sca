@@ -8,6 +8,7 @@ import org.newdawn.spaceinvaders.Sprite;
 import org.newdawn.spaceinvaders.entity.AlienEntity;
 import org.newdawn.spaceinvaders.entity.Entity;
 import org.newdawn.spaceinvaders.entity.ShipEntity;
+import org.newdawn.spaceinvaders.entity.boss.HardBossEntity;
 import org.newdawn.spaceinvaders.utility.SpriteStore;
 
 /**
@@ -109,6 +110,9 @@ public class LaserEntity extends Entity {
 
     // 적에 적중시관통
     public void collidedWith(Entity other) {
+        if (other instanceof HardBossEntity) {
+            return; // HardBossEntity는 자체적으로 데미지 처리
+        }
         if (!(other instanceof AlienEntity)) return;
 
         // ShotEntity와 동일한 처치 흐름을 따르도록 게임에 통지

@@ -3,7 +3,9 @@ package org.newdawn.spaceinvaders;
 import java.awt.Graphics2D;
 import java.util.ArrayList;
 import org.newdawn.spaceinvaders.entity.AlienEntity;
+import org.newdawn.spaceinvaders.entity.BossShotEntity;
 import org.newdawn.spaceinvaders.entity.Entity;
+import org.newdawn.spaceinvaders.entity.GuidedBossShotEntity;
 import org.newdawn.spaceinvaders.entity.ShipEntity;
 import org.newdawn.spaceinvaders.entity.ShotEntity;
 import org.newdawn.spaceinvaders.entity.playerSkill.BombEntity;
@@ -273,6 +275,11 @@ public class GamePlay {
                         if (laser.collidesWith(e)) {
                             laser.collidedWith(e);
                             e.collidedWith(laser);
+                        }
+                    }
+                    if (e instanceof BossShotEntity || e instanceof GuidedBossShotEntity) {
+                        if (laser.collidesWith(e)) {
+                            removeEntity(e);
                         }
                     }
                 }
