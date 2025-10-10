@@ -16,6 +16,15 @@ public class HardBossEntity extends AlienEntity {
     private int attackPattern = 0;
     private Random random = new Random();
     private int health = 5000; // 보스 체력
+    private int maxHealth = 5000;
+
+    public int getHealth() {
+        return health;
+    }
+
+    public int getMaxHealth() {
+        return maxHealth;
+    }
 
     // 움직임 관련
     private long lastMoveTime = 0;

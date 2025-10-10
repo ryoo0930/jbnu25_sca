@@ -391,6 +391,25 @@ public class GamePlay {
             laser.draw(g);
         }
 
+        for (Entity entity : entities) {
+            if (entity instanceof org.newdawn.spaceinvaders.entity.boss.HardBossEntity) {
+                org.newdawn.spaceinvaders.entity.boss.HardBossEntity boss = (org.newdawn.spaceinvaders.entity.boss.HardBossEntity) entity;
+                int maxHealth = boss.getMaxHealth();
+                int currentHealth = boss.getHealth();
+                int barWidth = 500;
+                int barHeight = 20;
+                int barX = (800 - barWidth) / 2;
+                int barY = 30;
+
+                g.setColor(java.awt.Color.GRAY);
+                g.fillRect(barX, barY, barWidth, barHeight);
+
+                float healthPercentage = (float) currentHealth / maxHealth;
+                g.setColor(java.awt.Color.RED);
+                g.fillRect(barX, barY, (int) (barWidth * healthPercentage), barHeight);
+            }
+        }
+
         g.setColor(java.awt.Color.WHITE);
         g.drawString("Score: " + this.score, 700, 50);
         g.drawString("Lives: " + (this.lifes > 0 ? this.lifes -1 : 0), 10, 50);
