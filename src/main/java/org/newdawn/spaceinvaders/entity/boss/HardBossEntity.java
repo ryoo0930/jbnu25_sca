@@ -2,7 +2,7 @@ package org.newdawn.spaceinvaders.entity.boss;
 
 import org.newdawn.spaceinvaders.Game;
 import org.newdawn.spaceinvaders.entity.AlienEntity;
-import org.newdawn.spaceinvaders.entity.BossShotEntity;
+import org.newdawn.spaceinvaders.entity.GuidedBossShotEntity;
 import org.newdawn.spaceinvaders.entity.Entity;
 import org.newdawn.spaceinvaders.entity.ShipEntity;
 import org.newdawn.spaceinvaders.entity.ShotEntity;
@@ -101,7 +101,7 @@ public class HardBossEntity extends AlienEntity {
             double speed = 150;
             double shotDx = Math.cos(angle) * speed;
             double shotDy = Math.sin(angle) * speed;
-            game.addEntity(new BossShotEntity(game, "sprites/bossShot.gif", (int) x, (int) y, shotDx, shotDy));
+            game.addEntity(new GuidedBossShotEntity(game, "sprites/GuidedShot.gif", (int) x, (int) y, shotDx, shotDy));
         }
     }
 
@@ -113,7 +113,7 @@ public class HardBossEntity extends AlienEntity {
             double speed = 150 + i * 5;
             double shotDx = Math.cos(angle) * speed;
             double shotDy = Math.sin(angle) * speed;
-            game.addEntity(new BossShotEntity(game, "sprites/bossShot.gif", (int) x, (int) y, shotDx, shotDy));
+            game.addEntity(new GuidedBossShotEntity(game, "sprites/GuidedShot.gif", (int) x, (int) y, shotDx, shotDy));
         }
     }
 
@@ -137,7 +137,7 @@ public class HardBossEntity extends AlienEntity {
                 double adjustedAngle = angle + (i * 0.1);
                 double shotDx = Math.cos(adjustedAngle) * speed;
                 double shotDy = Math.sin(adjustedAngle) * speed;
-                game.addEntity(new BossShotEntity(game, "sprites/bossShot.gif", (int) x, (int) y, shotDx, shotDy));
+                game.addEntity(new GuidedBossShotEntity(game, "sprites/GuidedShot.gif", (int) x, (int) y, shotDx, shotDy));
             }
         }
     }
