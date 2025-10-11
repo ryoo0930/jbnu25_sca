@@ -6,6 +6,12 @@ import org.newdawn.spaceinvaders.entity.Entity;
 import org.newdawn.spaceinvaders.entity.boss.HardBossEntity;
 import org.newdawn.spaceinvaders.entity.boss.NormalBossEntity;
 import org.newdawn.spaceinvaders.entity.boss.EasyBossEntity;
+import org.newdawn.spaceinvaders.entity.EasyPassingAlienEntity;
+import org.newdawn.spaceinvaders.entity.NormalPassingAlienEntity;
+import org.newdawn.spaceinvaders.entity.HardPassingAlienEntity;
+import org.newdawn.spaceinvaders.entity.boss.EasyMidBossEntity;
+import org.newdawn.spaceinvaders.entity.boss.NormalMidBossEntity;
+import org.newdawn.spaceinvaders.entity.boss.MidBossEntity;
 
 public class BombEntity extends Entity {
     private Game game;
@@ -48,7 +54,14 @@ public class BombEntity extends Entity {
         }
         if (other instanceof HardBossEntity
                 || other instanceof NormalBossEntity
-                || other instanceof EasyBossEntity) {
+                || other instanceof EasyBossEntity
+                || other instanceof MidBossEntity
+                || other instanceof NormalMidBossEntity
+                || other instanceof EasyMidBossEntity
+                || other instanceof HardPassingAlienEntity
+                || other instanceof NormalPassingAlienEntity
+                || other instanceof EasyPassingAlienEntity
+        ) {
             explode();
             return;
         }

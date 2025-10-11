@@ -11,6 +11,12 @@ import org.newdawn.spaceinvaders.entity.ShipEntity;
 import org.newdawn.spaceinvaders.entity.boss.HardBossEntity;
 import org.newdawn.spaceinvaders.entity.boss.NormalBossEntity;
 import org.newdawn.spaceinvaders.entity.boss.EasyBossEntity;
+import org.newdawn.spaceinvaders.entity.EasyPassingAlienEntity;
+import org.newdawn.spaceinvaders.entity.NormalPassingAlienEntity;
+import org.newdawn.spaceinvaders.entity.HardPassingAlienEntity;
+import org.newdawn.spaceinvaders.entity.boss.EasyMidBossEntity;
+import org.newdawn.spaceinvaders.entity.boss.NormalMidBossEntity;
+import org.newdawn.spaceinvaders.entity.boss.MidBossEntity;
 import org.newdawn.spaceinvaders.utility.SpriteStore;
 
 public class LaserEntity extends Entity {
@@ -107,6 +113,36 @@ public class LaserEntity extends Entity {
                 if (e instanceof EasyBossEntity) {
                     if (this.collidesWith(e)) {
                         ((EasyBossEntity) e).takeDamage(damagePerTick);
+                    }
+                }
+                if (e instanceof EasyPassingAlienEntity) {
+                    if (this.collidesWith(e)) {
+                        ((EasyPassingAlienEntity) e).takeDamage(damagePerTick);
+                    }
+                }
+                if (e instanceof NormalPassingAlienEntity) {
+                    if (this.collidesWith(e)) {
+                        ((NormalPassingAlienEntity) e).takeDamage(damagePerTick);
+                    }
+                }
+                if (e instanceof HardPassingAlienEntity) {
+                    if (this.collidesWith(e)) {
+                        ((HardPassingAlienEntity) e).takeDamage(damagePerTick);
+                    }
+                }
+                if (e instanceof EasyMidBossEntity) {
+                    if (this.collidesWith(e)) {
+                        ((EasyMidBossEntity) e).takeDamage(damagePerTick);
+                    }
+                }
+                if (e instanceof NormalMidBossEntity) {
+                    if (this.collidesWith(e)) {
+                        ((NormalMidBossEntity) e).takeDamage(damagePerTick);
+                    }
+                }
+                if (e instanceof MidBossEntity) {
+                    if (this.collidesWith(e)) {
+                        ((MidBossEntity) e).takeDamage(damagePerTick);
                     }
                 }
             }
