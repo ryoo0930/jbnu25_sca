@@ -186,6 +186,16 @@ public class Game extends Canvas {
             gamePlay.removeEntity((Entity) entity);
 	}
 
+    public void increaseLife() {
+        if (gamePlay != null) gamePlay.increaseLife();
+    }
+    public void increaseLaserCharges() {
+        if (gamePlay != null) gamePlay.increaseLaserCharges();
+    }
+    public void increaseBombCharges() {
+        if (gamePlay != null) gamePlay.increaseBombCharges();
+    }
+
     public void addEntity(Entity entity) {
         if (gamePlay != null) gamePlay.addEntity(entity);
     }

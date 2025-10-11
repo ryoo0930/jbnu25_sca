@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import org.newdawn.spaceinvaders.entity.AlienEntity;
 import org.newdawn.spaceinvaders.entity.BossShotEntity;
 import org.newdawn.spaceinvaders.entity.Entity;
+import org.newdawn.spaceinvaders.entity.ItemEntity;
 import org.newdawn.spaceinvaders.entity.BossSkill.GuidedBossShotEntity;
 import org.newdawn.spaceinvaders.entity.ShipEntity;
 import org.newdawn.spaceinvaders.entity.ShotEntity;
@@ -41,6 +42,10 @@ public class GamePlay {
     private int lifes = 3;
     private boolean invincible = false;
     private long invincibilityEndTime = 0;
+
+    // Skill Charges
+    private int laserCharges = 2;
+    private int bombCharges = 2;
 
     private long lastBombTime = 0L;
     private static final long BOMB_COOLDOWN_MS = 1500L;
@@ -122,6 +127,18 @@ public class GamePlay {
 
     public int getLifes() {
         return lifes;
+    }
+
+    public void increaseLife() {
+        this.lifes++;
+    }
+
+    public void increaseLaserCharges() {
+        this.laserCharges++;
+    }
+
+    public void increaseBombCharges() {
+        this.bombCharges++;
     }
 
     /**
@@ -240,9 +257,12 @@ public class GamePlay {
         SoundManager.get().playSound("sounds/alienshoot2.wav");
     }
     private void fireBombIfReady() {
+        if (bombCharges <= 0) return; // Check charges
+
         long now = System.currentTimeMillis();
         if (now - lastBombTime < BOMB_COOLDOWN_MS) return; //연속발사 방지
         lastBombTime = now;
+        bombCharges--; // Use a charge
 
         int sx = (int) ship.getX();
         int sy = (int) ship.getY();
@@ -296,8 +316,9 @@ public class GamePlay {
                     Entity me = entities.get(p);
                     Entity him = entities.get(s);
 
-                    // if ship is invincible, skip collision with it
-                    if ((me instanceof ShipEntity && invincible) || (him instanceof ShipEntity && invincible)) {
+                    // if ship is invincible, skip collision with it, unless it's an item
+                    if ((me instanceof ShipEntity && invincible && !(him instanceof ItemEntity)) || 
+                        (him instanceof ShipEntity && invincible && !(me instanceof ItemEntity))) {
                         continue;
                     }
 
@@ -363,7 +384,8 @@ public class GamePlay {
                 fireBombIfReady();
             }
             // 레이저 발사 트리거: X키 누르면 3초 지속
-            if (x && !laserButtonLatched && laser == null) {
+            if (x && !laserButtonLatched && laser == null && laserCharges > 0) {
+                laserCharges--; // Use a charge
                 laser = new org.newdawn.spaceinvaders.entity.playerSkill.LaserEntity(
                         game,
                         (org.newdawn.spaceinvaders.entity.ShipEntity) ship,
@@ -424,5 +446,7 @@ public class GamePlay {
         g.setColor(java.awt.Color.WHITE);
         g.drawString("Score: " + this.score, 700, 50);
         g.drawString("Lives: " + (this.lifes > 0 ? this.lifes -1 : 0), 10, 50);
+        g.drawString("Laser: " + this.laserCharges, 10, 70);
+        g.drawString("Bomb: " + this.bombCharges, 10, 90);
     }
 }

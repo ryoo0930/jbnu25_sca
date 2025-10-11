@@ -5,6 +5,7 @@ import org.newdawn.spaceinvaders.Game;
 import org.newdawn.spaceinvaders.entity.BossSkill.GuidedBossShotEntity;
 import org.newdawn.spaceinvaders.entity.BossSkill.LaserWarningLineEntity;
 import org.newdawn.spaceinvaders.entity.Entity;
+import org.newdawn.spaceinvaders.entity.ItemEntity;
 import org.newdawn.spaceinvaders.entity.ShipEntity;
 import org.newdawn.spaceinvaders.entity.ShotEntity;
 
@@ -41,7 +42,8 @@ public class HardBossEntity extends Entity {
     // Movement & State
     private enum BossState {
         MOVING,
-        ATTACKING
+        ATTACKING,
+        RESTING
     }
     private BossState currentState = BossState.MOVING;
     private long stateChangeTime = 0;
@@ -86,6 +88,9 @@ public class HardBossEntity extends Entity {
     private void setNewTargetX() {
         targetX = 100 + random.nextInt(600);
     }
+
+    private long restStartTime = 0;
+    private long restDuration = 3000; // 3 seconds
 
     @Override
     public void move(long delta) {
@@ -134,6 +139,13 @@ public class HardBossEntity extends Entity {
                     setNewTargetX();
                 }
                 break;
+            
+            case RESTING:
+                if (currentTime - restStartTime > restDuration) {
+                    currentState = BossState.ATTACKING;
+                    stateChangeTime = currentTime;
+                }
+                break;
         }
 
         // Common logic for animation, actual movement, and phase transition
@@ -159,12 +171,20 @@ public class HardBossEntity extends Entity {
 
         // Reset attack state on phase change
         if (phase != currentPhase) {
+            // Drop items on phase change
+            int dropX = (int) this.x + this.sprite.getWidth() / 2;
+            int dropY = (int) this.y + this.sprite.getHeight() / 2;
+            game.addEntity(new ItemEntity(game, "sprites/H.gif", dropX - 30, dropY, ItemEntity.ItemType.HEALTH));
+            game.addEntity(new ItemEntity(game, "sprites/L.gif", dropX, dropY, ItemEntity.ItemType.LASER));
+            game.addEntity(new ItemEntity(game, "sprites/B.gif", dropX + 30, dropY, ItemEntity.ItemType.BOMB));
+
             phase1AttackStep = 0;
             attackCounter = 0;
             lastAttackTime = currentTime;
-            // Force transition to attacking state to start new phase attack
-            currentState = BossState.ATTACKING;
-            stateChangeTime = currentTime;
+            
+            // Enter RESTING state
+            currentState = BossState.RESTING;
+            restStartTime = currentTime;
             this.dx = 0;
         }
     }

@@ -6,6 +6,7 @@ import java.awt.Rectangle;
 import org.newdawn.spaceinvaders.Game;
 import org.newdawn.spaceinvaders.Sprite;
 import org.newdawn.spaceinvaders.utility.SpriteStore;
+import org.newdawn.spaceinvaders.entity.ItemEntity;
 
 /**
  * The entity that represents the players ship
@@ -110,6 +111,22 @@ public class ShipEntity extends Entity {
 		// is dead
 		if (other instanceof AlienEntity || other instanceof org.newdawn.spaceinvaders.entity.BossSkill.BossLaserEntity) {
 			game.notifyDeath();
+		}
+
+		if (other instanceof ItemEntity) {
+			ItemEntity item = (ItemEntity) other;
+			switch (item.getType()) {
+				case HEALTH:
+					game.increaseLife();
+					break;
+				case LASER:
+					game.increaseLaserCharges();
+					break;
+				case BOMB:
+					game.increaseBombCharges();
+					break;
+			}
+			game.removeEntity(other);
 		}
 	}
 }

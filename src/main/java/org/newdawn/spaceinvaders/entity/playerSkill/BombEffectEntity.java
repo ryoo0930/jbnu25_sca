@@ -27,7 +27,7 @@ public class BombEffectEntity extends Entity {
     // 판정 반경
     private int radius;
     private double scale = 5.0;  // 폭발 크기
-    private int damagePerHit = 5000;  // 폭발 데미지
+    private int damagePerHit = 2000;  // 폭발 데미지
     public BombEffectEntity(Game game, String spriteRef,
                             int centerX, int centerY,
                             long lifeMs, int maxHitsPerTarget, long hitIntervalMs) {
