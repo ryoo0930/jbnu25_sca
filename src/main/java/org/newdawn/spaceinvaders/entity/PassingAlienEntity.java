@@ -7,7 +7,7 @@ import org.newdawn.spaceinvaders.entity.playerSkill.LaserEntity;
 
 public class PassingAlienEntity extends Entity {
     private final Game game;
-    private int health = 60;
+    private int health = 150;
 
     // Animation
     private final Sprite[] sprites;

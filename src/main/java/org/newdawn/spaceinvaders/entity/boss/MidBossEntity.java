@@ -16,7 +16,7 @@ public class MidBossEntity extends Entity {
     private enum State { ENTERING, ATTACKING, EXITING }
     private State currentState = State.ENTERING;
 
-    private final long stayDuration = 30000; // 30 seconds
+    private final long stayDuration = 10000; // 10 seconds
     private long stateStartTime;
 
     // Spiral Attack Pattern
