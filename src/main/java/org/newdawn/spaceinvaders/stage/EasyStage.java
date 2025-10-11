@@ -20,4 +20,9 @@ public class EasyStage implements Stage {
     public int getAlienCount() {
         return alienCount;
     }
+
+    @Override
+    public void update(Game game) {
+        // Easy stage has no dynamic spawning
+    }
 }

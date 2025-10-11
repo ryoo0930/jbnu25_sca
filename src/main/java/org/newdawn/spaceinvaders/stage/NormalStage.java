@@ -24,4 +24,9 @@ public class NormalStage implements Stage {
     public int getAlienCount() {
         return alienCount;
     }
+
+    @Override
+    public void update(Game game) {
+        // Normal stage has no dynamic spawning
+    }
 }

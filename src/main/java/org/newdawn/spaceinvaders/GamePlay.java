@@ -286,6 +286,9 @@ public class GamePlay {
         }
 
         if (!waitingForKeyPress) {
+            // update stage logic (e.g. spawning)
+            stage.update(game);
+
             // 엔티티 이동
             for (Entity entity : entities) {
                 entity.move(delta);

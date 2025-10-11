@@ -24,4 +24,9 @@ public class LunaticStage implements Stage {
     public int getAlienCount() {
         return alienCount;
     }
+
+    @Override
+    public void update(Game game) {
+        // Lunatic stage has no dynamic spawning yet
+    }
 }
