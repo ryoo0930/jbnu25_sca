@@ -5,7 +5,7 @@ import org.newdawn.spaceinvaders.Sprite;
 import org.newdawn.spaceinvaders.entity.BossSkill.GuidedBossShotEntity;
 import org.newdawn.spaceinvaders.entity.playerSkill.LaserEntity;
 
-public class PassingAlienEntity extends Entity {
+public class HardPassingAlienEntity extends Entity {
     private final Game game;
     private int health = 150;
 
@@ -29,7 +29,7 @@ public class PassingAlienEntity extends Entity {
     private long lastBurstTime = 0;
     private final long burstInterval = 300; // ms between each fan shot burst
 
-    public PassingAlienEntity(Game game, int x, int y, Origin origin) {
+    public HardPassingAlienEntity(Game game, int x, int y, Origin origin) {
         super("sprites/alien1.1.gif", x, y);
         this.game = game;
         this.origin = origin;

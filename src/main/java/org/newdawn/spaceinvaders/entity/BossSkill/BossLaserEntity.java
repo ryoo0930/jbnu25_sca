@@ -18,7 +18,7 @@ public class BossLaserEntity extends Entity {
 
     public BossLaserEntity(
             Game game,
-            HardBossEntity boss,
+            Entity boss,
             String laserSpriteRef,
             long durationMillis,
             long damageIntervalMillis,

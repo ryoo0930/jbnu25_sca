@@ -78,6 +78,13 @@ public class GamePlay {
         this.game = game;
         this.difficulty = difficulty;
         setStage(difficulty);
+
+        if (difficulty == 3) { // Lunatic Mode Bonus
+            this.lifes = 101; // Shows as 100 extra lives
+            this.laserCharges = 20;
+            this.bombCharges = 20;
+        }
+
         initEntities();
     }
 
@@ -428,8 +435,8 @@ public class GamePlay {
         }
 
         for (Entity entity : entities) {
-            if (entity instanceof org.newdawn.spaceinvaders.entity.boss.HardBossEntity) {
-                org.newdawn.spaceinvaders.entity.boss.HardBossEntity boss = (org.newdawn.spaceinvaders.entity.boss.HardBossEntity) entity;
+            if (entity instanceof org.newdawn.spaceinvaders.entity.boss.BossEntity) {
+                org.newdawn.spaceinvaders.entity.boss.BossEntity boss = (org.newdawn.spaceinvaders.entity.boss.BossEntity) entity;
                 int maxHealth = boss.getMaxHealth();
                 int currentHealth = boss.getHealth();
                 int barWidth = 500;

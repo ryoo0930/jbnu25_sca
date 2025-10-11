@@ -13,14 +13,16 @@ import java.util.Random;
 import java.awt.Rectangle;
 import org.newdawn.spaceinvaders.entity.BossSkill.BossLaserEntity;
 
-public class HardBossEntity extends Entity {
+public class HardBossEntity extends BossEntity {
     private Game game;
     private Random random = new Random();
     private int health = 15000;
     private int maxHealth = 15000;
     private long lastLaserHitTime = 0;
 
-    private org.newdawn.spaceinvaders.Sprite[] sprites;
+    private org.newdawn.spaceinvaders.Sprite[] sprites; // The currently active sprite array for animation
+    private org.newdawn.spaceinvaders.Sprite[] normalSprites;
+    private org.newdawn.spaceinvaders.Sprite[] darkSprites;
     private int currentFrame = 0;
     private long lastFrameChange = 0;
     private long frameDuration = 150;
@@ -40,40 +42,60 @@ public class HardBossEntity extends Entity {
     private long attackDuration = 4000;
     private double targetX;
 
-    // Phase 2: Touhou-style patterns
-    private double p2_spiralAngle1 = 0;
-    private double p2_spiralAngle2 = 0;
-    private long p2_lastRingTime = 0;
-    private final long p2_ringCooldown = 2000; // 2 seconds
-    private long p2_lastAimedTime = 0;
-    private final long p2_aimedCooldown = 1500; // 1.5 seconds
+    // Enrage (Dark Sprite) State
+    private boolean isEnraged = false;
+    private long lastEnrageToggleTime = 0;
+    private final long ENRAGE_NORMAL_DURATION = 7000; // 7 seconds normal
+    private final long ENRAGE_DARK_DURATION = 3000;   // 3 seconds dark
 
-    private int phase3AttackStep = 0;
-    private double phase3BurstAngle;
+    // Phase 2 Patterns
+    private int phase2AttackStep = 0;
+    private double phase3BurstAngle; // This is used by phase 2's laser, name is from previous refactor
     private long warningStartTime = 0;
-    private long lastPhase3SpiralTime = 0;
-    private long phase3SpiralCooldown = 200;
+    private long lastPhase2SpiralTime = 0;
+    private long phase2SpiralCooldown = 200;
     private int spiralAngleIndex = 0;
+
+    // Phase 3 Patterns
+    private double p3_spiralAngle1 = 0;
+    private double p3_spiralAngle2 = 0;
+    private long p3_lastRingTime = 0;
+    private final long p3_ringCooldown = 2000;
+    private long p3_lastAimedTime = 0;
+    private final long p3_aimedCooldown = 1500;
 
     public HardBossEntity(Game game, int x, int y) {
         super("sprites/Boss1.gif", x, 100);
         this.game = game;
-        this.sprites = new org.newdawn.spaceinvaders.Sprite[3];
-        this.sprites[0] = sprite;
-        this.sprites[1] = game.getSpriteStore().getSprite("sprites/Boss2.gif");
-        this.sprites[2] = game.getSpriteStore().getSprite("sprites/Boss3.gif");
+
+        // Load normal sprites
+        this.normalSprites = new org.newdawn.spaceinvaders.Sprite[3];
+        this.normalSprites[0] = sprite; // From super constructor
+        this.normalSprites[1] = game.getSpriteStore().getSprite("sprites/Boss2.gif");
+        this.normalSprites[2] = game.getSpriteStore().getSprite("sprites/Boss3.gif");
+
+        // Load dark sprites
+        this.darkSprites = new org.newdawn.spaceinvaders.Sprite[3];
+        this.darkSprites[0] = game.getSpriteStore().getSprite("sprites/BossDark.gif");
+        this.darkSprites[1] = game.getSpriteStore().getSprite("sprites/BossDark2.gif");
+        this.darkSprites[2] = game.getSpriteStore().getSprite("sprites/BossDark3.gif");
+
+        // Set the initial active sprites
+        this.sprites = this.normalSprites;
+
         this.x = x;
         this.y = 100;
         this.stateChangeTime = System.currentTimeMillis();
+        this.lastEnrageToggleTime = System.currentTimeMillis();
         setNewTargetX();
     }
 
+    @Override
     public int getHealth() { return health; }
+    @Override
     public int getMaxHealth() { return maxHealth; }
 
-    private void setNewTargetX() {
-        targetX = 100 + random.nextInt(600);
-    }
+    private void setNewTargetX() { targetX = 100 + random.nextInt(600); }
 
     private long restStartTime = 0;
     private long restDuration = 3000;
@@ -82,31 +104,39 @@ public class HardBossEntity extends Entity {
     public void move(long delta) {
         long currentTime = System.currentTimeMillis();
 
+        // Handle Enrage state transition
+        if (!isEnraged && currentTime - lastEnrageToggleTime > ENRAGE_NORMAL_DURATION) {
+            isEnraged = true;
+            lastEnrageToggleTime = currentTime;
+            this.sprites = this.darkSprites;
+        } else if (isEnraged && currentTime - lastEnrageToggleTime > ENRAGE_DARK_DURATION) {
+            isEnraged = false;
+            lastEnrageToggleTime = currentTime;
+            this.sprites = this.normalSprites;
+        }
+
+        // State machine
         switch (currentState) {
             case MOVING:
                 double dx_vec = targetX - x;
-                double distance = Math.abs(dx_vec);
-                if (distance > 1) {
-                    this.dx = (dx_vec / distance) * 100;
-                } else {
-                    this.dx = 0;
-                }
+                if (Math.abs(dx_vec) > 1) this.dx = Math.signum(dx_vec) * 100;
+                else this.dx = 0;
                 if (currentTime - stateChangeTime > moveDuration) {
                     currentState = BossState.ATTACKING;
                     stateChangeTime = currentTime;
                     this.dx = 0;
-                    phase3AttackStep = 0;
+                    phase2AttackStep = 0;
                 }
                 break;
             case ATTACKING:
                 switch (phase) {
                     case 1: phase1Attack(currentTime); break;
-                    case 2: // Now runs the logic that was in phase 3
-                        phase3LaserAttack(currentTime);
-                        phase3SpiralAttack(currentTime);
+                    case 2:
+                        phase2LaserAttack(currentTime);
+                        phase2SpiralAttack(currentTime);
                         break;
-                    case 3: // Now runs the logic that was in phase 2
-                        phase2Attack(currentTime);
+                    case 3:
+                        phase3TouhouAttack(currentTime);
                         break;
                 }
                 if (currentTime - stateChangeTime > attackDuration) {
@@ -123,6 +153,7 @@ public class HardBossEntity extends Entity {
                 break;
         }
 
+        // Animation - uses the currently active 'sprites' array
         if (currentTime - lastFrameChange > frameDuration) {
             lastFrameChange = currentTime;
             currentFrame = (currentFrame + 1) % sprites.length;
@@ -131,6 +162,7 @@ public class HardBossEntity extends Entity {
 
         super.move(delta);
 
+        // Phase transition
         int currentPhase = phase;
         if (health > 10000) phase = 1;
         else if (health > 5000) phase = 2;
@@ -152,9 +184,6 @@ public class HardBossEntity extends Entity {
     }
 
     private void phase1Attack(long currentTime) {
-        long burstInterval = 100;
-        long circularShotInterval = 100;
-
         if (phase1AttackStep == 0 && currentTime - lastAttackTime > attackCooldown) {
             phase1AttackStep = 1;
             attackCounter = 5;
@@ -166,123 +195,44 @@ public class HardBossEntity extends Entity {
                 }
             }
             if (player != null) {
-                double targetDx = player.getX() - this.x;
-                double targetDy = player.getY() - this.y;
-                this.phase1BurstAngle = Math.atan2(targetDy, targetDx);
+                this.phase1BurstAngle = Math.atan2(player.getY() - this.y, player.getX() - this.x);
             } else {
                 this.phase1BurstAngle = -Math.PI / 2;
             }
         }
 
-        if (phase1AttackStep == 1) {
-            if (attackCounter > 0 && currentTime - lastSubAttackTime > burstInterval) {
-                lastSubAttackTime = currentTime;
-                patternAimedBurst(this.phase1BurstAngle);
-                attackCounter--;
-                if (attackCounter == 0) {
-                    phase1AttackStep = 2;
-                    attackCounter = 20;
-                    lastSubAttackTime = currentTime + 500;
-                }
+        if (phase1AttackStep == 1 && attackCounter > 0 && currentTime - lastSubAttackTime > 100) {
+            lastSubAttackTime = currentTime;
+            patternAimedBurst(this.phase1BurstAngle);
+            attackCounter--;
+            if (attackCounter == 0) {
+                phase1AttackStep = 2;
+                attackCounter = 20;
+                lastSubAttackTime = currentTime + 500;
             }
-        } else if (phase1AttackStep == 2) {
-            if (attackCounter > 0 && currentTime - lastSubAttackTime > circularShotInterval) {
-                lastSubAttackTime = currentTime;
-                patternCircleShot(attackCounter);
-                attackCounter--;
-                if (attackCounter == 0) {
-                    phase1AttackStep = 0;
-                    lastAttackTime = currentTime;
-                }
-            }
-        }
-    }
-
-    private void phase2Attack(long currentTime) {
-        int fireX = (int) (x + sprite.getWidth() / 2);
-        int fireY = (int) (y + sprite.getHeight() / 2);
-        double speed = 180;
-
-        // Pattern 1: Dual rotating spirals
-        p2_spiralAngle1 += Math.PI / 30; // Clockwise
-        p2_spiralAngle2 -= Math.PI / 30; // Counter-clockwise
-
-        double dx1 = Math.cos(p2_spiralAngle1) * speed;
-        double dy1 = Math.sin(p2_spiralAngle1) * speed;
-        game.addEntity(new GuidedBossShotEntity(game, "sprites/GuidedShot.gif", fireX, fireY, dx1, dy1));
-
-        double dx2 = Math.cos(p2_spiralAngle2) * speed;
-        double dy2 = Math.sin(p2_spiralAngle2) * speed;
-        game.addEntity(new GuidedBossShotEntity(game, "sprites/GuidedShot.gif", fireX, fireY, dx2, dy2));
-
-        // Pattern 2: Expanding ring every 2 seconds
-        if (currentTime - p2_lastRingTime > p2_ringCooldown) {
-            p2_lastRingTime = currentTime;
-            int bulletCount = 20;
-            for (int i = 0; i < bulletCount; i++) {
-                double angle = 2 * Math.PI * i / bulletCount;
-                double ringDx = Math.cos(angle) * (speed * 0.8); // Slightly slower
-                double ringDy = Math.sin(angle) * (speed * 0.8);
-                game.addEntity(new GuidedBossShotEntity(game, "sprites/GuidedShot.gif", fireX, fireY, ringDx, ringDy));
-            }
-        }
-
-        // Pattern 3: Aimed 3-shot burst every 1.5 seconds
-        if (currentTime - p2_lastAimedTime > p2_aimedCooldown) {
-            p2_lastAimedTime = currentTime;
-            Entity player = null;
-            for (Object entity : game.getEntities()) {
-                if (entity instanceof ShipEntity) {
-                    player = (Entity) entity;
-                    break;
-                }
-            }
-            if (player != null) {
-                double targetDx = player.getX() - this.x;
-                double targetDy = player.getY() - this.y;
-                double centerAngle = Math.atan2(targetDy, targetDx);
-                double spread = Math.PI / 16;
-                for (int i = -1; i <= 1; i++) {
-                    double angle = centerAngle + i * spread;
-                    double aimedDx = Math.cos(angle) * (speed * 1.2); // Slightly faster
-                    double aimedDy = Math.sin(angle) * (speed * 1.2);
-                    game.addEntity(new GuidedBossShotEntity(game, "sprites/GuidedShot.gif", fireX, fireY, aimedDx, aimedDy));
-                }
+        } else if (phase1AttackStep == 2 && attackCounter > 0 && currentTime - lastSubAttackTime > 100) {
+            lastSubAttackTime = currentTime;
+            patternCircleShot(attackCounter);
+            attackCounter--;
+            if (attackCounter == 0) {
+                phase1AttackStep = 0;
+                lastAttackTime = currentTime;
             }
         }
     }
 
     private void patternAimedBurst(double angle) {
-        double speed = 250;
-        int fireX = (int) (x + sprite.getWidth() / 2);
-        int fireY = (int) (y + sprite.getHeight() / 2);
-        for (int i = -2; i <= 2; i++) {
-            double adjustedAngle = angle + (i * 0.1);
-            double shotDx = Math.cos(adjustedAngle) * speed;
-            double shotDy = Math.sin(adjustedAngle) * speed;
-            game.addEntity(new GuidedBossShotEntity(game, "sprites/GuidedShot.gif", fireX, fireY, shotDx, shotDy));
-        }
+        fireFan(angle, 5, 250, 0.1, "sprites/GuidedShot.gif");
     }
 
     private void patternCircleShot(int shotIndex) {
-        int bulletCount = 28;
-        int fireX = (int) (x + sprite.getWidth() / 2);
-        int fireY = (int) (y + sprite.getHeight() / 2);
         double rotationPerShot = Math.PI / 30.0;
         double angleOffset = (20 - shotIndex) * rotationPerShot;
-        for (int i = 0; i < bulletCount; i++) {
-            double angle = 2 * Math.PI * i / bulletCount + angleOffset;
-            double speed = 150;
-            double shotDx = Math.cos(angle) * speed;
-            double shotDy = Math.sin(angle) * speed;
-            game.addEntity(new GuidedBossShotEntity(game, "sprites/GuidedShot.gif", fireX, fireY, shotDx, shotDy));
-        }
+        fireCircular(angleOffset, 28, 150, "sprites/GuidedShot.gif");
     }
 
-    private void phase3LaserAttack(long currentTime) {
-        long warningDuration = 1000;
-        long burstInterval = 10;
-        if (phase3AttackStep == 0) {
+    private void phase2LaserAttack(long currentTime) {
+        if (phase2AttackStep == 0) {
             Entity player = null;
             for (Object entity : game.getEntities()) {
                 if (entity instanceof ShipEntity) {
@@ -291,53 +241,81 @@ public class HardBossEntity extends Entity {
                 }
             }
             if (player != null) {
-                double targetDx = player.getX() - this.x;
-                double targetDy = player.getY() - this.y;
-                this.phase3BurstAngle = Math.atan2(targetDy, targetDx);
-                game.addEntity(new LaserWarningLineEntity(game, this, this.phase3BurstAngle, warningDuration));
+                this.phase3BurstAngle = Math.atan2(player.getY() - this.y, player.getX() - this.x);
+                game.addEntity(new LaserWarningLineEntity(game, this, this.phase3BurstAngle, 1000));
                 warningStartTime = currentTime;
-                phase3AttackStep = 1;
+                phase2AttackStep = 1;
             }
         }
-        if (phase3AttackStep == 1) {
-            if (currentTime - warningStartTime > warningDuration) {
-                phase3AttackStep = 2;
-                attackCounter = 50;
-                lastSubAttackTime = currentTime;
-            }
+        if (phase2AttackStep == 1 && currentTime - warningStartTime > 1000) {
+            phase2AttackStep = 2;
+            attackCounter = 50;
+            lastSubAttackTime = currentTime;
         }
-        if (phase3AttackStep == 2) {
-            if (attackCounter > 0 && currentTime - lastSubAttackTime > burstInterval) {
-                lastSubAttackTime = currentTime;
-                game.addEntity(new BossLaserEntity(game, this, "sprites/BossLaser2.gif", 2000, 100, 1, this.phase3BurstAngle));
-                attackCounter--;
-                if (attackCounter == 0) {
-                    phase3AttackStep = 3;
+        if (phase2AttackStep == 2 && attackCounter > 0 && currentTime - lastSubAttackTime > 10) {
+            lastSubAttackTime = currentTime;
+            game.addEntity(new BossLaserEntity(game, this, "sprites/BossLaser2.gif", 2000, 100, 1, this.phase3BurstAngle));
+            attackCounter--;
+            if (attackCounter == 0) phase2AttackStep = 3;
+        }
+    }
+
+    private void phase2SpiralAttack(long currentTime) {
+        if (currentTime - lastPhase2SpiralTime > phase2SpiralCooldown) {
+            lastPhase2SpiralTime = currentTime;
+            double rotationOffset = spiralAngleIndex * (Math.PI / 16.0);
+            fireCircular(rotationOffset, 12, 200, "sprites/GuidedShot.gif");
+            spiralAngleIndex++;
+        }
+    }
+
+    private void phase3TouhouAttack(long currentTime) {
+        p3_spiralAngle1 += Math.PI / 30;
+        p3_spiralAngle2 -= Math.PI / 30;
+        fireAtAngle(p3_spiralAngle1, 180, "sprites/GuidedShot.gif");
+        fireAtAngle(p3_spiralAngle2, 180, "sprites/GuidedShot.gif");
+
+        if (currentTime - p3_lastRingTime > p3_ringCooldown) {
+            p3_lastRingTime = currentTime;
+            fireCircular(0, 20, 140, "sprites/GuidedShot.gif");
+        }
+
+        if (currentTime - p3_lastAimedTime > p3_aimedCooldown) {
+            p3_lastAimedTime = currentTime;
+            Entity player = null;
+            for (Object entity : game.getEntities()) {
+                if (entity instanceof ShipEntity) {
+                    player = (Entity) entity;
+                    break;
                 }
             }
+            if (player != null) {
+                double centerAngle = Math.atan2(player.getY() - this.y, player.getX() - this.x);
+                fireFan(centerAngle, 3, 220, Math.PI / 16, "sprites/GuidedShot.gif");
+            }
         }
     }
 
-    private void phase3SpiralAttack(long currentTime) {
-        if (currentTime - lastPhase3SpiralTime > phase3SpiralCooldown) {
-            lastPhase3SpiralTime = currentTime;
-            patternPhase3SpiralShot();
-        }
+    private void fireAtAngle(double angle, double speed, String sprite) {
+        int fireX = (int) (x + this.sprite.getWidth() / 2);
+        int fireY = (int) (y + this.sprite.getHeight() / 2);
+        double dx = Math.cos(angle) * speed;
+        double dy = Math.sin(angle) * speed;
+        game.addEntity(new GuidedBossShotEntity(game, sprite, fireX, fireY, dx, dy));
     }
 
-    private void patternPhase3SpiralShot() {
-        int bulletCount = 12;
-        int fireX = (int) (x + sprite.getWidth() / 2);
-        int fireY = (int) (y + sprite.getHeight() / 2);
-        double rotationOffset = spiralAngleIndex * (Math.PI / 16.0);
+    private void fireCircular(double angleOffset, int bulletCount, double speed, String sprite) {
         for (int i = 0; i < bulletCount; i++) {
-            double angle = (2 * Math.PI * i / bulletCount) + rotationOffset;
-            double speed = 200;
-            double shotDx = Math.cos(angle) * speed;
-            double shotDy = Math.sin(angle) * speed;
-            game.addEntity(new GuidedBossShotEntity(game, "sprites/GuidedShot.gif", fireX, fireY, shotDx, shotDy));
+            double angle = 2 * Math.PI * i / bulletCount + angleOffset;
+            fireAtAngle(angle, speed, sprite);
         }
-        spiralAngleIndex++;
+    }
+
+    private void fireFan(double centerAngle, int bulletCount, double speed, double spread, String sprite) {
+        for (int i = 0; i < bulletCount; i++) {
+            double angle = centerAngle + (i - (bulletCount - 1) / 2.0) * spread;
+            fireAtAngle(angle, speed, sprite);
+        }
     }
 
     public void takeDamage(int damage) {
@@ -351,11 +329,7 @@ public class HardBossEntity extends Entity {
 
     @Override
     public boolean collidesWith(Entity other) {
-        int hitboxWidth = (int) (sprite.getWidth() * 0.75);
-        int hitboxHeight = (int) (sprite.getHeight() * 0.75);
-        int hitboxX = (int) (x + (sprite.getWidth() - hitboxWidth) / 2);
-        int hitboxY = (int) (y + (sprite.getHeight() - hitboxHeight) / 2);
-        Rectangle me = new Rectangle(hitboxX, hitboxY, hitboxWidth, hitboxHeight);
+        Rectangle me = new Rectangle((int) (x + sprite.getWidth() * 0.125), (int) (y + sprite.getHeight() * 0.125), (int) (sprite.getWidth() * 0.75), (int) (sprite.getHeight() * 0.75));
         Rectangle him = new Rectangle((int) other.getX(), (int) other.getY(), other.getSprite().getWidth(), other.getSprite().getHeight());
         return me.intersects(him);
     }
@@ -366,10 +340,9 @@ public class HardBossEntity extends Entity {
             takeDamage(30);
             game.removeEntity(other);
         } else if (other instanceof LaserEntity) {
-            long currentTime = System.currentTimeMillis();
-            if (currentTime - lastLaserHitTime > 100) {
+            if (System.currentTimeMillis() - lastLaserHitTime > 100) {
                 takeDamage(100);
-                lastLaserHitTime = currentTime;
+                lastLaserHitTime = System.currentTimeMillis();
             }
         }
     }

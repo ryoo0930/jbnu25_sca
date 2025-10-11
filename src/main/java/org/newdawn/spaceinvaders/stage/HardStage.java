@@ -2,7 +2,7 @@ package org.newdawn.spaceinvaders.stage;
 
 import org.newdawn.spaceinvaders.Game;
 import org.newdawn.spaceinvaders.entity.Entity;
-import org.newdawn.spaceinvaders.entity.PassingAlienEntity;
+import org.newdawn.spaceinvaders.entity.HardPassingAlienEntity;
 import org.newdawn.spaceinvaders.entity.ShipEntity;
 import org.newdawn.spaceinvaders.entity.boss.HardBossEntity;
 import org.newdawn.spaceinvaders.entity.boss.MidBossEntity;
@@ -72,7 +72,7 @@ public class HardStage implements Stage {
                 break;
 
             case WAIT_FOR_ALIENS_TO_CLEAR:
-                if (!isEntityOnScreen(game, PassingAlienEntity.class)) {
+                if (!isEntityOnScreen(game, HardPassingAlienEntity.class)) {
                     phaseTransitionTime = currentTime;
                     currentPhase = StagePhase.PAUSE_BEFORE_MID_BOSS;
                 }
@@ -137,8 +137,8 @@ public class HardStage implements Stage {
         if (pairsSpawnedInWave < 5) {
             if (currentTime - lastPairSpawnTime > pairSpawnDelay) {
                 lastPairSpawnTime = currentTime;
-                game.addEntity(new PassingAlienEntity(game, 150, -50, PassingAlienEntity.Origin.LEFT));
-                game.addEntity(new PassingAlienEntity(game, 650, -50, PassingAlienEntity.Origin.RIGHT));
+                game.addEntity(new HardPassingAlienEntity(game, 150, -50, HardPassingAlienEntity.Origin.LEFT));
+                game.addEntity(new HardPassingAlienEntity(game, 650, -50, HardPassingAlienEntity.Origin.RIGHT));
                 pairsSpawnedInWave++;
             }
         } else {

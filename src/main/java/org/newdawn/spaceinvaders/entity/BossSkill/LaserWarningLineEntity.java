@@ -10,11 +10,11 @@ import java.awt.Graphics2D;
 
 public class LaserWarningLineEntity extends Entity {
     private final Game game;
-    private final HardBossEntity boss;
+    private final Entity boss;
     private final double angle;
     private final long endTimeMillis;
 
-    public LaserWarningLineEntity(Game game, HardBossEntity boss, double angle, long durationMillis) {
+    public LaserWarningLineEntity(Game game, Entity boss, double angle, long durationMillis) {
         super("sprites/shot.gif", (int) boss.getX(), (int) boss.getY()); // Placeholder sprite
         this.game = game;
         this.boss = boss;
