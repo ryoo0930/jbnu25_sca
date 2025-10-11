@@ -150,6 +150,10 @@ public class GamePlay {
         alienCount = stage.getAlienCount();
     }
 
+    public void addScore(int amount) {
+        this.score += amount;
+    }
+
     /**
      * Notification from a game entity that the logic of the game
      * should be run at the next opportunity (normally as a result of some

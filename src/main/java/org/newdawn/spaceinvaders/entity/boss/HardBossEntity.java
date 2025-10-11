@@ -3,6 +3,7 @@ package org.newdawn.spaceinvaders.entity.boss;
 import org.newdawn.spaceinvaders.Game;
 
 import org.newdawn.spaceinvaders.entity.BossSkill.GuidedBossShotEntity;
+import org.newdawn.spaceinvaders.entity.BossSkill.LaserWarningLineEntity;
 import org.newdawn.spaceinvaders.entity.Entity;
 import org.newdawn.spaceinvaders.entity.ShipEntity;
 import org.newdawn.spaceinvaders.entity.ShotEntity;
@@ -15,7 +16,6 @@ import java.util.Random;
 import java.awt.Rectangle;
 
 import org.newdawn.spaceinvaders.entity.BossSkill.BossLaserEntity;
-import org.newdawn.spaceinvaders.entity.BossSkill.LaserWarningLineEntity;
 
 public class HardBossEntity extends Entity {
     private Game game;
@@ -49,14 +49,15 @@ public class HardBossEntity extends Entity {
     private long attackDuration = 4000; // 4 seconds, enough for one attack sequence
     private double targetX;
 
-    // BossLaser
-    private long bossLaserChargeMillis   = 1000;  // 차지 시간
-    private long bossLaserDurationMillis = 1000;  // 발사 지속 시간
-    private long bossLaserDamageInterval = 1000;  // 1초에 1틱
-    private int  bossLaserDamagePerTick  = 1;     // 틱당 1데미지
-    private long lastBossLaserTime = 0;           // 마지막 시퀀스 시작 시간
-    private long bossLaserCooldown  = 5000;       // 시퀀스 쿨다운
-    private boolean bossLaserActive = false;      // 발사 진행 여부
+    // Phase 3 Laser Attack
+    private int phase3AttackStep = 0;
+    private double phase3BurstAngle;
+    private long warningStartTime = 0;
+
+    // Phase 3 Spiral Attack
+    private long lastPhase3SpiralTime = 0;
+    private long phase3SpiralCooldown = 200; // ms
+    private int spiralAngleIndex = 0;
 
 
     public HardBossEntity(Game game, int x, int y) {
@@ -121,7 +122,8 @@ public class HardBossEntity extends Entity {
                         phase2Attack(currentTime);
                         break;
                     case 3:
-                        phase3Attack(currentTime);
+                        phase3LaserAttack(currentTime);
+                        phase3SpiralAttack(currentTime);
                         break;
                 }
 
@@ -164,10 +166,6 @@ public class HardBossEntity extends Entity {
             currentState = BossState.ATTACKING;
             stateChangeTime = currentTime;
             this.dx = 0;
-
-            // 보스 레이자 상태 초기화
-            bossLaserActive = false;
-            lastBossLaserTime = currentTime;
         }
     }
 
@@ -285,12 +283,8 @@ public class HardBossEntity extends Entity {
             game.addEntity(new GuidedBossShotEntity(game, "sprites/GuidedShot.gif", fireX, fireY, shotDx, shotDy));
         }
     }
-    private int phase3AttackStep = 0;
-    private double phase3BurstAngle;
 
-    private long warningStartTime = 0;
-
-    private void phase3Attack(long currentTime) {
+    private void phase3LaserAttack(long currentTime) {
         long warningDuration = 1000; // 1초
         long burstInterval = 10; // 0.01초 간격 (더 빠름)
 
@@ -345,9 +339,35 @@ public class HardBossEntity extends Entity {
         }
     }
 
+    private void phase3SpiralAttack(long currentTime) {
+        if (currentTime - lastPhase3SpiralTime > phase3SpiralCooldown) {
+            lastPhase3SpiralTime = currentTime;
+            patternPhase3SpiralShot();
+        }
+    }
 
-        public void takeDamage(int damage) {
+    private void patternPhase3SpiralShot() {
+        int bulletCount = 12;
+        int fireX = (int) (x + sprite.getWidth() / 2);
+        int fireY = (int) (y + sprite.getHeight() / 2);
+        
+        double rotationOffset = spiralAngleIndex * (Math.PI / 16.0); 
+        
+        for (int i = 0; i < bulletCount; i++) {
+            double angle = (2 * Math.PI * i / bulletCount) + rotationOffset;
+            double speed = 200;
+            double shotDx = Math.cos(angle) * speed;
+            double shotDy = Math.sin(angle) * speed;
+            game.addEntity(new GuidedBossShotEntity(game, "sprites/GuidedShot.gif", fireX, fireY, shotDx, shotDy));
+        }
+        
+        spiralAngleIndex++;
+    }
+
+
+    public void takeDamage(int damage) {
         health -= damage;
+        game.addScore(damage * 10); // Add score based on damage
         if (health <= 0) {
             game.removeEntity(this);
             game.notifyWin(); // Notify game win when boss is defeated

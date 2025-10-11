@@ -170,6 +170,12 @@ public class Game extends Canvas {
 		gamePlay = null;
 	}
 
+    public void addScore(int score) {
+        if (gamePlay != null) {
+            gamePlay.addScore(score);
+        }
+    }
+
 	public void updateLogic() {
 		if (gamePlay != null)
 			gamePlay.updateLogic();
