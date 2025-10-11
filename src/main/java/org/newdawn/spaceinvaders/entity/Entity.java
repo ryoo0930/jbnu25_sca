@@ -139,6 +139,10 @@ public abstract class Entity {
 		this.y = y;
 	}
 
+	public Rectangle getHitbox() {
+		return new Rectangle((int) x, (int) y, sprite.getWidth(), sprite.getHeight());
+	}
+
 	/**
 	 * Check if this entity collised with another.
 	 * 

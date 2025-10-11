@@ -53,4 +53,12 @@ public class Sprite {
 	public void draw(Graphics g,int x,int y) {
 		g.drawImage(image,x,y,null);
 	}
+
+	public void draw(Graphics g, int x, int y, double angle) {
+		java.awt.Graphics2D g2d = (java.awt.Graphics2D) g;
+		java.awt.geom.AffineTransform old = g2d.getTransform();
+		g2d.rotate(angle, x + getWidth() / 2, y + getHeight() / 2);
+		g2d.drawImage(image, x, y, null);
+		g2d.setTransform(old);
+	}
 }

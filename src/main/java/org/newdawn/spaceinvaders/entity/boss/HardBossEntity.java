@@ -1,7 +1,7 @@
 package org.newdawn.spaceinvaders.entity.boss;
 
 import org.newdawn.spaceinvaders.Game;
-import org.newdawn.spaceinvaders.entity.BossSkill.BossLaserChargerEntity;
+
 import org.newdawn.spaceinvaders.entity.BossSkill.GuidedBossShotEntity;
 import org.newdawn.spaceinvaders.entity.Entity;
 import org.newdawn.spaceinvaders.entity.ShipEntity;
@@ -15,6 +15,7 @@ import java.util.Random;
 import java.awt.Rectangle;
 
 import org.newdawn.spaceinvaders.entity.BossSkill.BossLaserEntity;
+import org.newdawn.spaceinvaders.entity.BossSkill.LaserWarningLineEntity;
 
 public class HardBossEntity extends Entity {
     private Game game;
@@ -106,6 +107,7 @@ public class HardBossEntity extends Entity {
                     currentState = BossState.ATTACKING;
                     stateChangeTime = currentTime;
                     this.dx = 0; // Stop
+                    phase3AttackStep = 0; // Reset attack for new ATTACKING state
                 }
                 break;
 
@@ -283,33 +285,64 @@ public class HardBossEntity extends Entity {
             game.addEntity(new GuidedBossShotEntity(game, "sprites/GuidedShot.gif", fireX, fireY, shotDx, shotDy));
         }
     }
-    //  3페이지 보스 레이저
+    private int phase3AttackStep = 0;
+    private double phase3BurstAngle;
+
+    private long warningStartTime = 0;
+
     private void phase3Attack(long currentTime) {
-        if (bossLaserActive) {
-            boolean anyAlive = false;
-            for (Object o : game.getEntities()) {
-                if (o instanceof BossLaserChargerEntity || o instanceof BossLaserEntity) {
-                    anyAlive = true; break;
+        long warningDuration = 1000; // 1초
+        long burstInterval = 10; // 0.01초 간격 (더 빠름)
+
+        if (phase3AttackStep == 0) { // 0: 조준 및 경고선 표시
+            Entity player = null;
+            for (Object entity : game.getEntities()) {
+                if (entity instanceof ShipEntity) {
+                    player = (Entity) entity;
+                    break;
                 }
             }
-            if (!anyAlive) {
-                bossLaserActive = false;
-                lastBossLaserTime = currentTime;
+            if (player != null) {
+                double targetDx = player.getX() - this.x;
+                double targetDy = player.getY() - this.y;
+                this.phase3BurstAngle = Math.atan2(targetDy, targetDx);
+
+                // 경고선 생성
+                game.addEntity(new LaserWarningLineEntity(game, this, this.phase3BurstAngle, warningDuration));
+                
+                warningStartTime = currentTime;
+                phase3AttackStep = 1; // 발사 대기 상태로 전환
             }
-            return;
         }
-        BossLaserChargerEntity charger = new BossLaserChargerEntity(
-                game,
-                this,
-                "sprites/BossLaser1.gif",
-                bossLaserChargeMillis,
-                "sprites/BossLaser2.gif",
-                bossLaserDurationMillis,
-                bossLaserDamageInterval,
-                bossLaserDamagePerTick
-        );
-        game.addEntity(charger);
-        bossLaserActive = true;
+        
+        if (phase3AttackStep == 1) { // 1: 발사 대기
+            if (currentTime - warningStartTime > warningDuration) {
+                phase3AttackStep = 2; // 발사 중 상태로 전환
+                attackCounter = 50; // 50발 발사
+                lastSubAttackTime = currentTime;
+            }
+        }
+
+        if (phase3AttackStep == 2) { // 2: 발사 중
+            if (attackCounter > 0 && currentTime - lastSubAttackTime > burstInterval) {
+                lastSubAttackTime = currentTime;
+
+                game.addEntity(new BossLaserEntity(
+                    game,
+                    this,
+                    "sprites/BossLaser2.gif",
+                    2000,
+                    100,
+                    1,
+                    this.phase3BurstAngle
+                ));
+
+                attackCounter--;
+                if (attackCounter == 0) {
+                    phase3AttackStep = 3; // 발사 완료, 대기 상태로 전환
+                }
+            }
+        }
     }
 
 
