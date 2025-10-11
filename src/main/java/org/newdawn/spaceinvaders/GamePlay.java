@@ -60,9 +60,7 @@ public class GamePlay {
      * True if game logic needs to be applied this loop, normally as a result of a
      * game event
      */
-    private boolean logicRequiredThisLoop = false;
-    private boolean gameWon = false;
-
+    	private boolean logicRequiredThisLoop = false;
     // Entity 생성 시 필요.
     private Game game;
     private Stage stage;
@@ -152,15 +150,13 @@ public class GamePlay {
      * Start a fresh game, this should clear out any old data and
      * create a new set.
      */
-    public void startGame() {
-        // clear out any existing entities and intialise a new set
-        entities.clear();
-        initEntities();
-
-        waitingForKeyPress = false;
-        gameWon = false;
-    }
-
+    	public void startGame() {
+    		// clear out any existing entities and intialise a new set
+    		entities.clear();
+    		initEntities();
+    
+    		waitingForKeyPress = false;
+    	}
     /**
      * Initialise the starting state of the entities (ship and aliens). Each
      * entitiy will be added to the overall list of entities in the game.
@@ -217,12 +213,10 @@ public class GamePlay {
      * Notification that the player has won since all the aliens
      * are dead.
      */
-    public void notifyWin() {
-        message = "Well done! You Win!";
-        waitingForKeyPress = true;
-        gameWon = true;
-    }
-
+    	public void notifyWin() {
+    		message = "Well done! You Win!";
+    		waitingForKeyPress = true;
+    	}
     /**
      * Notification that an alien has been killed
      */

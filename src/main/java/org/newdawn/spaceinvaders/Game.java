@@ -50,9 +50,6 @@ public class Game extends Canvas {
 	private BufferStrategy strategy;
 	/** True if the game is currently "running", i.e. the game loop is looping */
 	private boolean gameRunning = true;
-
-	/** True if we're holding up game play until a key has been pressed */
-	private boolean waitingForKeyPress = true;
 	/** Ture if the up cursor key is currently pressed */
 	private boolean upPressed = false;
 	/** Ture if the down cursor key is currently pressed */
@@ -69,12 +66,6 @@ public class Game extends Canvas {
 	private boolean zPressed = false;
 	private boolean xPressed = false;
     private boolean cPressed = false;
-
-	/**
-	 * True if game logic needs to be applied this loop, normally as a result of a
-	 * game event
-	 */
-	private boolean logicRequiredThisLoop = false;
 	/** The last time at which we recorded the frame rate */
 	private long lastFpsTime;
 	/** The current number of frames recorded */
@@ -387,8 +378,6 @@ public class Game extends Canvas {
 	 * @author Kevin Glass
 	 */
 	private class KeyInputHandler extends KeyAdapter {
-		/** The number of key presses we've had while waiting for an "any key" press */
-		private int pressCount = 1;
 
 		/**
 		 * Notification from AWT that a key has been pressed. Note that
@@ -495,12 +484,6 @@ public class Game extends Canvas {
 		 * @param e The details of the key that was released
 		 */
 		public void keyReleased(KeyEvent e) {
-			// if we're waiting for an "any key" typed then we don't
-			// want to do anything with just a "released"
-			if (waitingForKeyPress) {
-				return;
-			}
-
 			if (e.getKeyCode() == KeyEvent.VK_UP) {
 				upPressed = false;
 			}
@@ -537,24 +520,6 @@ public class Game extends Canvas {
 		 * @param e The details of the key that was typed.
 		 */
 		public void keyTyped(KeyEvent e) {
-			// if we're waiting for a "any key" type then
-			// check if we've recieved any recently. We may
-			// have had a keyType() event from the user releasing
-			// the shoot or move keys, hence the use of the "pressCount"
-			// counter.
-			if (waitingForKeyPress) {
-				if (pressCount == 1) {
-					// since we've now recieved our key typed
-					// event we can mark it as such and start
-					// our new game
-					waitingForKeyPress = false;
-					// gameStart();
-					pressCount = 0;
-				} else {
-					pressCount++;
-				}
-			}
-
 			// if we hit escape, then quit the game
 			if (e.getKeyChar() == 27) {
 				System.exit(0);

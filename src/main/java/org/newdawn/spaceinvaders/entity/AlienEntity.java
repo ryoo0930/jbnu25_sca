@@ -95,7 +95,7 @@ public class AlienEntity extends Entity {
 		}
 		
 		// proceed with normal move
-		// super.move(delta); // 적 이동 패턴 제거.
+		super.move(delta);
 	}
 	
 	/**
@@ -120,6 +120,8 @@ public class AlienEntity extends Entity {
 	 * @param other The other entity
 	 */
 	public void collidedWith(Entity other) {
-		// collisions with aliens are handled elsewhere
+		if (other instanceof org.newdawn.spaceinvaders.entity.playerSkill.LaserEntity) {
+			takeDamage(1);
+		}
 	}
 }

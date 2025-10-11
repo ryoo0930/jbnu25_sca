@@ -105,8 +105,6 @@ public class EasyPassingAlienEntity extends Entity {
         if (other instanceof ShotEntity) {
             takeDamage(30);
             game.removeEntity(other);
-        } else if (other instanceof LaserEntity) {
-            takeDamage(1);
         }
     }
 }

@@ -31,7 +31,7 @@ public class ScoreScreen {
             g.drawString(header, x, y);
             y += 40;
 
-            for (int i = 0; i < highScores.size(); i++) {
+            for (int i = 0; i < highScores.size() && i < 5; i++) {
                 Score score = highScores.get(i);
                 String difficultyStr = getDifficultyString(score.getDifficulty());
                 String scoreText = String.format("%2d.  %-15s %-8d (%s)", i + 1, score.getPlayerName(), score.getScore(), difficultyStr);

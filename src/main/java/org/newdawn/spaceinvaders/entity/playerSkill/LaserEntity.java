@@ -30,12 +30,7 @@ public class LaserEntity extends Entity {
     private int tileH;
 
     // Ship 기준 위치 보정
-    private int xOffset = 10;
     private int yOffset = -30;
-
-    // 과다 타격 방지: 짧은 쿨타임 생성
-    private long lastHitTime = 0L;
-    private long hitCooldown = 120L; // ms
 
     // 레이저 지속시간/판정시간/데미지 제어
     private long lastDamageTick;               // 마지막으로 피해를 준 시간

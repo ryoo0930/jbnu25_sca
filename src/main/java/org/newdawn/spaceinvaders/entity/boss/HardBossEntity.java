@@ -18,7 +18,6 @@ public class HardBossEntity extends BossEntity {
     private Random random = new Random();
     private int health = 15000;
     private int maxHealth = 15000;
-    private long lastLaserHitTime = 0;
 
     private org.newdawn.spaceinvaders.Sprite[] sprites; // The currently active sprite array for animation
     private org.newdawn.spaceinvaders.Sprite[] normalSprites;
@@ -340,10 +339,7 @@ public class HardBossEntity extends BossEntity {
             takeDamage(30);
             game.removeEntity(other);
         } else if (other instanceof LaserEntity) {
-            if (System.currentTimeMillis() - lastLaserHitTime > 100) {
-                takeDamage(100);
-                lastLaserHitTime = System.currentTimeMillis();
-            }
+            takeDamage(100);
         }
     }
 }
