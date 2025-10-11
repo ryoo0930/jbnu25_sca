@@ -2,7 +2,6 @@ package org.newdawn.spaceinvaders.entity.boss;
 
 import org.newdawn.spaceinvaders.Game;
 import org.newdawn.spaceinvaders.entity.BossSkill.GuidedBossShotEntity;
-import org.newdawn.spaceinvaders.entity.BossSkill.LaserWarningLineEntity;
 import org.newdawn.spaceinvaders.entity.Entity;
 import org.newdawn.spaceinvaders.entity.ItemEntity;
 import org.newdawn.spaceinvaders.entity.ShipEntity;
@@ -11,13 +10,12 @@ import org.newdawn.spaceinvaders.entity.playerSkill.LaserEntity;
 
 import java.util.Random;
 import java.awt.Rectangle;
-import org.newdawn.spaceinvaders.entity.BossSkill.BossLaserEntity;
 
 public class LunaticBossEntity extends BossEntity {
     private Game game;
     private Random random = new Random();
-    private int health = 30000;
-    private int maxHealth = 30000;
+    private int health = 15000; // Health reduced
+    private int maxHealth = 15000;
     private long lastLaserHitTime = 0;
 
     private org.newdawn.spaceinvaders.Sprite[] sprites;
@@ -26,10 +24,12 @@ public class LunaticBossEntity extends BossEntity {
     private long frameDuration = 150;
 
     private int phase = 1;
-    private enum BossState { ATTACKING, RESTING }
-    private BossState currentState = BossState.ATTACKING;
+    private enum BossState { MOVING, ATTACKING, RESTING }
+    private BossState currentState = BossState.MOVING;
     private long stateChangeTime = 0;
+    private long moveDuration = 1000;
     private long attackDuration = 8000;
+    private double targetX;
 
     // Phase 1
     private double p1_sunflowerAngle1 = 0;
@@ -41,29 +41,25 @@ public class LunaticBossEntity extends BossEntity {
     private long p2_lastWheelExpandTime = 0;
     private long p2_lastHomingTime = 0;
 
-    // Phase 3
-    private long p3_lastGridLaserTime = 0;
-    private int p3_laserStep = 0;
-    private long p3_lastCollapseTime = 0;
-
-
     public LunaticBossEntity(Game game, int x, int y) {
-        super("sprites/Boss1.gif", x, y);
+        super("sprites/BossDark.gif", x, 100);
         this.game = game;
         this.sprites = new org.newdawn.spaceinvaders.Sprite[3];
         this.sprites[0] = sprite;
-        this.sprites[1] = game.getSpriteStore().getSprite("sprites/Boss2.gif");
-        this.sprites[2] = game.getSpriteStore().getSprite("sprites/Boss3.gif");
+        this.sprites[1] = game.getSpriteStore().getSprite("sprites/BossDark2.gif");
+        this.sprites[2] = game.getSpriteStore().getSprite("sprites/BossDark3.gif");
         this.x = x;
-        this.y = y;
-        this.dx = 0;
+        this.y = 100;
         this.stateChangeTime = System.currentTimeMillis();
+        setNewTargetX();
     }
 
     @Override
     public int getHealth() { return health; }
     @Override
     public int getMaxHealth() { return maxHealth; }
+
+    private void setNewTargetX() { targetX = 100 + random.nextInt(600); }
 
     private long restStartTime = 0;
     private long restDuration = 2000;
@@ -72,12 +68,27 @@ public class LunaticBossEntity extends BossEntity {
     public void move(long delta) {
         long currentTime = System.currentTimeMillis();
 
+        // State machine
         switch (currentState) {
+            case MOVING:
+                double dx_vec = targetX - x;
+                if (Math.abs(dx_vec) > 1) this.dx = Math.signum(dx_vec) * 150;
+                else this.dx = 0;
+                if (currentTime - stateChangeTime > moveDuration) {
+                    currentState = BossState.ATTACKING;
+                    stateChangeTime = currentTime;
+                    this.dx = 0;
+                }
+                break;
             case ATTACKING:
                 switch (phase) {
                     case 1: phase1Attack(currentTime); break;
                     case 2: phase2Attack(currentTime); break;
-                    case 3: phase3Attack(currentTime); break;
+                }
+                if (currentTime - stateChangeTime > attackDuration) {
+                    currentState = BossState.MOVING;
+                    stateChangeTime = currentTime;
+                    setNewTargetX();
                 }
                 break;
             case RESTING:
@@ -96,10 +107,13 @@ public class LunaticBossEntity extends BossEntity {
 
         super.move(delta);
 
+        // Phase transition
         int currentPhase = phase;
-        if (health > 20000) phase = 1;
-        else if (health > 10000) phase = 2;
-        else phase = 3;
+        if (health > 7500) { // Phase 2 at 1/2 health
+            phase = 1;
+        } else {
+            phase = 2;
+        }
 
         if (phase != currentPhase) {
             for (int i = -2; i <= 2; i++) {
@@ -107,6 +121,7 @@ public class LunaticBossEntity extends BossEntity {
             }
             currentState = BossState.RESTING;
             restStartTime = currentTime;
+            this.dx = 0;
         }
     }
 
@@ -114,8 +129,8 @@ public class LunaticBossEntity extends BossEntity {
     private void phase1Attack(long currentTime) {
         p1_sunflowerAngle1 += Math.PI / 60;
         p1_sunflowerAngle2 -= Math.PI / 60;
-        fireCircular(p1_sunflowerAngle1, 4, 160, "sprites/GuidedShot2.gif"); // 6 -> 4 bullets
-        fireCircular(p1_sunflowerAngle2, 4, 160, "sprites/GuidedShot4.gif"); // 6 -> 4 bullets
+        fireCircular(p1_sunflowerAngle1, 4, 160, "sprites/GuidedShot2.gif");
+        fireCircular(p1_sunflowerAngle2, 4, 160, "sprites/GuidedShot4.gif");
 
         if (currentTime - p1_lastRainTime > 250) {
             p1_lastRainTime = currentTime;
@@ -131,7 +146,7 @@ public class LunaticBossEntity extends BossEntity {
         double wheelRadius = 150;
         if(currentTime - p2_lastWheelExpandTime > 4000){
             p2_lastWheelExpandTime = currentTime;
-            fireCircular(p2_wheelAngle, 8, 200, "sprites/GuidedShot3.gif"); // 12 -> 8 bullets
+            fireCircular(p2_wheelAngle, 8, 200, "sprites/GuidedShot3.gif");
         }
         fireAtAngleFromPoint(x - wheelRadius, y, p2_wheelAngle, 150, "sprites/GuidedShot2.gif");
         fireAtAngleFromPoint(x + wheelRadius, y, -p2_wheelAngle, 150, "sprites/GuidedShot4.gif");
@@ -141,35 +156,7 @@ public class LunaticBossEntity extends BossEntity {
             Entity player = getPlayer();
             if (player != null) {
                 double angle = Math.atan2(player.getY() - this.y, player.getX() - this.x);
-                fireFan(angle, 1, 120, Math.PI / 12, "sprites/GuidedShot4.gif"); // 3 -> 1 bullet
-            }
-        }
-    }
-
-    // Phase 3: Laser Grid + Collapse
-    private void phase3Attack(long currentTime) {
-        if (currentTime - p3_lastGridLaserTime > 1000) {
-            p3_lastGridLaserTime = currentTime;
-            double angle = (p3_laserStep % 10) * (Math.PI / 9) - Math.PI/2;
-            game.addEntity(new LaserWarningLineEntity(game, this, angle, 1000));
-            game.addEntity(new BossLaserEntity(game, this, "sprites/BossLaser2.gif", 1000, 100, 1, angle));
-            p3_laserStep++;
-        }
-
-        if (currentTime - p3_lastCollapseTime > 3500) {
-            p3_lastCollapseTime = currentTime;
-            int bulletCount = 12; // 18 -> 12 bullets
-            for (int i = 0; i < bulletCount; i++) {
-                double angle = 2 * Math.PI * i / bulletCount;
-                double spawnX = x + Math.cos(angle) * 500;
-                double spawnY = y + Math.sin(angle) * 500;
-                Entity collapseShot = new GuidedBossShotEntity(game, "sprites/GuidedShot.gif", (int)spawnX, (int)spawnY, 0, 0);
-                double dx = x - spawnX;
-                double dy = y - spawnY;
-                double norm = Math.sqrt(dx*dx + dy*dy);
-                collapseShot.setHorizontalMovement(dx/norm * 90);
-                collapseShot.setVerticalMovement(dy/norm * 90);
-                game.addEntity(collapseShot);
+                fireFan(angle, 1, 120, Math.PI / 12, "sprites/GuidedShot4.gif");
             }
         }
     }
