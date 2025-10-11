@@ -96,7 +96,7 @@ public class EasyPassingAlienEntity extends Entity {
         health -= damage;
         if (health <= 0) {
             game.removeEntity(this);
-            game.addScore(1000);
+            game.addScore(300);
         }
     }
 

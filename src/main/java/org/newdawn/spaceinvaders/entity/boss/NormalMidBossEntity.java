@@ -121,7 +121,7 @@ public class NormalMidBossEntity extends Entity {
         health -= damage;
         if (health <= 0) {
             game.removeEntity(this);
-            game.addScore(5000);
+            game.addScore(4000);
         }
     }
 
