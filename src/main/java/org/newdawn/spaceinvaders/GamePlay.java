@@ -3,7 +3,10 @@ package org.newdawn.spaceinvaders;
 import java.awt.Graphics2D;
 import java.util.ArrayList;
 import org.newdawn.spaceinvaders.entity.AlienEntity;
+import org.newdawn.spaceinvaders.entity.BossShotEntity;
 import org.newdawn.spaceinvaders.entity.Entity;
+import org.newdawn.spaceinvaders.entity.ItemEntity;
+import org.newdawn.spaceinvaders.entity.BossSkill.GuidedBossShotEntity;
 import org.newdawn.spaceinvaders.entity.ShipEntity;
 import org.newdawn.spaceinvaders.entity.ShotEntity;
 import org.newdawn.spaceinvaders.entity.playerSkill.BombEntity;
@@ -21,6 +24,8 @@ public class GamePlay {
     private ArrayList<Entity> entities = new ArrayList<>();
     /** The list of entities that need to be removed from the game this loop */
     private ArrayList<Entity> removeList = new ArrayList<>();
+    /** The list of entities that need to be added to the game this loop */
+    private ArrayList<Entity> addList = new ArrayList<>(); // 새로 추가된 엔티티를 위한 리스트
     /** The entity representing the player */
     private Entity ship;
     /** The speed at which the player's ship should move (pixels/sec) */
@@ -38,6 +43,10 @@ public class GamePlay {
     private boolean invincible = false;
     private long invincibilityEndTime = 0;
 
+    // Skill Charges
+    private int laserCharges = 2;
+    private int bombCharges = 2;
+
     private long lastBombTime = 0L;
     private static final long BOMB_COOLDOWN_MS = 1500L;
 
@@ -51,9 +60,7 @@ public class GamePlay {
      * True if game logic needs to be applied this loop, normally as a result of a
      * game event
      */
-    private boolean logicRequiredThisLoop = false;
-    private boolean gameWon = false;
-
+    	private boolean logicRequiredThisLoop = false;
     // Entity 생성 시 필요.
     private Game game;
     private Stage stage;
@@ -69,6 +76,13 @@ public class GamePlay {
         this.game = game;
         this.difficulty = difficulty;
         setStage(difficulty);
+
+        if (difficulty == 3) { // Lunatic Mode Bonus
+            this.lifes = 101; // Shows as 100 extra lives
+            this.laserCharges = 20;
+            this.bombCharges = 20;
+        }
+
         initEntities();
     }
 
@@ -120,19 +134,29 @@ public class GamePlay {
         return lifes;
     }
 
+    public void increaseLife() {
+        this.lifes++;
+    }
+
+    public void increaseLaserCharges() {
+        this.laserCharges++;
+    }
+
+    public void increaseBombCharges() {
+        this.bombCharges++;
+    }
+
     /**
      * Start a fresh game, this should clear out any old data and
      * create a new set.
      */
-    public void startGame() {
-        // clear out any existing entities and intialise a new set
-        entities.clear();
-        initEntities();
-
-        waitingForKeyPress = false;
-        gameWon = false;
-    }
-
+    	public void startGame() {
+    		// clear out any existing entities and intialise a new set
+    		entities.clear();
+    		initEntities();
+    
+    		waitingForKeyPress = false;
+    	}
     /**
      * Initialise the starting state of the entities (ship and aliens). Each
      * entitiy will be added to the overall list of entities in the game.
@@ -144,6 +168,10 @@ public class GamePlay {
 
         stage.initEntities(game, entities);
         alienCount = stage.getAlienCount();
+    }
+
+    public void addScore(int amount) {
+        this.score += amount;
     }
 
     /**
@@ -158,7 +186,7 @@ public class GamePlay {
     /**
      * Remove an entity from the game. The entity removed will
      * no longer move or be drawn.
-     * 
+     *
      * @param entity The entity that should be removed
      */
     public void removeEntity(Entity entity) {
@@ -166,7 +194,7 @@ public class GamePlay {
     }
 
     public void addEntity(Entity entity) {
-        entities.add(entity);
+        addList.add(entity); // entities.add(entity) 대신 addList에 추가
     }
 
     public java.util.List getEntities() {
@@ -185,12 +213,10 @@ public class GamePlay {
      * Notification that the player has won since all the aliens
      * are dead.
      */
-    public void notifyWin() {
-        message = "Well done! You Win!";
-        waitingForKeyPress = true;
-        gameWon = true;
-    }
-
+    	public void notifyWin() {
+    		message = "Well done! You Win!";
+    		waitingForKeyPress = true;
+    	}
     /**
      * Notification that an alien has been killed
      */
@@ -232,9 +258,12 @@ public class GamePlay {
         SoundManager.get().playSound("sounds/alienshoot2.wav");
     }
     private void fireBombIfReady() {
+        if (bombCharges <= 0) return; // Check charges
+
         long now = System.currentTimeMillis();
         if (now - lastBombTime < BOMB_COOLDOWN_MS) return; //연속발사 방지
         lastBombTime = now;
+        bombCharges--; // Use a charge
 
         int sx = (int) ship.getX();
         int sy = (int) ship.getY();
@@ -243,13 +272,13 @@ public class GamePlay {
         Entity bomb = new BombEntity(
                 game,"sprites/Boom.gif",
                 startX, startY, 0, -250);
-        entities.add(bomb);
+        addEntity(bomb); // addEntity 사용
     }
 
 
     /**
      * Game 클래스의 메인 루프에서 호출되어 게임 상태를 업데이트합니다.
-     * 
+     *
      * @param delta 마지막 프레임 이후 경과 시간
      */
     public void update(long delta) {
@@ -258,6 +287,9 @@ public class GamePlay {
         }
 
         if (!waitingForKeyPress) {
+            // update stage logic (e.g. spawning)
+            stage.update(game);
+
             // 엔티티 이동
             for (Entity entity : entities) {
                 entity.move(delta);
@@ -273,6 +305,11 @@ public class GamePlay {
                             e.collidedWith(laser);
                         }
                     }
+                    if (e instanceof BossShotEntity || e instanceof GuidedBossShotEntity) {
+                        if (laser.collidesWith(e)) {
+                            removeEntity(e);
+                        }
+                    }
                 }
             }
 
@@ -283,8 +320,9 @@ public class GamePlay {
                     Entity me = entities.get(p);
                     Entity him = entities.get(s);
 
-                    // if ship is invincible, skip collision with it
-                    if ((me instanceof ShipEntity && invincible) || (him instanceof ShipEntity && invincible)) {
+                    // if ship is invincible, skip collision with it, unless it's an item
+                    if ((me instanceof ShipEntity && invincible && !(him instanceof ItemEntity)) || 
+                        (him instanceof ShipEntity && invincible && !(me instanceof ItemEntity))) {
                         continue;
                     }
 
@@ -304,6 +342,10 @@ public class GamePlay {
         // 제거할 엔티티 정리
         entities.removeAll(removeList);
         removeList.clear();
+
+        // 추가할 엔티티 정리
+        entities.addAll(addList);
+        addList.clear();
 
         // 레이저 수명 확인 및 정리
         if (laser != null && laser.isExpired()) {
@@ -346,13 +388,14 @@ public class GamePlay {
                 fireBombIfReady();
             }
             // 레이저 발사 트리거: X키 누르면 3초 지속
-            if (x && !laserButtonLatched && laser == null) {
+            if (x && !laserButtonLatched && laser == null && laserCharges > 0) {
+                laserCharges--; // Use a charge
                 laser = new org.newdawn.spaceinvaders.entity.playerSkill.LaserEntity(
                         game,
                         (org.newdawn.spaceinvaders.entity.ShipEntity) ship,
                         LASER_DURATION
                 );
-                entities.add(laser); // 엔티티 리스트에 추가
+                addEntity(laser); // addEntity 사용
                 laserButtonLatched = true;
             }
             if (!x) {
@@ -385,8 +428,29 @@ public class GamePlay {
             laser.draw(g);
         }
 
+        for (Entity entity : entities) {
+            if (entity instanceof org.newdawn.spaceinvaders.entity.boss.BossEntity) {
+                org.newdawn.spaceinvaders.entity.boss.BossEntity boss = (org.newdawn.spaceinvaders.entity.boss.BossEntity) entity;
+                int maxHealth = boss.getMaxHealth();
+                int currentHealth = boss.getHealth();
+                int barWidth = 500;
+                int barHeight = 20;
+                int barX = (800 - barWidth) / 2;
+                int barY = 30;
+
+                g.setColor(java.awt.Color.GRAY);
+                g.fillRect(barX, barY, barWidth, barHeight);
+
+                float healthPercentage = (float) currentHealth / maxHealth;
+                g.setColor(java.awt.Color.RED);
+                g.fillRect(barX, barY, (int) (barWidth * healthPercentage), barHeight);
+            }
+        }
+
         g.setColor(java.awt.Color.WHITE);
         g.drawString("Score: " + this.score, 700, 50);
         g.drawString("Lives: " + (this.lifes > 0 ? this.lifes -1 : 0), 10, 50);
+        g.drawString("Laser: " + this.laserCharges, 10, 70);
+        g.drawString("Bomb: " + this.bombCharges, 10, 90);
     }
 }

@@ -3,16 +3,14 @@ package org.newdawn.spaceinvaders.entity.playerSkill;
 import org.newdawn.spaceinvaders.Game;
 import org.newdawn.spaceinvaders.entity.AlienEntity;
 import org.newdawn.spaceinvaders.entity.Entity;
+import org.newdawn.spaceinvaders.entity.boss.HardBossEntity;
+import org.newdawn.spaceinvaders.entity.boss.NormalBossEntity;
+import org.newdawn.spaceinvaders.entity.boss.EasyBossEntity;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.awt.Graphics;
 
-/**
- * 폭탄 적중 시 생성되는 범위 폭발 이펙트.
- * - lifeMs 동안 유지되며
- * - 반경 내 모든 적에게 hitIntervalMs 간격으로 최대 maxHitsPerTarget만큼 피해
- */
 public class BombEffectEntity extends Entity {
     private Game game;
 
@@ -29,7 +27,7 @@ public class BombEffectEntity extends Entity {
     // 판정 반경
     private int radius;
     private double scale = 5.0;  // 폭발 크기
-
+    private int damagePerHit = 2000;  // 폭발 데미지
     public BombEffectEntity(Game game, String spriteRef,
                             int centerX, int centerY,
                             long lifeMs, int maxHitsPerTarget, long hitIntervalMs) {
@@ -54,7 +52,7 @@ public class BombEffectEntity extends Entity {
         this.dy = 0;
     }
 
-    /** 폭발 유지 및 범위 판정 */
+    // 폭발 유지 및 범위 판정
     public void move(long delta) {
         long now = System.currentTimeMillis();
 
@@ -72,7 +70,10 @@ public class BombEffectEntity extends Entity {
         java.util.List list = game.getEntities();
         for (int i = 0; i < list.size(); i++) {
             Entity e = (Entity) list.get(i);
-            if (!(e instanceof AlienEntity)) continue;
+            if (!(e instanceof AlienEntity
+                    || e instanceof HardBossEntity
+                    || e instanceof NormalBossEntity
+                    || e instanceof EasyBossEntity)) continue;
 
             int ex = (int) (e.getX() + (e.getSprite() != null ? e.getSprite().getWidth() : 0) / 2.0);
             int ey = (int) (e.getY() + (e.getSprite() != null ? e.getSprite().getHeight() : 0) / 2.0);
@@ -104,6 +105,7 @@ public class BombEffectEntity extends Entity {
             }
         }
     }
+
     public void draw(Graphics g) {
         if (sprite == null) return;
         int srcW = sprite.getWidth();
@@ -128,13 +130,36 @@ public class BombEffectEntity extends Entity {
         }
     }
 
-    /** 실제 데미지/처치 처리 (보스 없음 경우 가정 일반 적 즉시 제거) */
-        private void applyHit(Entity target) {
-            game.notifyAlienKilled(target);
-            game.removeEntity(target);
+    //데미지 처리
+    private void applyHit(Entity target) {
+        //  체력0 이하 시 처치/삭제까지 수행
+        if (target instanceof AlienEntity) {
+            AlienEntity a = (AlienEntity) target;
+            try {
+                a.takeDamage(damagePerHit);
+                if (a.getHealth() <= 0) {
+                    game.notifyAlienKilled(a);
+                    game.removeEntity(a);
+                }
+            }catch (Throwable ignore) {}
+            return;
+        }
+
+        if (target instanceof HardBossEntity) {
+            ((HardBossEntity) target).takeDamage(damagePerHit);
+            return;
+        }
+        if (target instanceof NormalBossEntity) {
+            ((NormalBossEntity) target).takeDamage(damagePerHit);
+            return;
+        }
+        if (target instanceof EasyBossEntity) {
+            ((EasyBossEntity) target).takeDamage(damagePerHit);
+            return;
+        }
     }
 
-        public void collidedWith(Entity other) {
-        // 고정 이펙트: 추가 충돌 처리 없음
+    public void collidedWith(Entity other) {
+        // 고정 이펙트: 추가 충돌 처리 없음 (기존 유지)
     }
 }

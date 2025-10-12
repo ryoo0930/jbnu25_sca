@@ -12,8 +12,6 @@ public class ShotEntity extends Entity {
 	private double moveSpeed = -300;
 	/** The game in which this entity exists */
 	private Game game;
-	/** True if this shot has been "used", i.e. its hit something */
-	private boolean used = false;
 	
 	/**
 	 * Create a new shot from the player
@@ -53,18 +51,11 @@ public class ShotEntity extends Entity {
 	 * @parma other The other entity with which we've collided
 	 */
 	public void collidedWith(Entity other) {
-		// prevents double kills, if we've already hit something,
-		// don't collide
-		if (used) {
-			return;
-		}
-		
 		// if we've hit an alien, kill it!
 		if (other instanceof AlienEntity) {
 			// notify the game that the alien has been killed
 
 			// 충돌이 일어날 때 처리
-			used = true;
 			game.removeEntity(this);
 
 			AlienEntity alien = (AlienEntity) other;

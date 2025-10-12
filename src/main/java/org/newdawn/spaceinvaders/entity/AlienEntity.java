@@ -34,13 +34,13 @@ public class AlienEntity extends Entity {
 	 * @param y The intial y location of this alient
 	 */
 	public AlienEntity(Game game,int x,int y) {
-		super("sprites/alien.gif",x,y);
+		super("sprites/Boss1.gif",x,y);
 		
 		// setup the animatin frames
 		frames[0] = sprite;
-		frames[1] = SpriteStore.get().getSprite("sprites/alien2.gif");
+		frames[1] = SpriteStore.get().getSprite("sprites/Boss1.gif");
 		frames[2] = sprite;
-		frames[3] = SpriteStore.get().getSprite("sprites/alien3.gif");
+		frames[3] = SpriteStore.get().getSprite("sprites/Boss1.gif");
 		
 		this.game = game;
 		dx = -moveSpeed;
@@ -95,7 +95,7 @@ public class AlienEntity extends Entity {
 		}
 		
 		// proceed with normal move
-		// super.move(delta); // 적 이동 패턴 제거.
+		super.move(delta);
 	}
 	
 	/**
@@ -120,6 +120,8 @@ public class AlienEntity extends Entity {
 	 * @param other The other entity
 	 */
 	public void collidedWith(Entity other) {
-		// collisions with aliens are handled elsewhere
+		if (other instanceof org.newdawn.spaceinvaders.entity.playerSkill.LaserEntity) {
+			takeDamage(1);
+		}
 	}
 }
