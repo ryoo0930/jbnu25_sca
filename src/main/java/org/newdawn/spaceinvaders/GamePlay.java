@@ -19,6 +19,17 @@ import org.newdawn.spaceinvaders.utility.SoundManager;
 
 
 public class GamePlay {
+    /** Command */
+    private boolean upPressed = false;
+    private boolean downPressed = false;
+    private boolean leftPressed = false;
+    private boolean rightPressed = false;
+    private boolean spacePressed = false;
+    private boolean shiftPressed = false;
+    private boolean zPressed = false;
+    private boolean xPressed = false;
+    private boolean cPressed = false;
+
 
     /** The list of all the entities that exist in our game */
     private ArrayList<Entity> entities = new ArrayList<>();
@@ -362,47 +373,7 @@ public class GamePlay {
         }
     }
 
-    /**
-     * Game 클래스에서 키 입력 상태를 받아와 처리.
-     */
-    public void handleInput(boolean up, boolean down, boolean left, boolean right, boolean space, boolean shift, boolean z, boolean x, boolean c) {
-        if (!waitingForKeyPress) {
-            ship.setHorizontalMovement(0);
-            ship.setVerticalMovement(0);
-            if ((up) && (!down))
-                ship.setVerticalMovement(-moveSpeed);
-            if ((down) && (!up))
-                ship.setVerticalMovement(moveSpeed);
-            if ((left) && (!right))
-                ship.setHorizontalMovement(-moveSpeed);
-            if ((right) && (!left))
-                ship.setHorizontalMovement(moveSpeed);
-            if(shift)
-                moveSpeed = 150;
-            if(!shift)
-                moveSpeed = 300;
-            if (z) {
-                tryToFire();
-            }
-            if (c) {
-                fireBombIfReady();
-            }
-            // 레이저 발사 트리거: X키 누르면 3초 지속
-            if (x && !laserButtonLatched && laser == null && laserCharges > 0) {
-                laserCharges--; // Use a charge
-                laser = new org.newdawn.spaceinvaders.entity.playerSkill.LaserEntity(
-                        game,
-                        (org.newdawn.spaceinvaders.entity.ShipEntity) ship,
-                        LASER_DURATION
-                );
-                addEntity(laser); // addEntity 사용
-                laserButtonLatched = true;
-            }
-            if (!x) {
-                laserButtonLatched = false;
-            }
-        }
-    }
+    
 
     /**
      * Game 클래스에서 호출되어 모든 엔티티를 화면에 그리기.
@@ -453,4 +424,54 @@ public class GamePlay {
         g.drawString("Laser: " + this.laserCharges, 10, 70);
         g.drawString("Bomb: " + this.bombCharges, 10, 90);
     }
+
+    /** 커맨드 객체가 호출할 메소드들 */
+    public void setMoveUp(boolean pressed) { this.upPressed = pressed; }
+    public void setMoveDown(boolean pressed) { this.downPressed = pressed; }
+    public void setMoveLeft(boolean pressed) { this.leftPressed = pressed; }
+    public void setMoveRight(boolean pressed) { this.rightPressed = pressed; }
+    public void setShift(boolean pressed) { this.shiftPressed = pressed; }
+    public void setFire(boolean pressed) { this.zPressed = pressed; }
+    public void setLaser(boolean pressed) { this.xPressed = pressed; }
+    public void setBomb(boolean pressed) { this.cPressed = pressed; }
+
+
+    public void handleInput() {
+        if (!waitingForKeyPress) {
+            ship.setHorizontalMovement(0);
+            ship.setVerticalMovement(0);
+
+            /** 플레이어 이동에 관한 로직 */
+            if ((upPressed) && (!downPressed)) ship.setVerticalMovement(-moveSpeed);
+            if ((downPressed) && (!upPressed)) ship.setVerticalMovement(moveSpeed);
+            if ((leftPressed) && (!rightPressed)) ship.setHorizontalMovement(-moveSpeed);
+            if ((rightPressed) && (!leftPressed)) ship.setHorizontalMovement(moveSpeed);
+
+            /** 플레이어 이동 속도에 관한 로직 (Shift) */
+            if(shiftPressed) moveSpeed = 150;
+            if(!shiftPressed) moveSpeed = 300;
+
+            /** 플레이어 공격 */
+            if (zPressed) tryToFire();
+            
+            /** 플레이어 스킬(폭탄) */
+            if (cPressed)  fireBombIfReady();
+
+            /** 플레이어 스킬(레이저) */
+            if (xPressed && !laserButtonLatched && laser == null && laserCharges > 0) {
+                laserCharges--; // Use a charge
+                laser = new org.newdawn.spaceinvaders.entity.playerSkill.LaserEntity(
+                        game,
+                        (org.newdawn.spaceinvaders.entity.ShipEntity) ship,
+                        LASER_DURATION
+                );
+                addEntity(laser); // addEntity 사용
+                laserButtonLatched = true;
+            }
+            if (!xPressed) {
+                laserButtonLatched = false;
+            }
+        }
+    }
+
 }

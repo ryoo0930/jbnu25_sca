@@ -50,22 +50,6 @@ public class Game extends Canvas {
 	private BufferStrategy strategy;
 	/** True if the game is currently "running", i.e. the game loop is looping */
 	private boolean gameRunning = true;
-	/** Ture if the up cursor key is currently pressed */
-	private boolean upPressed = false;
-	/** Ture if the down cursor key is currently pressed */
-	private boolean downPressed = false;
-	/** True if the left cursor key is currently pressed */
-	private boolean leftPressed = false;
-	/** True if the right cursor key is currently pressed */
-	private boolean rightPressed = false;
-	/** True if the space cursor key is currently pressed */
-	private boolean spacePressed = false;
-	/** True if the shift cursor key is currently pressed */
-	private boolean shiftPressed = false;
-	/** True if the Z cursor key is currently pressed */
-	private boolean zPressed = false;
-	private boolean xPressed = false;
-    private boolean cPressed = false;
 	/** The last time at which we recorded the frame rate */
 	private long lastFpsTime;
 	/** The current number of frames recorded */
@@ -333,7 +317,7 @@ public class Game extends Canvas {
 	}
 
 	/** 메인 메뉴 선택 로직 추가 */
-	private void selectMenuOption() {
+	public void selectMenuOption() {
 		int selection = mainMenu.getSelection();
 		switch (selection) {
 			case 0:
