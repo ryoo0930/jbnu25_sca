@@ -13,11 +13,11 @@ public class InputMapper {
     /** 단일 실행 커맨드 매핑 */
     public void mapAction(int keyCode, Command command) { pressMap.put(keyCode, command); }
     /** 상태 변경 커맨드 매핑 */
-    public void mapState(int keyCode, Command command) { stateMap.put(keyCode, command); }
+    public void mapState(int keyCode, StatefulCommand command) { stateMap.put(keyCode, command); }
 
     public void handleKeyPress(int keyCode) {
         if(pressMap.containsKey(keyCode)) pressMap.get(keyCode).execute();
-        if(stateMap.containsKey(keyCode)) stateMap.get(keyCode).execute();
+        if(stateMap.containsKey(keyCode)) stateMap.get(keyCode).onPress();
     }
     public void handleKeyReleased(int keyCode) {
         if(stateMap.containsKey(keyCode)) stateMap.get(keyCode).onRelease();

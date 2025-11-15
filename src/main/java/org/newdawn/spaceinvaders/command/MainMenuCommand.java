@@ -5,7 +5,7 @@ import org.newdawn.spaceinvaders.ui.MainMenu;
 
 public class MainMenuCommand implements Command{
     /** MainMenuCommand가 수행할 수 있는 목록 */
-    private enum Action { MOVE_UP, MOVE_DOWN, SELECT }
+    public enum Action { MOVE_UP, MOVE_DOWN, SELECT }
     
     private MainMenu mainMenuReceiver;
     private Game gameReceiver;
@@ -29,7 +29,6 @@ public class MainMenuCommand implements Command{
                 if(gameReceiver != null) gameReceiver.selectMenuOption();
                 break;
             default:
-                System.err.println("잘못된 Action입니다.");
                 break;
         }
     }
