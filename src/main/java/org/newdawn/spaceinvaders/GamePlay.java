@@ -17,7 +17,6 @@ import org.newdawn.spaceinvaders.stage.NormalStage;
 import org.newdawn.spaceinvaders.stage.Stage;
 import org.newdawn.spaceinvaders.utility.SoundManager;
 
-
 public class GamePlay {
 
     /** The list of all the entities that exist in our game */
@@ -50,8 +49,6 @@ public class GamePlay {
     private long lastBombTime = 0L;
     private static final long BOMB_COOLDOWN_MS = 1500L;
 
-
-
     /** The message to display which waiting for a key press */
     private String message = "";
     /** True if we're holding up game play until a key has been pressed */
@@ -60,7 +57,7 @@ public class GamePlay {
      * True if game logic needs to be applied this loop, normally as a result of a
      * game event
      */
-    	private boolean logicRequiredThisLoop = false;
+    private boolean logicRequiredThisLoop = false;
     // Entity 생성 시 필요.
     private Game game;
     private Stage stage;
@@ -71,6 +68,17 @@ public class GamePlay {
     private org.newdawn.spaceinvaders.entity.playerSkill.LaserEntity laser;
     private final long LASER_DURATION = 3000;
     private boolean laserButtonLatched = false; // 중첩방지
+
+    // --- (추가) GamePlay의 내부 입력 상태를 저장할 boolean 필드 ---
+    private boolean upPressed = false;
+    private boolean downPressed = false;
+    private boolean leftPressed = false;
+    private boolean rightPressed = false;
+    private boolean shiftPressed = false;
+    private boolean zPressed = false; // Fire
+    private boolean xPressed = false; // Laser
+    private boolean cPressed = false; // Bomb
+    // --- (추가 끝) ---
 
     public GamePlay(Game game, int difficulty) {
         this.game = game;
@@ -103,6 +111,18 @@ public class GamePlay {
         }
     }
 
+    // --- (추가) GamePlayCommand가 호출할 public setter 메소드들 ---
+    public void setMoveUp(boolean pressed) { this.upPressed = pressed; }
+    public void setMoveDown(boolean pressed) { this.downPressed = pressed; }
+    public void setMoveLeft(boolean pressed) { this.leftPressed = pressed; }
+    public void setMoveRight(boolean pressed) { this.rightPressed = pressed; }
+    public void setShift(boolean pressed) { this.shiftPressed = pressed; }
+    public void setFire(boolean pressed) { this.zPressed = pressed; }
+    public void setLaser(boolean pressed) { this.xPressed = pressed; }
+    public void setBomb(boolean pressed) { this.cPressed = pressed; }
+    // --- (추가 끝) ---
+
+
     // Game 클래스가 상태를 조회할 수 있도록 메서드 제공
     public boolean isWaitingForKeyPress() {
         return waitingForKeyPress;
@@ -111,6 +131,7 @@ public class GamePlay {
     public String getMessage() {
         return message;
     }
+
     public int getScore() {
         return this.score;
     }
@@ -120,13 +141,16 @@ public class GamePlay {
     }
 
     public void loseLifeAndRespawn() {
-        if (invincible) return; // Already invincible, do nothing
+        if (invincible)
+            return; // Already invincible, do nothing
 
         lifes--;
         if (lifes > 0) {
             ship.setPosition(370, 550);
             invincible = true;
             invincibilityEndTime = System.currentTimeMillis() + 2000; // 1 second of invincibility
+        } else {
+            notifyDeath();
         }
     }
 
@@ -150,13 +174,14 @@ public class GamePlay {
      * Start a fresh game, this should clear out any old data and
      * create a new set.
      */
-    	public void startGame() {
-    		// clear out any existing entities and intialise a new set
-    		entities.clear();
-    		initEntities();
-    
-    		waitingForKeyPress = false;
-    	}
+    public void startGame() {
+        // clear out any existing entities and intialise a new set
+        entities.clear();
+        initEntities();
+
+        waitingForKeyPress = false;
+    }
+
     /**
      * Initialise the starting state of the entities (ship and aliens). Each
      * entitiy will be added to the overall list of entities in the game.
@@ -213,15 +238,17 @@ public class GamePlay {
      * Notification that the player has won since all the aliens
      * are dead.
      */
-    	public void notifyWin() {
-    		message = "Well done! You Win!";
-    		waitingForKeyPress = true;
-    	}
+    public void notifyWin() {
+        message = "Well done! You Win!";
+        waitingForKeyPress = true;
+    }
+
     /**
      * Notification that an alien has been killed
      */
     public void notifyAlienKilled(Entity alien) {
-        if(removeList.contains(alien)) return;
+        if (removeList.contains(alien))
+            return;
 
         this.score += 100;
 
@@ -257,31 +284,37 @@ public class GamePlay {
         entities.add(shot);
         SoundManager.get().playSound("sounds/alienshoot2.wav");
     }
+
     private void fireBombIfReady() {
-        if (bombCharges <= 0) return; // Check charges
+        if (bombCharges <= 0)
+            return; // Check charges
 
         long now = System.currentTimeMillis();
-        if (now - lastBombTime < BOMB_COOLDOWN_MS) return; //연속발사 방지
+        if (now - lastBombTime < BOMB_COOLDOWN_MS)
+            return; // 연속발사 방지
         lastBombTime = now;
         bombCharges--; // Use a charge
 
         int sx = (int) ship.getX();
         int sy = (int) ship.getY();
-        int startX = (int)(ship.getX() + 3);
-        int startY = (int)(ship.getY() - 30);
+        int startX = (int) (ship.getX() + 3);
+        int startY = (int) (ship.getY() - 30);
         Entity bomb = new BombEntity(
-                game,"sprites/Boom.gif",
+                game, "sprites/Boom.gif",
                 startX, startY, 0, -250);
         addEntity(bomb); // addEntity 사용
     }
 
-
     /**
      * Game 클래스의 메인 루프에서 호출되어 게임 상태를 업데이트합니다.
+     * (수정) `handleInput()` 호출을 이 메소드 상단에 추가합니다.
      *
      * @param delta 마지막 프레임 이후 경과 시간
      */
     public void update(long delta) {
+        // (추가) 매 프레임마다 내부 입력 상태를 기반으로 로직을 처리
+        handleInput();
+
         if (invincible && System.currentTimeMillis() > invincibilityEndTime) {
             invincible = false;
         }
@@ -313,7 +346,6 @@ public class GamePlay {
                 }
             }
 
-
             // 충돌 검사
             for (int p = 0; p < entities.size(); p++) {
                 for (int s = p + 1; s < entities.size(); s++) {
@@ -321,8 +353,8 @@ public class GamePlay {
                     Entity him = entities.get(s);
 
                     // if ship is invincible, skip collision with it, unless it's an item
-                    if ((me instanceof ShipEntity && invincible && !(him instanceof ItemEntity)) || 
-                        (him instanceof ShipEntity && invincible && !(me instanceof ItemEntity))) {
+                    if ((me instanceof ShipEntity && invincible && !(him instanceof ItemEntity)) ||
+                            (him instanceof ShipEntity && invincible && !(me instanceof ItemEntity))) {
                         continue;
                     }
 
@@ -363,42 +395,45 @@ public class GamePlay {
     }
 
     /**
-     * Game 클래스에서 키 입력 상태를 받아와 처리.
+     * (수정) Game 클래스에서 키 입력 상태를 받아오는 파라미터를 모두 제거.
+     * 대신 이 클래스의 내부 boolean 필드를 읽어 로직을 처리.
+     * `public`에서 `private`으로 변경.
      */
-    public void handleInput(boolean up, boolean down, boolean left, boolean right, boolean space, boolean shift, boolean z, boolean x, boolean c) {
+    private void handleInput() {
         if (!waitingForKeyPress) {
             ship.setHorizontalMovement(0);
             ship.setVerticalMovement(0);
-            if ((up) && (!down))
+            
+            // (수정) 파라미터(up, down) 대신 내부 필드(this.upPressed, this.downPressed) 사용
+            if ((upPressed) && (!downPressed))
                 ship.setVerticalMovement(-moveSpeed);
-            if ((down) && (!up))
+            if ((downPressed) && (!upPressed))
                 ship.setVerticalMovement(moveSpeed);
-            if ((left) && (!right))
+            if ((leftPressed) && (!rightPressed))
                 ship.setHorizontalMovement(-moveSpeed);
-            if ((right) && (!left))
+            if ((rightPressed) && (!leftPressed))
                 ship.setHorizontalMovement(moveSpeed);
-            if(shift)
+            if (shiftPressed)
                 moveSpeed = 150;
-            if(!shift)
+            if (!shiftPressed)
                 moveSpeed = 300;
-            if (z) {
+            if (zPressed) {
                 tryToFire();
             }
-            if (c) {
+            if (cPressed) {
                 fireBombIfReady();
             }
             // 레이저 발사 트리거: X키 누르면 3초 지속
-            if (x && !laserButtonLatched && laser == null && laserCharges > 0) {
+            if (xPressed && !laserButtonLatched && laser == null && laserCharges > 0) {
                 laserCharges--; // Use a charge
                 laser = new org.newdawn.spaceinvaders.entity.playerSkill.LaserEntity(
                         game,
                         (org.newdawn.spaceinvaders.entity.ShipEntity) ship,
-                        LASER_DURATION
-                );
+                        LASER_DURATION);
                 addEntity(laser); // addEntity 사용
                 laserButtonLatched = true;
             }
-            if (!x) {
+            if (!xPressed) {
                 laserButtonLatched = false;
             }
         }
@@ -449,7 +484,7 @@ public class GamePlay {
 
         g.setColor(java.awt.Color.WHITE);
         g.drawString("Score: " + this.score, 700, 50);
-        g.drawString("Lives: " + (this.lifes > 0 ? this.lifes -1 : 0), 10, 50);
+        g.drawString("Lives: " + (this.lifes > 0 ? this.lifes - 1 : 0), 10, 50);
         g.drawString("Laser: " + this.laserCharges, 10, 70);
         g.drawString("Bomb: " + this.bombCharges, 10, 90);
     }
