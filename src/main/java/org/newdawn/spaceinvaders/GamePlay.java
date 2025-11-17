@@ -149,6 +149,8 @@ public class GamePlay {
             ship.setPosition(370, 550);
             invincible = true;
             invincibilityEndTime = System.currentTimeMillis() + 2000; // 1 second of invincibility
+        } else {
+            notifyDeath();
         }
     }
 

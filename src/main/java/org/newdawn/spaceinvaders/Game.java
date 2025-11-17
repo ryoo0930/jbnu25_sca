@@ -16,8 +16,14 @@ import javax.swing.JPanel;
 import javax.sound.sampled.Clip;
 
 // 리팩토링을 위한 Import
-import org.newdawn.spaceinvaders.command.GamePlayCommand;
-import org.newdawn.spaceinvaders.command.MainMenuCommand;
+import org.newdawn.spaceinvaders.command.implement.BombCommand;
+import org.newdawn.spaceinvaders.command.implement.FireCommand;
+import org.newdawn.spaceinvaders.command.implement.LaserCommand;
+import org.newdawn.spaceinvaders.command.implement.MoveDownCommand;
+import org.newdawn.spaceinvaders.command.implement.MoveLeftCommand;
+import org.newdawn.spaceinvaders.command.implement.MoveRightCommand;
+import org.newdawn.spaceinvaders.command.implement.MoveUpCommand;
+import org.newdawn.spaceinvaders.command.implement.ShiftCommand;
 import org.newdawn.spaceinvaders.input.InputMapper;
 
 import org.newdawn.spaceinvaders.entity.Entity;
@@ -146,14 +152,10 @@ public class Game extends Canvas {
     private void initializeMappers() {
         // 1. 메인 메뉴 매퍼
         mainMenuMapper = new InputMapper();
-        mainMenuMapper.mapAction(KeyEvent.VK_UP,
-                new MainMenuCommand(mainMenu, MainMenuCommand.Action.MOVE_UP));
-        mainMenuMapper.mapAction(KeyEvent.VK_DOWN,
-                new MainMenuCommand(mainMenu, MainMenuCommand.Action.MOVE_DOWN));
-        mainMenuMapper.mapAction(KeyEvent.VK_ENTER,
-                new MainMenuCommand(this, MainMenuCommand.Action.SELECT));
-        mainMenuMapper.mapAction(KeyEvent.VK_Z,
-                new MainMenuCommand(this, MainMenuCommand.Action.SELECT));
+        mainMenuMapper.mapAction(KeyEvent.VK_UP, () -> mainMenu.moveUp());
+        mainMenuMapper.mapAction(KeyEvent.VK_DOWN, () -> mainMenu.moveDown());
+        mainMenuMapper.mapAction(KeyEvent.VK_ENTER, () -> selectMenuOption());
+        mainMenuMapper.mapAction(KeyEvent.VK_Z, () -> selectMenuOption());
 
         // 2. 난이도 선택 매퍼 (람다식 사용)
         difficultyMenuMapper = new InputMapper();
@@ -261,8 +263,7 @@ public class Game extends Canvas {
         if (gamePlay != null) {
             gamePlay.loseLifeAndRespawn();
             if (gamePlay.getLifes() <= 0) {
-                // (수정) Game Over 메시지 대기 상태로 진입
-                // (이 상태의 입력은 KeyInputHandler에서 예외 처리)
+                gamePlay.notifyDeath();
             }
         }
     }
@@ -418,21 +419,21 @@ public class Game extends Canvas {
         // (추가) GamePlay 매퍼 생성 및 매핑 (1번 방식 적용)
         gamePlayMapper = new InputMapper();
         gamePlayMapper.mapState(KeyEvent.VK_UP,
-                new GamePlayCommand(gamePlay, GamePlayCommand.Action.MOVE_UP));
+                new MoveUpCommand(gamePlay));
         gamePlayMapper.mapState(KeyEvent.VK_DOWN,
-                new GamePlayCommand(gamePlay, GamePlayCommand.Action.MOVE_DOWN));
+                new MoveDownCommand(gamePlay));
         gamePlayMapper.mapState(KeyEvent.VK_LEFT,
-                new GamePlayCommand(gamePlay, GamePlayCommand.Action.MOVE_LEFT));
+                new MoveLeftCommand(gamePlay));
         gamePlayMapper.mapState(KeyEvent.VK_RIGHT,
-                new GamePlayCommand(gamePlay, GamePlayCommand.Action.MOVE_RIGHT));
+                new MoveRightCommand(gamePlay));
         gamePlayMapper.mapState(KeyEvent.VK_SHIFT,
-                new GamePlayCommand(gamePlay, GamePlayCommand.Action.SHIFT));
+                new ShiftCommand(gamePlay));
         gamePlayMapper.mapState(KeyEvent.VK_Z,
-                new GamePlayCommand(gamePlay, GamePlayCommand.Action.FIRE));
+                new FireCommand(gamePlay));
         gamePlayMapper.mapState(KeyEvent.VK_X,
-                new GamePlayCommand(gamePlay, GamePlayCommand.Action.LASER));
+                new LaserCommand(gamePlay));
         gamePlayMapper.mapState(KeyEvent.VK_C,
-                new GamePlayCommand(gamePlay, GamePlayCommand.Action.BOMB));
+                new BombCommand(gamePlay));
 
         gamePlay.startGame();
         currentGameState = GameState.GAME_PLAY;
