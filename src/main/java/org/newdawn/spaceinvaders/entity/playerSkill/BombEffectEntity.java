@@ -58,7 +58,7 @@ public class BombEffectEntity extends Entity {
 
         // 수명 종료
         if (now - startTs >= lifeMs) {
-            game.removeEntity(this);
+            game.getGamePlay().removeEntity(this);
             return;
         }
 
@@ -67,7 +67,7 @@ public class BombEffectEntity extends Entity {
         int cy = (int) (y + (sprite != null ? sprite.getHeight() : 0) * scale / 2.0);
 
         // 게임의 엔티티 전체 순회 (Game.getEntities 필요)
-        java.util.List list = game.getEntities();
+        java.util.List list = game.getGamePlay().getEntities();
         for (int i = 0; i < list.size(); i++) {
             Entity e = (Entity) list.get(i);
             if (!(e instanceof AlienEntity
@@ -138,8 +138,8 @@ public class BombEffectEntity extends Entity {
             try {
                 a.takeDamage(damagePerHit);
                 if (a.getHealth() <= 0) {
-                    game.notifyAlienKilled(a);
-                    game.removeEntity(a);
+                    game.getGamePlay().notifyAlienKilled(a);
+                    game.getGamePlay().removeEntity(a);
                 }
             }catch (Throwable ignore) {}
             return;
