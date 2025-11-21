@@ -66,13 +66,13 @@ public class EasyPassingAlienEntity extends Entity {
         }
 
         if (x > 850 || x < -50 || y > 650 || y < -50) {
-            game.removeEntity(this);
+            game.getGamePlay().removeEntity(this);
         }
     }
 
     private void fireFanShot() {
         Entity player = null;
-        for (Object entity : game.getEntities()) {
+        for (Object entity : game.getGamePlay().getEntities()) {
             if (entity instanceof ShipEntity) {
                 player = (Entity) entity;
                 break;
@@ -88,15 +88,15 @@ public class EasyPassingAlienEntity extends Entity {
             // Fire a single shot
             double shotDx = Math.cos(centerAngle) * speed;
             double shotDy = Math.sin(centerAngle) * speed;
-            game.addEntity(new GuidedBossShotEntity(game, "sprites/GuidedShot1.gif", (int)(x + sprite.getWidth()/2), (int)y, shotDx, shotDy));
+            game.getGamePlay().addEntity(new GuidedBossShotEntity(game, "sprites/GuidedShot1.gif", (int)(x + sprite.getWidth()/2), (int)y, shotDx, shotDy));
         }
     }
 
     public void takeDamage(int damage) {
         health -= damage;
         if (health <= 0) {
-            game.removeEntity(this);
-            game.addScore(300);
+            game.getGamePlay().removeEntity(this);
+            game.getGamePlay().addScore(300);
         }
     }
 
@@ -104,7 +104,7 @@ public class EasyPassingAlienEntity extends Entity {
     public void collidedWith(Entity other) {
         if (other instanceof ShotEntity) {
             takeDamage(30);
-            game.removeEntity(other);
+            game.getGamePlay().removeEntity(other);
         }
     }
 }

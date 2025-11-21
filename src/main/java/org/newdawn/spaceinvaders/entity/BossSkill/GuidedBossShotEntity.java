@@ -3,6 +3,8 @@ package org.newdawn.spaceinvaders.entity.BossSkill;
 import org.newdawn.spaceinvaders.Game;
 import org.newdawn.spaceinvaders.entity.Entity;
 import org.newdawn.spaceinvaders.entity.ShipEntity;
+import org.newdawn.spaceinvaders.event.EventBus;
+import org.newdawn.spaceinvaders.event.PlayerHitEvent;
 
 import java.awt.Graphics;
 import java.awt.Graphics2D;
@@ -11,6 +13,7 @@ import java.awt.Rectangle;
 public class GuidedBossShotEntity extends Entity {
     private Game game;
     private double angle = 0; // 총알의 회전 각도
+    private boolean used = false;
 
     public GuidedBossShotEntity(Game game, String sprite, int x, int y, double dx, double dy) {
         super(sprite, x, y);
@@ -25,7 +28,7 @@ public class GuidedBossShotEntity extends Entity {
     public void move(long delta) {
         super.move(delta);
         if (y < -100 || y > 700 || x < -100 || x > 900) {
-            game.removeEntity(this);
+            game.getGamePlay().removeEntity(this);
         }
     }
 
@@ -49,13 +52,17 @@ public class GuidedBossShotEntity extends Entity {
 
     @Override
     public void collidedWith(Entity other) {
+        if (used) {
+            return;
+        }
         if (other instanceof ShipEntity) {
             ShipEntity ship = (ShipEntity) other;
             Rectangle myBounds = new Rectangle((int) this.x, (int) this.y, this.sprite.getWidth(), this.sprite.getHeight());
 
             if (myBounds.intersects(ship.getHitbox())) {
-                game.removeEntity(this);
-                game.notifyDeath();
+                used = true;
+                game.getGamePlay().removeEntity(this);
+                EventBus.getInstance().publish(new PlayerHitEvent());
             }
         }
     }

@@ -1,38 +1,39 @@
 package org.newdawn.spaceinvaders.entity;
 
-import org.newdawn.spaceinvaders.Game;
+import org.newdawn.spaceinvaders.Game; // (수정) GamePlay로 변경
+import org.newdawn.spaceinvaders.GamePlay;
 
 /**
  * An entity representing a shot fired by the player's ship
- * 
- * @author Kevin Glass
+ * * @author Kevin Glass
  */
 public class ShotEntity extends Entity {
 	/** The vertical speed at which the players shot moves */
 	private double moveSpeed = -300;
 	/** The game in which this entity exists */
-	private Game game;
+	// (수정) Game game -> GamePlay gamePlay
+	private GamePlay gamePlay;
 	
 	/**
 	 * Create a new shot from the player
-	 * 
-	 * @param game The game in which the shot has been created
+	 * * @param gamePlay The game in which the shot has been created
 	 * @param sprite The sprite representing this shot
 	 * @param x The initial x location of the shot
 	 * @param y The initial y location of the shot
 	 */
-	public ShotEntity(Game game,String sprite,int x,int y) {
+	// (수정) Game game -> GamePlay gamePlay
+	public ShotEntity(GamePlay gamePlay,String sprite,int x,int y) {
 		super(sprite,x,y);
 		
-		this.game = game;
+		// (수정) this.game = game -> this.gamePlay = gamePlay
+		this.gamePlay = gamePlay;
 		
 		dy = moveSpeed;
 	}
 
 	/**
 	 * Request that this shot moved based on time elapsed
-	 * 
-	 * @param delta The time that has elapsed since last move
+	 * * @param delta The time that has elapsed since last move
 	 */
 	public void move(long delta) {
 		// proceed with normal move
@@ -40,15 +41,15 @@ public class ShotEntity extends Entity {
 		
 		// if we shot off the screen, remove ourselfs
 		if (y < -100) {
-			game.removeEntity(this);
+			// (수정) game.removeEntity -> gamePlay.removeEntity
+			gamePlay.removeEntity(this);
 		}
 	}
 	
 	/**
 	 * Notification that this shot has collided with another
 	 * entity
-	 * 
-	 * @parma other The other entity with which we've collided
+	 * * @parma other The other entity with which we've collided
 	 */
 	public void collidedWith(Entity other) {
 		// if we've hit an alien, kill it!
@@ -56,14 +57,17 @@ public class ShotEntity extends Entity {
 			// notify the game that the alien has been killed
 
 			// 충돌이 일어날 때 처리
-			game.removeEntity(this);
+			// (수정) game.removeEntity -> gamePlay.removeEntity
+			gamePlay.removeEntity(this);
 
 			AlienEntity alien = (AlienEntity) other;
 			alien.takeDamage(30);
 
 			if(alien.getHealth() <= 0) {
-				game.notifyAlienKilled(other);
-				game.removeEntity(other);
+				// (수정) game.notifyAlienKilled -> gamePlay.notifyAlienKilled
+				gamePlay.notifyAlienKilled(other);
+				// (수정) game.removeEntity -> gamePlay.removeEntity
+				gamePlay.removeEntity(other);
 			}
 		}
 	}

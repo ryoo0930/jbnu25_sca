@@ -116,7 +116,7 @@ public class LunaticBossEntity extends BossEntity {
 
         if (phase != currentPhase) {
             for (int i = -2; i <= 2; i++) {
-                game.addEntity(new ItemEntity(game, "sprites/H.gif", (int)this.x + i*30, (int)this.y, ItemEntity.ItemType.HEALTH));
+                game.getGamePlay().addEntity(new ItemEntity(game, "sprites/H.gif", (int)this.x + i*30, (int)this.y, ItemEntity.ItemType.HEALTH));
             }
             currentState = BossState.RESTING;
             restStartTime = currentTime;
@@ -135,7 +135,7 @@ public class LunaticBossEntity extends BossEntity {
             p1_lastRainTime = currentTime;
             int rainX = 50 + random.nextInt(700);
             Entity rainShot = new GuidedBossShotEntity(game, "sprites/GuidedShot3.gif", rainX, -20, 0, 200);
-            game.addEntity(rainShot);
+            game.getGamePlay().addEntity(rainShot);
         }
     }
 
@@ -161,7 +161,7 @@ public class LunaticBossEntity extends BossEntity {
     }
 
     private Entity getPlayer() {
-        for (Object entity : game.getEntities()) {
+        for (Object entity : game.getGamePlay().getEntities()) {
             if (entity instanceof ShipEntity) {
                 return (Entity) entity;
             }
@@ -178,7 +178,7 @@ public class LunaticBossEntity extends BossEntity {
         int fireY = (int) (startY + this.sprite.getHeight() / 2);
         double dx = Math.cos(angle) * speed;
         double dy = Math.sin(angle) * speed;
-        game.addEntity(new GuidedBossShotEntity(game, sprite, fireX, fireY, dx, dy));
+        game.getGamePlay().addEntity(new GuidedBossShotEntity(game, sprite, fireX, fireY, dx, dy));
     }
 
     private void fireCircular(double angleOffset, int bulletCount, double speed, String sprite) {
@@ -197,10 +197,10 @@ public class LunaticBossEntity extends BossEntity {
 
     public void takeDamage(int damage) {
         health -= damage;
-        game.addScore(damage * 20);
+        game.getGamePlay().addScore(damage * 20);
         if (health <= 0) {
-            game.removeEntity(this);
-            game.notifyWin();
+            game.getGamePlay().removeEntity(this);
+            game.getGamePlay().notifyWin();
         }
     }
 
@@ -215,7 +215,7 @@ public class LunaticBossEntity extends BossEntity {
     public void collidedWith(Entity other) {
         if (other instanceof ShotEntity) {
             takeDamage(30);
-            game.removeEntity(other);
+            game.getGamePlay().removeEntity(other);
         } else if (other instanceof LaserEntity) {
             takeDamage(100);
         }

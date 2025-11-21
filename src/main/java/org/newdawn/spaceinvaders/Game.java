@@ -220,6 +220,10 @@ public class Game extends Canvas {
         }
     }
 
+    public GamePlay getGamePlay() {
+        return this.gamePlay;
+    }
+
     /**
      * (수정) 메인 메뉴로 복귀 시 매퍼 교체
      */
@@ -229,56 +233,6 @@ public class Game extends Canvas {
         gamePlay = null;
     }
 
-    // --- (addScore, updateLogic 등 GamePlay 중계 메소드들은 그대로 유지) ---
-    public void addScore(int score) {
-        if (gamePlay != null) {
-            gamePlay.addScore(score);
-        }
-    }
-    public void updateLogic() {
-        if (gamePlay != null)
-            gamePlay.updateLogic();
-    }
-    public void removeEntity(Object entity) {
-        if (gamePlay != null)
-            gamePlay.removeEntity((Entity) entity);
-    }
-    public void increaseLife() {
-        if (gamePlay != null) gamePlay.increaseLife();
-    }
-    public void increaseLaserCharges() {
-        if (gamePlay != null) gamePlay.increaseLaserCharges();
-    }
-    public void increaseBombCharges() {
-        if (gamePlay != null) gamePlay.increaseBombCharges();
-    }
-    public void addEntity(Entity entity) {
-        if (gamePlay != null) gamePlay.addEntity(entity);
-    }
-    public java.util.List getEntities() {
-        if (gamePlay != null) return gamePlay.getEntities();
-        return java.util.Collections.emptyList();
-    }
-    public void notifyDeath() {
-        if (gamePlay != null) {
-            gamePlay.loseLifeAndRespawn();
-            if (gamePlay.getLifes() <= 0) {
-                gamePlay.notifyDeath();
-            }
-        }
-    }
-    public void notifyWin() {
-        if (gamePlay != null)
-            gamePlay.notifyWin();
-    }
-    public void notifyAlienKilled(Entity alien) {
-        if (gamePlay != null)
-            gamePlay.notifyAlienKilled(alien);
-    }
-    public void tryToFire() {
-        if (gamePlay != null)
-            gamePlay.tryToFire();
-    }
     public SpriteStore getSpriteStore(){
         return this.spriteStore;
     }
