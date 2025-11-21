@@ -39,12 +39,12 @@ public class GamePlay {
     private int score = 0;
 
     /** Extra Life 추가 */
-    private int lifes = 3;
+    private int lifes = 300;
     private boolean invincible = false;
     private long invincibilityEndTime = 0;
 
     // Skill Charges
-    private int laserCharges = 2;
+    private int laserCharges = 200;
     private int bombCharges = 2;
 
     private long lastBombTime = 0L;

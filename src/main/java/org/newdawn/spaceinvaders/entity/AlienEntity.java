@@ -9,7 +9,7 @@ import org.newdawn.spaceinvaders.utility.SpriteStore;
  * 
  * @author Kevin Glass
  */
-public class AlienEntity extends Entity {
+public class AlienEntity extends Entity implements Damageable {
 	/** The speed at which the alient moves horizontally */
 	private double moveSpeed = 75;
 	/** The game in which the entity exists */

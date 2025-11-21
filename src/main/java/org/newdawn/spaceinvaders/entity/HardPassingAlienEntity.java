@@ -5,7 +5,8 @@ import org.newdawn.spaceinvaders.Sprite;
 import org.newdawn.spaceinvaders.entity.BossSkill.GuidedBossShotEntity;
 import org.newdawn.spaceinvaders.entity.playerSkill.LaserEntity;
 
-public class HardPassingAlienEntity extends Entity {
+public class HardPassingAlienEntity extends Entity implements Damageable {
+
     private final Game game;
     private int health = 150;
 
