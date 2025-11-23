@@ -66,11 +66,8 @@ public class MidBossEntity extends Entity {
                 break;
 
             case EXITING:
-                if (origin == Origin.LEFT && x + sprite.getWidth() < 0) {
-                    game.removeEntity(this);
-                }
-                if (origin == Origin.RIGHT && x > game.getWidth()) {
-                    game.removeEntity(this);
+                if (x < -100 || x > 900) {
+                    game.getGamePlay().removeEntity(this);
                 }
                 break;
         }
@@ -97,11 +94,36 @@ public class MidBossEntity extends Entity {
         }
     }
 
-    // 플레이어 찾기 메서드 추가
-    private ShipEntity findPlayer() {
-        for (Object entity : game.getEntities()) {
+    private void fireSpiralShot() {
+        double speed = 200;
+        double shotDx = Math.cos(spiralAngle) * speed;
+        double shotDy = Math.sin(spiralAngle) * speed;
+        game.getGamePlay().addEntity(new GuidedBossShotEntity(game, "sprites/GuidedShot2.gif", (int)(x + sprite.getWidth()/2), (int)(y + sprite.getHeight()/2), shotDx, shotDy));
+        spiralAngle += Math.PI / 6;
+    }
+
+    private void fireGuidedFanShot() {
+        Entity player = null;
+        for (Object entity : game.getGamePlay().getEntities()) {
             if (entity instanceof ShipEntity) {
-                return (ShipEntity) entity;
+                player = (Entity) entity;
+                break;
+            }
+        }
+
+        if (player != null) {
+            double targetDx = player.getX() - this.x;
+            double targetDy = player.getY() - this.y;
+            double centerAngle = Math.atan2(targetDy, targetDx);
+            double speed = 300;
+            double spreadAngle = Math.PI / 18; // 10 degrees spread between each shot
+
+            // Create 5 shots in a fan
+            for (int i = -2; i <= 2; i++) {
+                double angle = centerAngle + (i * spreadAngle);
+                double shotDx = Math.cos(angle) * speed;
+                double shotDy = Math.sin(angle) * speed;
+                game.getGamePlay().addEntity(new GuidedBossShotEntity(game, "sprites/GuidedShot3.gif", (int)(x + sprite.getWidth()/2), (int)(y + sprite.getHeight()/2), shotDx, shotDy));
             }
         }
         return null;
@@ -110,8 +132,8 @@ public class MidBossEntity extends Entity {
     public void takeDamage(int damage) {
         health -= damage;
         if (health <= 0) {
-            game.removeEntity(this);
-            game.addScore(3000);
+            game.getGamePlay().removeEntity(this);
+            game.getGamePlay().addScore(5000);
         }
     }
 
@@ -119,7 +141,7 @@ public class MidBossEntity extends Entity {
     public void collidedWith(Entity other) {
         if (other instanceof ShotEntity) {
             takeDamage(30);
-            game.removeEntity(other);
+            game.getGamePlay().removeEntity(other);
         }
     }
 }

@@ -15,6 +15,17 @@ import javax.swing.JPanel;
 
 import javax.sound.sampled.Clip;
 
+// 리팩토링을 위한 Import
+import org.newdawn.spaceinvaders.command.implement.BombCommand;
+import org.newdawn.spaceinvaders.command.implement.FireCommand;
+import org.newdawn.spaceinvaders.command.implement.LaserCommand;
+import org.newdawn.spaceinvaders.command.implement.MoveDownCommand;
+import org.newdawn.spaceinvaders.command.implement.MoveLeftCommand;
+import org.newdawn.spaceinvaders.command.implement.MoveRightCommand;
+import org.newdawn.spaceinvaders.command.implement.MoveUpCommand;
+import org.newdawn.spaceinvaders.command.implement.ShiftCommand;
+import org.newdawn.spaceinvaders.input.InputMapper;
+
 import org.newdawn.spaceinvaders.entity.Entity;
 import org.newdawn.spaceinvaders.entity.boss.BossEntity;
 import org.newdawn.spaceinvaders.entity.boss.BossCallbacks;
@@ -27,533 +38,418 @@ import org.newdawn.spaceinvaders.utility.ScoreManager;
 import org.newdawn.spaceinvaders.utility.SoundManager;
 import org.newdawn.spaceinvaders.utility.SpriteStore;
 
-/**
- * The main hook of our game. This class with both act as a manager
- * for the display and central mediator for the game logic.
- * 
- * Display management will consist of a loop that cycles round all
- * entities in the game asking them to move and then drawing them
- * in the appropriate place. With the help of an inner class it
- * will also allow the player to control the main ship.
- * 
- * As a mediator it will be informed when entities within our game
- * detect events (e.g. alient killed, played died) and will take
- * appropriate game actions.
- * 
- * @author Kevin Glass
- */
-public class Game extends Canvas implements BossCallbacks {
-	/** 게임 상태. 현재 Game class는 화면만 보여줄 뿐, GameState를 통해 화면의 구성을 변경시킵니다. */
-	private enum GameState {
-		MAIN_MENU, DIFFICULTY_MENU, GAME_PLAY, NICKNAME_INPUT, SCORE, OPTION, EXIT
-	}
+public class Game extends Canvas {
+    // (추가) Serializable 경고 해결을 위한 serialVersionUID
+    private static final long serialVersionUID = 1L;
 
-	/** The stragey that allows us to use accelerate page flipping */
-	private BufferStrategy strategy;
-	/** True if the game is currently "running", i.e. the game loop is looping */
-	private boolean gameRunning = true;
-	/** Ture if the up cursor key is currently pressed */
-	private boolean upPressed = false;
-	/** Ture if the down cursor key is currently pressed */
-	private boolean downPressed = false;
-	/** True if the left cursor key is currently pressed */
-	private boolean leftPressed = false;
-	/** True if the right cursor key is currently pressed */
-	private boolean rightPressed = false;
-	/** True if the space cursor key is currently pressed */
-	private boolean spacePressed = false;
-	/** True if the shift cursor key is currently pressed */
-	private boolean shiftPressed = false;
-	/** True if the Z cursor key is currently pressed */
-	private boolean zPressed = false;
-	private boolean xPressed = false;
-    private boolean cPressed = false;
-	/** The last time at which we recorded the frame rate */
-	private long lastFpsTime;
-	/** The current number of frames recorded */
-	private int fps;
-	/** The normal title of the game window */
-	private String windowTitle = "Space Invaders 102";
-	/** The game window that we'll update with the frame count */
-	private JFrame container;
+    /** 게임 상태. */
+    private enum GameState {
+        MAIN_MENU, DIFFICULTY_MENU, GAME_PLAY, NICKNAME_INPUT, SCORE, OPTION, EXIT
+    }
 
-	private MainMenu mainMenu;
-	private DifficultyMenu difficultyMenu;
-	private GamePlay gamePlay;
-	private NicknameInputScreen nicknameInputScreen;
-	private ScoreScreen scoreScreen;
-	private OptionScreen optionScreen;
-	private int scoreToSave;
-	private int lastDifficulty;
+    /** The stragey that allows us to use accelerate page flipping */
+    private transient BufferStrategy strategy;
+    /** True if the game is currently "running", i.e. the game loop is looping */
+    private boolean gameRunning = true;
 
-	private Clip mainMenuSound;
-	private boolean soundLoop = false;
-	private SpriteStore spriteStore;
 
-	/** 게임 시작 시 처음으로 보여줄 화면 */
-	private GameState currentGameState = GameState.MAIN_MENU;
+    /** The last time at which we recorded the frame rate */
+    private long lastFpsTime;
+    /** The current number of frames recorded */
+    private int fps;
+    /** The normal title of the game window */
+    private String windowTitle = "Space Invaders 102";
+    /** The game window that we'll update with the frame count */
+    private transient JFrame container; // (수정) transient 추가
 
-	/**
-	 * Construct our game and set it running.
-	 */
-	public Game() {
-		// create a frame to contain our game
-		container = new JFrame("Space Invaders 102");
+    // (수정) transient 추가
+    private transient MainMenu mainMenu;
+    private transient DifficultyMenu difficultyMenu;
+    private transient GamePlay gamePlay;
+    private transient NicknameInputScreen nicknameInputScreen;
+    private transient ScoreScreen scoreScreen;
+    private transient OptionScreen optionScreen;
+    private int scoreToSave;
+    private int lastDifficulty;
 
-		// get hold the content of the frame and set up the resolution of the game
-		JPanel panel = (JPanel) container.getContentPane();
-		panel.setPreferredSize(new Dimension(800, 600));
-		panel.setLayout(null);
+    private transient Clip mainMenuSound; // (수정) transient 추가
+    private boolean soundLoop = false;
+    private transient SpriteStore spriteStore; // (수정) transient 추가
 
-		// setup our canvas size and put it into the content of the frame
-		setBounds(0, 0, 800, 600);
-		panel.add(this);
+    /** 게임 시작 시 처음으로 보여줄 화면 */
+    private GameState currentGameState = GameState.MAIN_MENU;
 
-		// Tell AWT not to bother repainting our canvas since we're
-		// going to do that our self in accelerated mode
-		setIgnoreRepaint(true);
+    // --- (추가) InputMapper 필드 (모두 transient) ---
+    private transient InputMapper currentInputMapper;
+    private transient InputMapper mainMenuMapper;
+    private transient InputMapper difficultyMenuMapper;
+    private transient InputMapper gamePlayMapper;
+    private transient InputMapper nicknameInputMapper;
+    private transient InputMapper scoreScreenMapper;
+    private transient InputMapper optionScreenMapper;
+    // --- (추가 끝) ---
 
-		// finally make the window visible
-		container.pack();
-		container.setResizable(false);
-		container.setVisible(true);
+    /**
+     * Construct our game and set it running.
+     */
+    public Game() {
+        // create a frame to contain our game
+        container = new JFrame("Space Invaders 102");
 
-		// add a listener to respond to the user closing the window. If they
-		// do we'd like to exit the game
-		container.addWindowListener(new WindowAdapter() {
-			public void windowClosing(WindowEvent e) {
-				System.exit(0);
-			}
-		});
+        // get hold the content of the frame and set up the resolution of the game
+        JPanel panel = (JPanel) container.getContentPane();
+        panel.setPreferredSize(new Dimension(800, 600));
+        panel.setLayout(null);
 
-		// add a key input system (defined below) to our canvas
-		// so we can respond to key pressed
-		addKeyListener(new KeyInputHandler());
+        // setup our canvas size and put it into the content of the frame
+        setBounds(0, 0, 800, 600);
+        panel.add(this);
 
-		// request the focus so key events come to us
-		requestFocus();
+        // Tell AWT not to bother repainting our canvas since we're
+        // going to do that our self in accelerated mode
+        setIgnoreRepaint(true);
 
-		// create the buffering strategy which will allow AWT
-		// to manage our accelerated graphics
-		createBufferStrategy(2);
-		strategy = getBufferStrategy();
+        // finally make the window visible
+        container.pack();
+        container.setResizable(false);
+        container.setVisible(true);
 
-		mainMenu = new MainMenu();
-		difficultyMenu = new DifficultyMenu();
-		scoreScreen = new ScoreScreen();
-		optionScreen = new OptionScreen();
+        // add a listener to respond to the user closing the window. If they
+        // do we'd like to exit the game
+        container.addWindowListener(new WindowAdapter() {
+            public void windowClosing(WindowEvent e) {
+                System.exit(0);
+            }
+        });
 
-		mainMenuSound = SoundManager.get().getMusic("sounds/mainMenuSound.wav");
-		spriteStore = spriteStore.get();
-	}
+        // (수정) KeyInputHandler 자체는 유지
+        addKeyListener(new KeyInputHandler());
 
-	public void endGame() {
-		if (gamePlay != null) {
-			this.scoreToSave = gamePlay.getScore();
-			this.lastDifficulty = gamePlay.getDifficulty();
+        // request the focus so key events come to us
+        requestFocus();
 
-			nicknameInputScreen = new NicknameInputScreen();
-			currentGameState = GameState.NICKNAME_INPUT;
-			gamePlay = null;
-		}
-	}
+        // create the buffering strategy which will allow AWT
+        // to manage our accelerated graphics
+        createBufferStrategy(2);
+        strategy = getBufferStrategy();
 
-	public void returnToMainMenu() {
-		currentGameState = GameState.MAIN_MENU;
-		gamePlay = null;
-	}
+        // UI 객체 및 유틸리티 초기화
+        mainMenu = new MainMenu();
+        difficultyMenu = new DifficultyMenu();
+        scoreScreen = new ScoreScreen();
+        optionScreen = new OptionScreen();
+        nicknameInputScreen = new NicknameInputScreen(); // 닉네임 화면도 미리 초기화
 
-    public void addScore(int score) {
+        mainMenuSound = SoundManager.get().getMusic("sounds/mainMenuSound.wav");
+        spriteStore = SpriteStore.get(); // (수정) SpriteStore.get() 호출
+
+        // (추가) 매퍼 초기화 및 시작 매퍼 설정
+        initializeMappers();
+        currentInputMapper = mainMenuMapper;
+    }
+
+    /**
+     * (추가) 모든 InputMapper를 초기화하고 커맨드를 매핑하는 헬퍼 메소드
+     */
+    private void initializeMappers() {
+        // 1. 메인 메뉴 매퍼
+        mainMenuMapper = new InputMapper();
+        mainMenuMapper.mapAction(KeyEvent.VK_UP, () -> mainMenu.moveUp());
+        mainMenuMapper.mapAction(KeyEvent.VK_DOWN, () -> mainMenu.moveDown());
+        mainMenuMapper.mapAction(KeyEvent.VK_ENTER, () -> selectMenuOption());
+        mainMenuMapper.mapAction(KeyEvent.VK_Z, () -> selectMenuOption());
+
+        // 2. 난이도 선택 매퍼 (람다식 사용)
+        difficultyMenuMapper = new InputMapper();
+        difficultyMenuMapper.mapAction(KeyEvent.VK_UP, () -> difficultyMenu.moveUp());
+        difficultyMenuMapper.mapAction(KeyEvent.VK_DOWN, () -> difficultyMenu.moveDown());
+        difficultyMenuMapper.mapAction(KeyEvent.VK_ENTER, () -> selectDifficultyOption());
+        difficultyMenuMapper.mapAction(KeyEvent.VK_Z, () -> selectDifficultyOption());
+
+        // 3. 점수 화면 매퍼
+        scoreScreenMapper = new InputMapper();
+        scoreScreenMapper.mapAction(KeyEvent.VK_Z, () -> returnToMainMenu());
+        scoreScreenMapper.mapAction(KeyEvent.VK_SPACE, () -> returnToMainMenu());
+
+        // 4. 옵션 화면 매퍼
+        optionScreenMapper = new InputMapper();
+        optionScreenMapper.mapAction(KeyEvent.VK_UP, () -> optionScreen.moveUp());
+        optionScreenMapper.mapAction(KeyEvent.VK_DOWN, () -> optionScreen.moveDown());
+        optionScreenMapper.mapAction(KeyEvent.VK_LEFT, () -> optionScreen.decreaseVolume());
+        optionScreenMapper.mapAction(KeyEvent.VK_RIGHT, () -> optionScreen.increaseVolume());
+        optionScreenMapper.mapAction(KeyEvent.VK_ENTER, () -> {
+            if (optionScreen.getSelection() == 2) { // "Back" 선택 시
+                returnToMainMenu();
+            }
+        });
+        optionScreenMapper.mapAction(KeyEvent.VK_Z, () -> {
+            if (optionScreen.getSelection() == 2) { // "Back" 선택 시
+                returnToMainMenu();
+            }
+        });
+
+        // 5. 닉네임 입력 매퍼
+        nicknameInputMapper = new InputMapper();
+        nicknameInputMapper.mapAction(KeyEvent.VK_UP, () -> nicknameInputScreen.moveUp());
+        nicknameInputMapper.mapAction(KeyEvent.VK_DOWN, () -> nicknameInputScreen.moveDown());
+        nicknameInputMapper.mapAction(KeyEvent.VK_LEFT, () -> nicknameInputScreen.moveLeft());
+        nicknameInputMapper.mapAction(KeyEvent.VK_RIGHT, () -> nicknameInputScreen.moveRight());
+        nicknameInputMapper.mapAction(KeyEvent.VK_Z, () -> {
+            if (nicknameInputScreen == null) return;
+            boolean isDone = nicknameInputScreen.processSelection();
+            if (isDone) {
+                String finalNickname = nicknameInputScreen.getNickname();
+                ScoreManager.addScore(finalNickname, scoreToSave, lastDifficulty);
+                returnToMainMenu(); // (상태 및 매퍼 변경)
+            }
+        });
+
+        // 6. gamePlayMapper는 startGameWithDifficulty()에서 생성됩니다.
+    }
+
+    /**
+     * (수정) 게임 종료 시 닉네임 입력 상태 및 매퍼로 변경
+     */
+    public void endGame() {
         if (gamePlay != null) {
-            gamePlay.addScore(score);
+            this.scoreToSave = gamePlay.getScore();
+            this.lastDifficulty = gamePlay.getDifficulty();
+
+            nicknameInputScreen = new NicknameInputScreen(); // 닉네임 초기화
+            currentGameState = GameState.NICKNAME_INPUT;
+            currentInputMapper = nicknameInputMapper; // (매퍼 교체)
+            gamePlay = null;
         }
     }
 
-	public void updateLogic() {
-		if (gamePlay != null)
-			gamePlay.updateLogic();
-	}
-
-	public void removeEntity(Object entity) {
-        if (gamePlay != null)
-            gamePlay.removeEntity((Entity) entity);
+    public GamePlay getGamePlay() {
+        return this.gamePlay;
     }
 
-    public void increaseLife() {
-        if (gamePlay != null) gamePlay.increaseLife();
+    /**
+     * (수정) 메인 메뉴로 복귀 시 매퍼 교체
+     */
+    public void returnToMainMenu() {
+        currentGameState = GameState.MAIN_MENU;
+        currentInputMapper = mainMenuMapper; // (매퍼 교체)
+        gamePlay = null;
     }
 
-    @Override
-    public void onBossDamaged(BossEntity boss, int damage) {
-        addScore(damage * 10); // 점수 정책은 나중에 바꿔도 됨
-    }
-
-    @Override
-    public void onBossDead(BossEntity boss) {
-        addScore(boss.getScore());  // 보스 점수
-        removeEntity(boss);
-        notifyWin();
-    }
-    public void increaseLaserCharges() {
-        if (gamePlay != null) gamePlay.increaseLaserCharges();
-    }
-    public void increaseBombCharges() {
-        if (gamePlay != null) gamePlay.increaseBombCharges();
-    }
-
-    public void addEntity(Entity entity) {
-        if (gamePlay != null) gamePlay.addEntity(entity);
-    }
-    public java.util.List getEntities() {
-        if (gamePlay != null) return gamePlay.getEntities();
-        return java.util.Collections.emptyList();
-    }
-
-
-	public void notifyDeath() {
-		if (gamePlay != null) {
-			gamePlay.loseLifeAndRespawn();
-			if (gamePlay.getLifes() <= 0) {
-				endGame();
-			}
-		}
-	}
-
-	public void notifyWin() {
-		if (gamePlay != null)
-			gamePlay.notifyWin();
-	}
-
-	public void notifyAlienKilled(Entity alien) {
-		if (gamePlay != null)
-			gamePlay.notifyAlienKilled(alien);
-	}
-
-	public void tryToFire() {
-		if (gamePlay != null)
-			gamePlay.tryToFire();
-	}
-
-	public SpriteStore getSpriteStore(){
+    public SpriteStore getSpriteStore(){
         return this.spriteStore;
     }
+    // --- (중계 메소드 끝) ---
 
-	/**
-	 * The main game loop. This loop is running during all game
-	 * play as is responsible for the following activities:
-	 * <p>
-	 * - Working out the speed of the game loop to update moves
-	 * - Moving the game entities
-	 * - Drawing the screen contents (entities, text)
-	 * - Updating game events
-	 * - Checking Input
-	 * <p>
-	 */
-	public void gameLoop() {
-		long lastLoopTime = SystemTimer.getTime();
 
-		// keep looping round til the game ends
-		while (gameRunning) {
-			// work out how long its been since the last update, this
-			// will be used to calculate how far the entities should
-			// move this loop
-			long delta = SystemTimer.getTime() - lastLoopTime;
-			lastLoopTime = SystemTimer.getTime();
+    /**
+     * (수정) GameLoop에서 handleInput 호출 제거
+     */
+    public void gameLoop() {
+        long lastLoopTime = SystemTimer.getTime();
 
-			// update the frame counter
-			lastFpsTime += delta;
-			fps++;
+        // keep looping round til the game ends
+        while (gameRunning) {
+            // work out how long its been since the last update, this
+            // will be used to calculate how far the entities should
+            // move this loop
+            long delta = SystemTimer.getTime() - lastLoopTime;
+            lastLoopTime = SystemTimer.getTime();
 
-			// update our FPS counter if a second has passed since
-			// we last recorded
-			if (lastFpsTime >= 1000) {
-				container.setTitle(windowTitle + " (FPS: " + fps + ")");
-				lastFpsTime = 0;
-				fps = 0;
-			}
+            // update the frame counter
+            lastFpsTime += delta;
+            fps++;
 
-			// Get hold of a graphics context for the accelerated
-			// surface and blank it out
-			Graphics2D g = (Graphics2D) strategy.getDrawGraphics();
-			g.setColor(Color.black);
-			g.fillRect(0, 0, 800, 600);
-
-			if (currentGameState != GameState.GAME_PLAY && currentGameState != GameState.NICKNAME_INPUT) {
-				if (!soundLoop) {
-					mainMenuSound.loop(Clip.LOOP_CONTINUOUSLY);
-					soundLoop = true;
-				}
-			} else {
-				if (soundLoop) {
-					mainMenuSound.stop();
-					soundLoop = false;
-				}
-			}
-
-			// 화면 상태 변경
-			switch (currentGameState) {
-				case MAIN_MENU:
-					mainMenu.update();
-					mainMenu.draw(g);
-					break;
-				case DIFFICULTY_MENU:
-					difficultyMenu.draw(g);
-					break;
-				case GAME_PLAY:
-					if (gamePlay != null) {
-						gamePlay.update(delta);
-					}
-					// After update, gamePlay might be null, so we check again before drawing.
-					if (gamePlay != null) {
-						gamePlay.draw(g);
-
-						if (gamePlay.isWaitingForKeyPress()) {
-							g.setColor(Color.white);
-							String msg = gamePlay.getMessage();
-							String prompt = "Press Z or Space to return to the main menu";
-							g.drawString(msg, (800 - g.getFontMetrics().stringWidth(msg)) / 2, 250);
-							g.drawString(prompt, (800 - g.getFontMetrics().stringWidth(prompt)) / 2, 300);
-						}
-
-						gamePlay.handleInput(upPressed, downPressed, leftPressed, rightPressed, spacePressed,
-								shiftPressed,
-								zPressed, xPressed, cPressed); // gamePlay에게 넘겨줄 키보드 키
-					}
-					break;
-				case NICKNAME_INPUT:
-					if (nicknameInputScreen != null) {
-						nicknameInputScreen.draw(g);
-					}
-					break;
-				case SCORE:
-					scoreScreen.draw(g);
-					break;
-				case OPTION:
-					optionScreen.draw(g);
-					break;
-			}
-
-			// finally, we've completed drawing so clear up the graphics
-			// and flip the buffer over
-			g.dispose();
-			strategy.show();
-
-			// we want each frame to take 10 milliseconds, to do this
-			// we've recorded when we started the frame. We add 10 milliseconds
-			// to this and then factor in the current time to give
-			// us our final value to wait for
-			SystemTimer.sleep(lastLoopTime + 10 - SystemTimer.getTime());
-		}
-	}
-
-	/** 메인 메뉴 선택 로직 추가 */
-	private void selectMenuOption() {
-		int selection = mainMenu.getSelection();
-		switch (selection) {
-			case 0:
-				currentGameState = GameState.DIFFICULTY_MENU;
-				break;
-			case 1:
-				currentGameState = GameState.SCORE;
-				break;
-			case 2:
-				System.out.println("option");
-				currentGameState = GameState.OPTION;
-				break;
-			case 3:
-				System.exit(0);
-				break;
-		}
-	}
-
-	/** 난이도 선택 로직 추가 */
-	private void selectDifficultyOption() {
-		int difficulty = difficultyMenu.getSelection();
-		startGameWithDifficulty(difficulty);
-	}
-
-	/** 난이도에 따른 게임 실행 로직 추가 */
-	private void startGameWithDifficulty(int difficulty) {
-		gamePlay = new GamePlay(this, difficulty);
-		gamePlay.startGame();
-		currentGameState = GameState.GAME_PLAY;
-	}
-
-	/**
-	 * A class to handle keyboard input from the user. The class
-	 * handles both dynamic input during game play, i.e. left/right
-	 * and shoot, and more static type input (i.e. press any key to
-	 * continue)
-	 * 
-	 * This has been implemented as an inner class more through
-	 * habbit then anything else. Its perfectly normal to implement
-	 * this as seperate class if slight less convienient.
-	 * 
-	 * @author Kevin Glass
-	 */
-	private class KeyInputHandler extends KeyAdapter {
-
-		/**
-		 * Notification from AWT that a key has been pressed. Note that
-		 * a key being pressed is equal to being pushed down but *NOT*
-		 * released. Thats where keyTyped() comes in.
-		 *
-		 * @param e The details of the key that was pressed
-		 */
-		public void keyPressed(KeyEvent e) {
-			switch (currentGameState) {
-				case MAIN_MENU:
-					if (e.getKeyCode() == KeyEvent.VK_UP) {
-						mainMenu.moveUp();
-					} else if (e.getKeyCode() == KeyEvent.VK_DOWN) {
-						mainMenu.moveDown();
-					} else if (e.getKeyCode() == KeyEvent.VK_ENTER || e.getKeyCode() == KeyEvent.VK_Z) {
-						selectMenuOption();
-					}
-					break;
-				case DIFFICULTY_MENU:
-					if (e.getKeyCode() == KeyEvent.VK_UP) {
-						difficultyMenu.moveUp();
-					} else if (e.getKeyCode() == KeyEvent.VK_DOWN) {
-						difficultyMenu.moveDown();
-					} else if (e.getKeyCode() == KeyEvent.VK_ENTER || e.getKeyCode() == KeyEvent.VK_Z) {
-						selectDifficultyOption();
-					}
-					break;
-				case GAME_PLAY:
-					if (gamePlay != null && gamePlay.isWaitingForKeyPress()) {
-						if (e.getKeyCode() == KeyEvent.VK_Z || e.getKeyCode() == KeyEvent.VK_SPACE) {
-							endGame();
-						}
-					} else {
-						if (e.getKeyCode() == KeyEvent.VK_UP) {
-							upPressed = true;
-						} else if (e.getKeyCode() == KeyEvent.VK_DOWN) {
-							downPressed = true;
-						} else if (e.getKeyCode() == KeyEvent.VK_LEFT) {
-							leftPressed = true;
-						} else if (e.getKeyCode() == KeyEvent.VK_RIGHT) {
-							rightPressed = true;
-						} else if (e.getKeyCode() == KeyEvent.VK_SPACE) {
-							spacePressed = true;
-						} else if (e.getKeyCode() == KeyEvent.VK_SHIFT) {
-							shiftPressed = true;
-						} else if (e.getKeyCode() == KeyEvent.VK_Z) {
-							zPressed = true;
-						} else if (e.getKeyCode() == KeyEvent.VK_X) {
-							xPressed = true;
-						} else if (e.getKeyCode() == KeyEvent.VK_C) {
-                            cPressed = true;
-                        }
-					}
-					break;
-				case NICKNAME_INPUT:
-					if (nicknameInputScreen == null)
-						break;
-					if (e.getKeyCode() == KeyEvent.VK_UP)
-						nicknameInputScreen.moveUp();
-					else if (e.getKeyCode() == KeyEvent.VK_DOWN)
-						nicknameInputScreen.moveDown();
-					else if (e.getKeyCode() == KeyEvent.VK_LEFT)
-						nicknameInputScreen.moveLeft();
-					else if (e.getKeyCode() == KeyEvent.VK_RIGHT)
-						nicknameInputScreen.moveRight();
-					else if (e.getKeyCode() == KeyEvent.VK_Z) {
-						boolean isDone = nicknameInputScreen.processSelection();
-						if (isDone) {
-							String finalNickname = nicknameInputScreen.getNickname();
-
-							ScoreManager.addScore(finalNickname, scoreToSave, lastDifficulty);
-
-							currentGameState = GameState.MAIN_MENU;
-						}
-					}
-					break;
-				case SCORE:
-					if (e.getKeyCode() == KeyEvent.VK_Z || e.getKeyCode() == KeyEvent.VK_SPACE) {
-						currentGameState = GameState.MAIN_MENU;
-					}
-					break;
-				case OPTION:
-					if (e.getKeyCode() == KeyEvent.VK_UP) {
-						optionScreen.moveUp();
-					} else if (e.getKeyCode() == KeyEvent.VK_DOWN) {
-						optionScreen.moveDown();
-					} else if (e.getKeyCode() == KeyEvent.VK_LEFT) {
-						optionScreen.decreaseVolume();
-					} else if (e.getKeyCode() == KeyEvent.VK_RIGHT) {
-						optionScreen.increaseVolume();
-					} else if (e.getKeyCode() == KeyEvent.VK_ENTER || e.getKeyCode() == KeyEvent.VK_Z) {
-						if (optionScreen.getSelection() == 2) { // Back
-							currentGameState = GameState.MAIN_MENU;
-						}
-					}
-					break;
-			}
-		}
-
-		/**
-		 * Notification from AWT that a key has been released.
-		 *
-		 * @param e The details of the key that was released
-		 */
-		public void keyReleased(KeyEvent e) {
-			if (e.getKeyCode() == KeyEvent.VK_UP) {
-				upPressed = false;
-			}
-			if (e.getKeyCode() == KeyEvent.VK_DOWN) {
-				downPressed = false;
-			}
-			if (e.getKeyCode() == KeyEvent.VK_LEFT) {
-				leftPressed = false;
-			}
-			if (e.getKeyCode() == KeyEvent.VK_RIGHT) {
-				rightPressed = false;
-			}
-			if (e.getKeyCode() == KeyEvent.VK_SPACE) {
-				spacePressed = false;
-			}
-			if (e.getKeyCode() == KeyEvent.VK_SHIFT) {
-				shiftPressed = false;
-			}
-			if (e.getKeyCode() == KeyEvent.VK_Z) {
-				zPressed = false;
-			}
-			if (e.getKeyCode() == KeyEvent.VK_X) {
-				xPressed = false;
-			}
-            if (e.getKeyCode() == KeyEvent.VK_C) {
-                cPressed = false;
+            // update our FPS counter if a second has passed since
+            // we last recorded
+            if (lastFpsTime >= 1000) {
+                container.setTitle(windowTitle + " (FPS: " + fps + ")");
+                lastFpsTime = 0;
+                fps = 0;
             }
-		}
 
-		/**
-		 * Notification from AWT that a key has been typed. Note that
-		 * typing a key means to both press and then release it.
-		 *
-		 * @param e The details of the key that was typed.
-		 */
-		public void keyTyped(KeyEvent e) {
-			// if we hit escape, then quit the game
-			if (e.getKeyChar() == 27) {
-				System.exit(0);
-			}
-		}
-	}
+            // Get hold of a graphics context for the accelerated
+            // surface and blank it out
+            Graphics2D g = (Graphics2D) strategy.getDrawGraphics();
+            g.setColor(Color.black);
+            g.fillRect(0, 0, 800, 600);
 
-	/**
-	 * The entry point into the game. We'll simply create an
-	 * instance of class which will start the display and game
-	 * loop.
-	 * 
-	 * @param argv The arguments that are passed into our game
-	 */
-	public static void main(String argv[]) {
-		Game g = new Game();
+            if (currentGameState != GameState.GAME_PLAY && currentGameState != GameState.NICKNAME_INPUT) {
+                if (!soundLoop) {
+                    mainMenuSound.loop(Clip.LOOP_CONTINUOUSLY);
+                    soundLoop = true;
+                }
+            } else {
+                if (soundLoop) {
+                    mainMenuSound.stop();
+                    soundLoop = false;
+                }
+            }
 
-		// Start the main game loop, note: this method will not
-		// return until the game has finished running. Hence we are
-		// using the actual main thread to run the game.
-		g.gameLoop();
-	}
+            // 화면 상태 변경
+            switch (currentGameState) {
+                case MAIN_MENU:
+                    mainMenu.update();
+                    mainMenu.draw(g);
+                    break;
+                case DIFFICULTY_MENU:
+                    difficultyMenu.draw(g);
+                    break;
+                case GAME_PLAY:
+                    if (gamePlay != null) {
+                        gamePlay.update(delta); // update가 내부적으로 handleInput을 호출
+                    }
+                    // After update, gamePlay might be null, so we check again before drawing.
+                    if (gamePlay != null) {
+                        gamePlay.draw(g);
+
+                        if (gamePlay.isWaitingForKeyPress()) {
+                            g.setColor(Color.white);
+                            String msg = gamePlay.getMessage();
+                            String prompt = "Press Z or Space to return to the main menu";
+                            g.drawString(msg, (800 - g.getFontMetrics().stringWidth(msg)) / 2, 250);
+                            g.drawString(prompt, (800 - g.getFontMetrics().stringWidth(prompt)) / 2, 300);
+                        }
+
+                        // (삭제) gamePlay.handleInput(...) 호출 제거
+                    }
+                    break;
+                case NICKNAME_INPUT:
+                    if (nicknameInputScreen != null) {
+                        nicknameInputScreen.draw(g);
+                    }
+                    break;
+                case SCORE:
+                    scoreScreen.draw(g);
+                    break;
+                case OPTION:
+                    optionScreen.draw(g);
+                    break;
+            }
+
+            // finally, we've completed drawing so clear up the graphics
+            // and flip the buffer over
+            g.dispose();
+            strategy.show();
+
+            // we want each frame to take 10 milliseconds, to do this
+            // we've recorded when we started the frame. We add 10 milliseconds
+            // to this and then factor in the current time to give
+            // us our final value to wait for
+            SystemTimer.sleep(lastLoopTime + 10 - SystemTimer.getTime());
+        }
+    }
+
+    /** (수정) 메인 메뉴 선택 시 매퍼 교체 */
+    public void selectMenuOption() {
+        int selection = mainMenu.getSelection();
+        switch (selection) {
+            case 0:
+                currentGameState = GameState.DIFFICULTY_MENU;
+                currentInputMapper = difficultyMenuMapper; // (매퍼 교체)
+                break;
+            case 1:
+                currentGameState = GameState.SCORE;
+                currentInputMapper = scoreScreenMapper; // (매퍼 교체)
+                break;
+            case 2:
+                System.out.println("option");
+                currentGameState = GameState.OPTION;
+                currentInputMapper = optionScreenMapper; // (매퍼 교체)
+                break;
+            case 3:
+                System.exit(0);
+                break;
+        }
+    }
+
+    /** (수정) 난이도 선택 시 매퍼 교체 */
+    private void selectDifficultyOption() {
+        int difficulty = difficultyMenu.getSelection();
+        startGameWithDifficulty(difficulty);
+    }
+
+    /** (수정) 게임 시작 시 GamePlay 매퍼 생성 및 교체 */
+    private void startGameWithDifficulty(int difficulty) {
+        gamePlay = new GamePlay(this, difficulty);
+
+        // (추가) GamePlay 매퍼 생성 및 매핑 (1번 방식 적용)
+        gamePlayMapper = new InputMapper();
+        gamePlayMapper.mapState(KeyEvent.VK_UP,
+                new MoveUpCommand(gamePlay));
+        gamePlayMapper.mapState(KeyEvent.VK_DOWN,
+                new MoveDownCommand(gamePlay));
+        gamePlayMapper.mapState(KeyEvent.VK_LEFT,
+                new MoveLeftCommand(gamePlay));
+        gamePlayMapper.mapState(KeyEvent.VK_RIGHT,
+                new MoveRightCommand(gamePlay));
+        gamePlayMapper.mapState(KeyEvent.VK_SHIFT,
+                new ShiftCommand(gamePlay));
+        gamePlayMapper.mapState(KeyEvent.VK_Z,
+                new FireCommand(gamePlay));
+        gamePlayMapper.mapState(KeyEvent.VK_X,
+                new LaserCommand(gamePlay));
+        gamePlayMapper.mapState(KeyEvent.VK_C,
+                new BombCommand(gamePlay));
+
+        gamePlay.startGame();
+        currentGameState = GameState.GAME_PLAY;
+        currentInputMapper = gamePlayMapper; // (매퍼 교체)
+    }
+
+    /**
+     * (수정) KeyInputHandler를 대폭 수정
+     */
+    private class KeyInputHandler extends KeyAdapter {
+
+        public void keyPressed(KeyEvent e) {
+            // (예외적 상황(게임 오버 메시지)을 먼저 처리
+            // 이 상태는 GAME_PLAY 상태에 속하지만 입력 방식이 다름
+            if (currentGameState == GameState.GAME_PLAY && gamePlay != null && gamePlay.isWaitingForKeyPress()) {
+                if (e.getKeyCode() == KeyEvent.VK_Z || e.getKeyCode() == KeyEvent.VK_SPACE) {
+                    endGame(); // 닉네임 입력 상태로 전환
+                    return; // 매퍼가 실행되지 않도록 즉시 반환
+                }
+            }
+
+            // 현재 활성화된 매퍼에게 키 입력을 위임
+            if (currentInputMapper != null) {
+                currentInputMapper.handleKeyPress(e.getKeyCode());
+            }
+        }
+
+        /**
+         * KeyReleased도 매퍼에게 위임
+         */
+        public void keyReleased(KeyEvent e) {
+
+            if (currentInputMapper != null) {
+                currentInputMapper.handleKeyReleased(e.getKeyCode());
+            }
+        }
+
+        /**
+         * KeyTyped는 ESC 종료 기능으로 유지
+         */
+        public void keyTyped(KeyEvent e) {
+            // if we hit escape, then quit the game
+            if (e.getKeyChar() == 27) {
+                System.exit(0);
+            }
+        }
+    }
+
+    /**
+     * The entry point into the game. We'll simply create an
+     * instance of class which will start the display and game
+     * loop.
+     * * @param argv The arguments that are passed into our game
+     */
+    public static void main(String argv[]) {
+        Game g = new Game();
+
+        // Start the main game loop, note: this method will not
+        // return until the game has finished running. Hence we are
+        // using the actual main thread to run the game.
+        g.gameLoop();
+    }
 }

@@ -79,13 +79,13 @@ public class HardPassingAlienEntity extends Entity implements Damageable {
 
         // Remove if it goes off screen
         if (x > 850 || x < -50 || y > 650 || y < -50) {
-            game.removeEntity(this);
+            game.getGamePlay().removeEntity(this);
         }
     }
 
     private void fireFanShot() {
         Entity player = null;
-        for (Object entity : game.getEntities()) {
+        for (Object entity : game.getGamePlay().getEntities()) {
             if (entity instanceof ShipEntity) {
                 player = (Entity) entity;
                 break;
@@ -99,18 +99,11 @@ public class HardPassingAlienEntity extends Entity implements Damageable {
             double speed = 250;
             double spreadAngle = Math.PI / 12; // 15 degrees spread
 
-            // Define the three angles for the fan
-            double[] angles = {
-                centerAngle - spreadAngle,
-                centerAngle,
-                centerAngle + spreadAngle
-            };
-
-            // Create a shot for each angle
-            for (double angle : angles) {
+            for (int i = -1; i <= 1; i++) {
+                double angle = centerAngle + (i * spreadAngle);
                 double shotDx = Math.cos(angle) * speed;
                 double shotDy = Math.sin(angle) * speed;
-                game.addEntity(new GuidedBossShotEntity(game, "sprites/GuidedShot1.gif", (int)(x + sprite.getWidth()/2), (int)y, shotDx, shotDy));
+                game.getGamePlay().addEntity(new GuidedBossShotEntity(game, "sprites/GuidedShot1.gif", (int)(x + sprite.getWidth()/2), (int)y, shotDx, shotDy));
             }
         }
     }
@@ -118,8 +111,8 @@ public class HardPassingAlienEntity extends Entity implements Damageable {
     public void takeDamage(int damage) {
         health -= damage;
         if (health <= 0) {
-            game.removeEntity(this);
-            game.addScore(1000);
+            game.getGamePlay().removeEntity(this);
+            game.getGamePlay().addScore(300);
         }
     }
 
@@ -127,7 +120,7 @@ public class HardPassingAlienEntity extends Entity implements Damageable {
     public void collidedWith(Entity other) {
         if (other instanceof ShotEntity) {
             takeDamage(30);
-            game.removeEntity(other);
+            game.getGamePlay().removeEntity(other);
         }
     }
 }

@@ -66,7 +66,7 @@ public class NormalMidBossEntity extends Entity {
                 handleAttackingState(currentTime);
                 break;
             case EXITING:
-                handleExitingState(currentTime);
+                if (x < -100 || x > 900) game.getGamePlay().removeEntity(this);
                 break;
         }
     }
@@ -105,91 +105,36 @@ public class NormalMidBossEntity extends Entity {
         }
     }
 
-    private void fireSpiralShots(long currentTime) {
-        if (currentTime - lastSpiralShotTime >= spiralShotInterval) {
-            lastSpiralShotTime = currentTime;
-
-            // ★ game.getShip() 대신 내부 helper 사용
-            ShipEntity player = findPlayer();
-            if (player == null) return;
-
-            double centerX = x + sprite.getWidth() / 2.0;
-            double centerY = y + sprite.getHeight() / 2.0;
-
-            double angleToPlayer = Math.atan2(player.getY() - centerY, player.getX() - centerX);
-
-            double spiralSpeed = 250;
-            double spiralAngleStep = Math.toRadians(15);
-
-            double angle1 = angleToPlayer + spiralAngle;
-            double angle2 = angleToPlayer - spiralAngle;
-
-            double shotDx1 = Math.cos(angle1) * spiralSpeed;
-            double shotDy1 = Math.sin(angle1) * spiralSpeed;
-            double shotDx2 = Math.cos(angle2) * spiralSpeed;
-            double shotDy2 = Math.sin(angle2) * spiralSpeed;
-
-            // ★ GuidedBossShotEntity 생성자에 sprite 인자 추가
-            game.addEntity(new GuidedBossShotEntity(
-                    game, "sprites/...", (int) centerX, (int) centerY, shotDx1, shotDy1));
-            game.addEntity(new GuidedBossShotEntity(
-                    game, "sprites/...", (int) centerX, (int) centerY, shotDx2, shotDy2));
-
-            spiralAngle += spiralAngleStep;
-            if (spiralAngle >= Math.PI) {
-                spiralAngle -= Math.PI;
-            }
-        }
+    private void fireSpiralShot() {
+        double speed = 200;
+        double shotDx = Math.cos(spiralAngle) * speed;
+        double shotDy = Math.sin(spiralAngle) * speed;
+        game.getGamePlay().addEntity(new GuidedBossShotEntity(game, "sprites/GuidedShot2.gif", (int)(x + sprite.getWidth()/2), (int)(y + sprite.getHeight()/2), shotDx, shotDy));
+        spiralAngle += Math.PI / 6;
     }
 
-    private void fireBurstShots(long currentTime) {
-        long timeSinceBurstStart = currentTime - lastBurstStartTime;
-
-        if (timeSinceBurstStart >= burstCycleDuration) {
-            lastBurstStartTime = currentTime;
-            shotsToFireInBurst = totalShotsInBurst;
-            lastShotInBurstTime = currentTime;
-            timeSinceBurstStart = 0;
-        }
-
-        if (shotsToFireInBurst > 0 && (currentTime - lastShotInBurstTime) >= shotInBurstInterval) {
-            lastShotInBurstTime = currentTime;
-
-            // ★ game.getShip() → findPlayer()
-            ShipEntity player = findPlayer();
-            if (player == null) return;
-
-            double centerX = x + sprite.getWidth() / 2.0;
-            double centerY = y + sprite.getHeight() / 2.0;
-
-            double dxToPlayer = player.getX() - centerX;
-            double dyToPlayer = player.getY() - centerY;
-            double distance = Math.sqrt(dxToPlayer * dxToPlayer + dyToPlayer * dyToPlayer);
-            if (distance == 0) distance = 1;
-
-            double baseSpeed = 300;
-            double baseDx = (dxToPlayer / distance) * baseSpeed;
-            double baseDy = (dyToPlayer / distance) * baseSpeed;
-
-            double spreadAngle = Math.toRadians(10);
-
-            for (int i = -1; i <= 1; i++) {
-                double angle = Math.atan2(baseDy, baseDx) + (i * spreadAngle);
-                double shotDx = Math.cos(angle) * baseSpeed;
-                double shotDy = Math.sin(angle) * baseSpeed;
-
-                // ★ 여기서도 sprite 인자 추가
-                game.addEntity(new GuidedBossShotEntity(
-                        game, "sprites/...", (int) centerX, (int) centerY, shotDx, shotDy));
+    private void fireGuidedFanShot() {
+        Entity player = null;
+        for (Object entity : game.getGamePlay().getEntities()) {
+            if (entity instanceof ShipEntity) {
+                player = (Entity) entity;
+                break;
             }
 
             shotsToFireInBurst--;
         }
-    }
-    private ShipEntity findPlayer() {
-        for (Object entity : game.getEntities()) {
-            if (entity instanceof ShipEntity) {
-                return (ShipEntity) entity;
+        if (player != null) {
+            double targetDx = player.getX() - this.x;
+            double targetDy = player.getY() - this.y;
+            double centerAngle = Math.atan2(targetDy, targetDx);
+            double speed = 300;
+            double spreadAngle = Math.PI / 18;
+
+            for (int i = -1; i <= 1; i++) { // 3 shots
+                double angle = centerAngle + (i * spreadAngle);
+                double shotDx = Math.cos(angle) * speed;
+                double shotDy = Math.sin(angle) * speed;
+                game.getGamePlay().addEntity(new GuidedBossShotEntity(game, "sprites/GuidedShot3.gif", (int)(x + sprite.getWidth()/2), (int)(y + sprite.getHeight()/2), shotDx, shotDy));
             }
         }
         return null;
@@ -198,8 +143,8 @@ public class NormalMidBossEntity extends Entity {
     public void takeDamage(int damage) {
         health -= damage;
         if (health <= 0) {
-            game.removeEntity(this);
-            game.addScore(4000);
+            game.getGamePlay().removeEntity(this);
+            game.getGamePlay().addScore(4000);
         }
     }
 
@@ -207,7 +152,7 @@ public class NormalMidBossEntity extends Entity {
     public void collidedWith(Entity other) {
         if (other instanceof ShotEntity) {
             takeDamage(30);
-            game.removeEntity(other);
+            game.getGamePlay().removeEntity(other);
         }
     }
 }

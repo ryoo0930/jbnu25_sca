@@ -66,13 +66,13 @@ public class NormalPassingAlienEntity extends Entity implements Damageable {
         }
 
         if (x > 850 || x < -50 || y > 650 || y < -50) {
-            game.removeEntity(this);
+            game.getGamePlay().removeEntity(this);
         }
     }
 
     private void fireFanShot() {
         Entity player = null;
-        for (Object entity : game.getEntities()) {
+        for (Object entity : game.getGamePlay().getEntities()) {
             if (entity instanceof ShipEntity) {
                 player = (Entity) entity;
                 break;
@@ -84,22 +84,19 @@ public class NormalPassingAlienEntity extends Entity implements Damageable {
             double targetDy = player.getY() - this.y;
             double centerAngle = Math.atan2(targetDy, targetDx);
             double speed = 250;
-            double spreadAngle = Math.PI / 12;
 
-            for (int i = -1; i <= 1; i++) { // 3 shots
-                double angle = centerAngle + i * spreadAngle;
-                double shotDx = Math.cos(angle) * speed;
-                double shotDy = Math.sin(angle) * speed;
-                game.addEntity(new GuidedBossShotEntity(game, "sprites/GuidedShot1.gif", (int)(x + sprite.getWidth()/2), (int)y, shotDx, shotDy));
-            }
+            // Fire a single shot
+            double shotDx = Math.cos(centerAngle) * speed;
+            double shotDy = Math.sin(centerAngle) * speed;
+            game.getGamePlay().addEntity(new GuidedBossShotEntity(game, "sprites/GuidedShot1.gif", (int)(x + sprite.getWidth()/2), (int)y, shotDx, shotDy));
         }
     }
 
     public void takeDamage(int damage) {
         health -= damage;
         if (health <= 0) {
-            game.removeEntity(this);
-            game.addScore(600);
+            game.getGamePlay().removeEntity(this);
+            game.getGamePlay().addScore(300);
         }
     }
 
@@ -107,7 +104,7 @@ public class NormalPassingAlienEntity extends Entity implements Damageable {
     public void collidedWith(Entity other) {
         if (other instanceof ShotEntity) {
             takeDamage(30);
-            game.removeEntity(other);
+            game.getGamePlay().removeEntity(other);
         }
     }
 }

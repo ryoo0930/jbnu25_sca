@@ -66,12 +66,7 @@ public class EasyMidBossEntity extends Entity {
                 break;
 
             case EXITING:
-                if (origin == Origin.LEFT && x + sprite.getWidth() < 0) {
-                    game.removeEntity(this);
-                }
-                if (origin == Origin.RIGHT && x > game.getWidth()) {
-                    game.removeEntity(this);
-                }
+                if (x < -100 || x > 900) game.getGamePlay().removeEntity(this);
                 break;
         }
     }
@@ -88,36 +83,47 @@ public class EasyMidBossEntity extends Entity {
             double distance = Math.sqrt(dxToPlayer * dxToPlayer + dyToPlayer * dyToPlayer);
             if (distance == 0) distance = 1;
 
-            double speed = 180;
-            double vx = (dxToPlayer / distance) * speed;
-            double vy = (dyToPlayer / distance) * speed;
-
-            game.addEntity(new ShotEntity(game, (int)x + sprite.getWidth()/2, (int)y + sprite.getHeight()/2, vx, vy));
-        }
+    private void fireSpiralShot() {
+        double speed = 200;
+        double shotDx = Math.cos(spiralAngle) * speed;
+        double shotDy = Math.sin(spiralAngle) * speed;
+        game.getGamePlay().addEntity(new GuidedBossShotEntity(game, "sprites/GuidedShot2.gif", (int)(x + sprite.getWidth()/2), (int)(y + sprite.getHeight()/2), shotDx, shotDy));
+        spiralAngle += Math.PI / 6;
     }
 
-    private ShipEntity findPlayer() {
-        for (Object entity : game.getEntities()) {
+    private void fireGuidedFanShot() {
+        Entity player = null;
+        for (Object entity : game.getGamePlay().getEntities()) {
             if (entity instanceof ShipEntity) {
                 return (ShipEntity) entity;
             }
         }
-        return null;
+        if (player != null) {
+            double targetDx = player.getX() - this.x;
+            double targetDy = player.getY() - this.y;
+            double centerAngle = Math.atan2(targetDy, targetDx);
+            double speed = 300;
+
+            // Fire a single shot
+            double shotDx = Math.cos(centerAngle) * speed;
+            double shotDy = Math.sin(centerAngle) * speed;
+            game.getGamePlay().addEntity(new GuidedBossShotEntity(game, "sprites/GuidedShot3.gif", (int)(x + sprite.getWidth()/2), (int)(y + sprite.getHeight()/2), shotDx, shotDy));
+        }
     }
 
     public void takeDamage(int damage) {
         health -= damage;
         if (health <= 0) {
-            game.removeEntity(this);
-            game.addScore(2000);
+            game.getGamePlay().removeEntity(this);
+            game.getGamePlay().addScore(2500);
         }
     }
 
     @Override
     public void collidedWith(Entity other) {
         if (other instanceof ShotEntity) {
-            takeDamage(20);
-            game.removeEntity(other);
+            takeDamage(30);
+            game.getGamePlay().removeEntity(other);
         }
     }
 }
