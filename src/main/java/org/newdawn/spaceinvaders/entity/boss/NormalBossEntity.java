@@ -136,9 +136,9 @@ public class NormalBossEntity extends BossEntity {
         if (phase != currentPhase) {
             int dropX = (int) this.x + this.sprite.getWidth() / 2;
             int dropY = (int) this.y + this.sprite.getHeight() / 2;
-            game.addEntity(new ItemEntity(game, "sprites/H.gif", dropX - 30, dropY, ItemEntity.ItemType.HEALTH));
-            game.addEntity(new ItemEntity(game, "sprites/L.gif", dropX, dropY, ItemEntity.ItemType.LASER));
-            game.addEntity(new ItemEntity(game, "sprites/B.gif", dropX + 30, dropY, ItemEntity.ItemType.BOMB));
+            game.getGamePlay().addEntity(new ItemEntity(game, "sprites/H.gif", dropX - 30, dropY, ItemEntity.ItemType.HEALTH));
+            game.getGamePlay().addEntity(new ItemEntity(game, "sprites/L.gif", dropX, dropY, ItemEntity.ItemType.LASER));
+            game.getGamePlay().addEntity(new ItemEntity(game, "sprites/B.gif", dropX + 30, dropY, ItemEntity.ItemType.BOMB));
             phase1AttackStep = 0;
             attackCounter = 0;
             lastAttackTime = currentTime;
@@ -153,7 +153,7 @@ public class NormalBossEntity extends BossEntity {
             phase1AttackStep = 1;
             attackCounter = 4; // 4 bursts
             Entity player = null;
-            for (Object entity : game.getEntities()) {
+            for (Object entity : game.getGamePlay().getEntities()) {
                 if (entity instanceof ShipEntity) {
                     player = (Entity) entity;
                     break;
@@ -199,7 +199,7 @@ public class NormalBossEntity extends BossEntity {
     private void phase2LaserAttack(long currentTime) {
         if (phase2AttackStep == 0) {
             Entity player = null;
-            for (Object entity : game.getEntities()) {
+            for (Object entity : game.getGamePlay().getEntities()) {
                 if (entity instanceof ShipEntity) {
                     player = (Entity) entity;
                     break;
@@ -207,7 +207,7 @@ public class NormalBossEntity extends BossEntity {
             }
             if (player != null) {
                 this.phase3BurstAngle = Math.atan2(player.getY() - this.y, player.getX() - this.x);
-                game.addEntity(new LaserWarningLineEntity(game, this, this.phase3BurstAngle, 1200)); // Slightly longer warning
+                game.getGamePlay().addEntity(new LaserWarningLineEntity(game, this, this.phase3BurstAngle, 1200)); // Slightly longer warning
                 warningStartTime = currentTime;
                 phase2AttackStep = 1;
             }
@@ -219,7 +219,7 @@ public class NormalBossEntity extends BossEntity {
         }
         if (phase2AttackStep == 2 && attackCounter > 0 && currentTime - lastSubAttackTime > 15) {
             lastSubAttackTime = currentTime;
-            game.addEntity(new BossLaserEntity(game, this, "sprites/BossLaser2.gif", 2000, 100, 1, this.phase3BurstAngle));
+            game.getGamePlay().addEntity(new BossLaserEntity(game, this, "sprites/BossLaser2.gif", 2000, 100, 1, this.phase3BurstAngle));
             attackCounter--;
             if (attackCounter == 0) phase2AttackStep = 3;
         }
@@ -248,7 +248,7 @@ public class NormalBossEntity extends BossEntity {
         if (currentTime - p3_lastAimedTime > p3_aimedCooldown) {
             p3_lastAimedTime = currentTime;
             Entity player = null;
-            for (Object entity : game.getEntities()) {
+            for (Object entity : game.getGamePlay().getEntities()) {
                 if (entity instanceof ShipEntity) {
                     player = (Entity) entity;
                     break;
@@ -266,7 +266,7 @@ public class NormalBossEntity extends BossEntity {
         int fireY = (int) (y + this.sprite.getHeight() / 2);
         double dx = Math.cos(angle) * speed;
         double dy = Math.sin(angle) * speed;
-        game.addEntity(new GuidedBossShotEntity(game, sprite, fireX, fireY, dx, dy));
+        game.getGamePlay().addEntity(new GuidedBossShotEntity(game, sprite, fireX, fireY, dx, dy));
     }
 
     private void fireCircular(double angleOffset, int bulletCount, double speed, String sprite) {
@@ -285,10 +285,10 @@ public class NormalBossEntity extends BossEntity {
 
     public void takeDamage(int damage) {
         health -= damage;
-        game.addScore(damage * 10);
+        game.getGamePlay().addScore(damage * 10);
         if (health <= 0) {
-            game.removeEntity(this);
-            game.notifyWin();
+            game.getGamePlay().removeEntity(this);
+            game.getGamePlay().notifyWin();
         }
     }
 
@@ -303,7 +303,7 @@ public class NormalBossEntity extends BossEntity {
     public void collidedWith(Entity other) {
         if (other instanceof ShotEntity) {
             takeDamage(30);
-            game.removeEntity(other);
+            game.getGamePlay().removeEntity(other);
         } else if (other instanceof LaserEntity) {
             takeDamage(100);
         }

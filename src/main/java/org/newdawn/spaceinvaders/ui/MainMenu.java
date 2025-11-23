@@ -35,6 +35,7 @@ public class MainMenu {
             g.drawString(optionText, (800 - g.getFontMetrics().stringWidth(optionText)) / 2, 300 + current * 50);
         }
     }
+    
 
     /** 위로 이동하기 */
     public void moveUp() {
