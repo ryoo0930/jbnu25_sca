@@ -72,7 +72,7 @@ public class MidBossEntity extends Entity {
                 break;
             case EXITING:
                 if (x < -100 || x > 900) {
-                    game.removeEntity(this);
+                    game.getGamePlay().removeEntity(this);
                 }
                 break;
         }
@@ -110,13 +110,13 @@ public class MidBossEntity extends Entity {
         double speed = 200;
         double shotDx = Math.cos(spiralAngle) * speed;
         double shotDy = Math.sin(spiralAngle) * speed;
-        game.addEntity(new GuidedBossShotEntity(game, "sprites/GuidedShot2.gif", (int)(x + sprite.getWidth()/2), (int)(y + sprite.getHeight()/2), shotDx, shotDy));
+        game.getGamePlay().addEntity(new GuidedBossShotEntity(game, "sprites/GuidedShot2.gif", (int)(x + sprite.getWidth()/2), (int)(y + sprite.getHeight()/2), shotDx, shotDy));
         spiralAngle += Math.PI / 6;
     }
 
     private void fireGuidedFanShot() {
         Entity player = null;
-        for (Object entity : game.getEntities()) {
+        for (Object entity : game.getGamePlay().getEntities()) {
             if (entity instanceof ShipEntity) {
                 player = (Entity) entity;
                 break;
@@ -135,7 +135,7 @@ public class MidBossEntity extends Entity {
                 double angle = centerAngle + (i * spreadAngle);
                 double shotDx = Math.cos(angle) * speed;
                 double shotDy = Math.sin(angle) * speed;
-                game.addEntity(new GuidedBossShotEntity(game, "sprites/GuidedShot3.gif", (int)(x + sprite.getWidth()/2), (int)(y + sprite.getHeight()/2), shotDx, shotDy));
+                game.getGamePlay().addEntity(new GuidedBossShotEntity(game, "sprites/GuidedShot3.gif", (int)(x + sprite.getWidth()/2), (int)(y + sprite.getHeight()/2), shotDx, shotDy));
             }
         }
     }
@@ -143,8 +143,8 @@ public class MidBossEntity extends Entity {
     public void takeDamage(int damage) {
         health -= damage;
         if (health <= 0) {
-            game.removeEntity(this);
-            game.addScore(5000);
+            game.getGamePlay().removeEntity(this);
+            game.getGamePlay().addScore(5000);
         }
     }
 
@@ -152,7 +152,7 @@ public class MidBossEntity extends Entity {
     public void collidedWith(Entity other) {
         if (other instanceof ShotEntity) {
             takeDamage(30);
-            game.removeEntity(other);
+            game.getGamePlay().removeEntity(other);
         }
     }
 }

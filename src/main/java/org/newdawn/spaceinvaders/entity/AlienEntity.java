@@ -86,12 +86,16 @@ public class AlienEntity extends Entity implements Damageable {
 		// if we have reached the left hand side of the screen and
 		// are moving left then request a logic update 
 		if ((dx < 0) && (x < 10)) {
-			game.updateLogic();
+			if (game.getGamePlay() != null) {
+				game.getGamePlay().updateLogic();
+			}
 		}
 		// and vice vesa, if we have reached the right hand side of 
 		// the screen and are moving right, request a logic update
 		if ((dx > 0) && (x > 750)) {
-			game.updateLogic();
+			if (game.getGamePlay() != null) {
+				game.getGamePlay().updateLogic();
+			}
 		}
 		
 		// proceed with normal move
@@ -110,7 +114,9 @@ public class AlienEntity extends Entity implements Damageable {
 		// if we've reached the bottom of the screen then the player
 		// dies
 		if (y > 570) {
-			game.notifyDeath();
+			if (game.getGamePlay() != null) {
+				game.getGamePlay().notifyDeath();
+			}
 		}
 	}
 	

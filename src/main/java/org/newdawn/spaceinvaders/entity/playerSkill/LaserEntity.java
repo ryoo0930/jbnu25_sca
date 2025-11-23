@@ -4,6 +4,7 @@ import java.awt.Graphics;
 import java.awt.Rectangle;
 
 import org.newdawn.spaceinvaders.Game;
+import org.newdawn.spaceinvaders.GamePlay;
 import org.newdawn.spaceinvaders.Sprite;
 import org.newdawn.spaceinvaders.entity.AlienEntity;
 import org.newdawn.spaceinvaders.entity.Damageable;
@@ -30,9 +31,9 @@ public class LaserEntity extends Entity {
     private long damageIntervalMillis = 100L;  // 판정 0.1초에 1번만 피해 적용
     private int damagePerTick = 100;          // 틱당 피해량: 현재 100
 
-    public LaserEntity(Game game, ShipEntity ship, long durationMillis) {
+    public LaserEntity(GamePlay gamePlay, ShipEntity ship, long durationMillis) {
         super("sprites/laser.gif", (int) ship.getX(), (int) ship.getY());
-        this.game = game;
+        this.game = gamePlay.getGame();
         this.ship = ship;
         this.endTimeMillis = System.currentTimeMillis() + durationMillis;
 
@@ -59,8 +60,8 @@ public class LaserEntity extends Entity {
         this.y = ship.getY() + yOffset;
 
         // 지속시간 종료 시 제거
-        if (isExpired()) {
-            game.removeEntity(this);
+        if(isExpired()) {
+            game.getGamePlay().removeEntity(this);
             return;
         }
 
@@ -70,11 +71,19 @@ public class LaserEntity extends Entity {
             lastDamageTick = now;
 
             // 기존 충돌 판정 그대로 사용
-            for (Object o : game.getEntities()) {
+            for (Object o : game.getGamePlay().getEntities()) {
                 Entity e = (Entity) o;
 
-                if (e == this || e instanceof ShipEntity) {
-                    continue;
+                if (e instanceof AlienEntity) {
+                    if (this.collidesWith(e)) {
+                        ((AlienEntity) e).takeDamage(damagePerTick); // 에일리언 HP 기반 피해
+                        AlienEntity a = (AlienEntity) e;
+                        if (a.getHealth() <= 0) {                    // 체력 0이하가 될 경우 처치
+                            game.getGamePlay().notifyAlienKilled(a);               // 점수 상태 갱신
+                            game.getGamePlay().removeEntity(a);                    // 엔티티 제거
+                            continue;                                // 제거된 엔티티는 이후 로직에서 생략
+                        }
+                    }
                 }
 
                 if (e instanceof Damageable && this.collidesWith(e)) {

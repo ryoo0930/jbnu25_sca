@@ -4,9 +4,12 @@ import java.awt.Graphics;
 import java.awt.Rectangle;
 
 import org.newdawn.spaceinvaders.Game;
+import org.newdawn.spaceinvaders.GamePlay;
 import org.newdawn.spaceinvaders.Sprite;
 import org.newdawn.spaceinvaders.utility.SpriteStore;
 import org.newdawn.spaceinvaders.entity.ItemEntity;
+import org.newdawn.spaceinvaders.event.EventBus;
+import org.newdawn.spaceinvaders.event.PlayerHitEvent;
 
 /**
  * The entity that represents the players ship
@@ -29,9 +32,9 @@ public class ShipEntity extends Entity {
 	 * @param x The initial x location of the player's ship
 	 * @param y The initial y location of the player's ship
 	 */
-	public ShipEntity(Game game,String ref,int x,int y) {
+	public ShipEntity(GamePlay gamePlay,String ref,int x,int y) {
 		super(ref,x,y);
-		this.game = game;
+		this.game = gamePlay.getGame();
 
 		this.hitboxSprite = SpriteStore.get().getSprite("sprites/hitbox.gif");
 		this.hitbox = new Rectangle();
@@ -110,23 +113,23 @@ public class ShipEntity extends Entity {
 		// if its an alien, notify the game that the player
 		// is dead
 		if (other instanceof AlienEntity || other instanceof org.newdawn.spaceinvaders.entity.BossSkill.BossLaserEntity || other instanceof org.newdawn.spaceinvaders.entity.BossShotEntity) {
-			game.notifyDeath();
+			EventBus.getInstance().publish(new PlayerHitEvent());
 		}
 
 		if (other instanceof ItemEntity) {
 			ItemEntity item = (ItemEntity) other;
 			switch (item.getType()) {
 				case HEALTH:
-					game.increaseLife();
+					game.getGamePlay().increaseLife();
 					break;
 				case LASER:
-					game.increaseLaserCharges();
+					game.getGamePlay().increaseLaserCharges();
 					break;
 				case BOMB:
-					game.increaseBombCharges();
+					game.getGamePlay().increaseBombCharges();
 					break;
 			}
-			game.removeEntity(other);
+			game.getGamePlay().removeEntity(other);
 		}
 	}
 }
