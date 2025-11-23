@@ -7,17 +7,9 @@ import org.newdawn.spaceinvaders.Game;
 import org.newdawn.spaceinvaders.GamePlay;
 import org.newdawn.spaceinvaders.Sprite;
 import org.newdawn.spaceinvaders.entity.AlienEntity;
+import org.newdawn.spaceinvaders.entity.Damageable;
 import org.newdawn.spaceinvaders.entity.Entity;
 import org.newdawn.spaceinvaders.entity.ShipEntity;
-import org.newdawn.spaceinvaders.entity.boss.HardBossEntity;
-import org.newdawn.spaceinvaders.entity.boss.NormalBossEntity;
-import org.newdawn.spaceinvaders.entity.boss.EasyBossEntity;
-import org.newdawn.spaceinvaders.entity.EasyPassingAlienEntity;
-import org.newdawn.spaceinvaders.entity.NormalPassingAlienEntity;
-import org.newdawn.spaceinvaders.entity.HardPassingAlienEntity;
-import org.newdawn.spaceinvaders.entity.boss.EasyMidBossEntity;
-import org.newdawn.spaceinvaders.entity.boss.NormalMidBossEntity;
-import org.newdawn.spaceinvaders.entity.boss.MidBossEntity;
 import org.newdawn.spaceinvaders.utility.SpriteStore;
 
 public class LaserEntity extends Entity {
@@ -75,13 +67,12 @@ public class LaserEntity extends Entity {
 
         // 데미지는 프레임마다가 아니라 주기적으로만 적용
         long now = System.currentTimeMillis();
-        if(now -lastDamageTick >=damageIntervalMillis) {
+        if (now - lastDamageTick >= damageIntervalMillis) {
             lastDamageTick = now;
 
             // 기존 충돌 판정 그대로 사용
             for (Object o : game.getGamePlay().getEntities()) {
                 Entity e = (Entity) o;
-                if (e == this) continue;
 
                 if (e instanceof AlienEntity) {
                     if (this.collidesWith(e)) {
@@ -95,56 +86,20 @@ public class LaserEntity extends Entity {
                     }
                 }
 
-                if (e instanceof HardBossEntity) {
-                    if (this.collidesWith(e)) {
-                        ((HardBossEntity) e).takeDamage(damagePerTick); // 보스 피해
+                if (e instanceof Damageable && this.collidesWith(e)) {
+                    ((Damageable) e).takeDamage(damagePerTick);
 
-                    }
-                }
-                if (e instanceof NormalBossEntity) {
-                    if (this.collidesWith(e)) {
-                        ((NormalBossEntity) e).takeDamage(damagePerTick);
-                    }
-                }
-                if (e instanceof EasyBossEntity) {
-                    if (this.collidesWith(e)) {
-                        ((EasyBossEntity) e).takeDamage(damagePerTick);
-                    }
-                }
-                if (e instanceof EasyPassingAlienEntity) {
-                    if (this.collidesWith(e)) {
-                        ((EasyPassingAlienEntity) e).takeDamage(damagePerTick);
-                    }
-                }
-                if (e instanceof NormalPassingAlienEntity) {
-                    if (this.collidesWith(e)) {
-                        ((NormalPassingAlienEntity) e).takeDamage(damagePerTick);
-                    }
-                }
-                if (e instanceof HardPassingAlienEntity) {
-                    if (this.collidesWith(e)) {
-                        ((HardPassingAlienEntity) e).takeDamage(damagePerTick);
-                    }
-                }
-                if (e instanceof EasyMidBossEntity) {
-                    if (this.collidesWith(e)) {
-                        ((EasyMidBossEntity) e).takeDamage(damagePerTick);
-                    }
-                }
-                if (e instanceof NormalMidBossEntity) {
-                    if (this.collidesWith(e)) {
-                        ((NormalMidBossEntity) e).takeDamage(damagePerTick);
-                    }
-                }
-                if (e instanceof MidBossEntity) {
-                    if (this.collidesWith(e)) {
-                        ((MidBossEntity) e).takeDamage(damagePerTick);
+                    if (e instanceof AlienEntity) {
+                        AlienEntity a = (AlienEntity) e;
+                        if (a.getHealth() <= 0) {
+                            game.notifyAlienKilled(a);
+                            game.removeEntity(a);
+                        }
                     }
                 }
             }
         }
     }
-
     // Ship 앞에서 화면 상단까지 laser.gif를 세로로 이어 붙여서 그림
     public void draw(Graphics g) {
         if (isExpired()) return;
