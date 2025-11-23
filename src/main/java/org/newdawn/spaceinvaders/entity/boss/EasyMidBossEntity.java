@@ -4,11 +4,10 @@ import org.newdawn.spaceinvaders.Game;
 import org.newdawn.spaceinvaders.entity.Entity;
 import org.newdawn.spaceinvaders.entity.ShipEntity;
 import org.newdawn.spaceinvaders.entity.ShotEntity;
-import org.newdawn.spaceinvaders.entity.BossSkill.GuidedBossShotEntity;
 
 public class EasyMidBossEntity extends Entity {
     private final Game game;
-    private int health = 450; // 15 hits
+    private int health = 360;
 
     public enum Origin { LEFT, RIGHT }
     private final Origin origin;
@@ -16,74 +15,73 @@ public class EasyMidBossEntity extends Entity {
     private enum State { ENTERING, ATTACKING, EXITING }
     private State currentState = State.ENTERING;
 
-    private final long stayDuration = 10000;
+    private final long stayDuration = 7000;
     private long stateStartTime;
 
-    private long lastSpiralShotTime = 0;
-    private final long spiralShotInterval = 200; // Slower
-    private double spiralAngle = 0;
-
-    private long lastBurstStartTime = 0;
-    private final long shotInBurstInterval = 300;
-    private final long burstCooldown = 1000;
-    private final long burstCycleDuration = (shotInBurstInterval * 2) + burstCooldown;
-    private int shotsToFireInBurst = 0;
-    private static final int totalShotsInBurst = 3;
-    private long lastShotInBurstTime = 0;
+    private long lastShotTime = 0;
+    private final long shotInterval = 700;
 
     public EasyMidBossEntity(Game game, int x, int y, Origin origin) {
-        super("sprites/Boss2.gif", x, y);
+        super("sprites/Boss1.gif", x, y);
         this.game = game;
         this.origin = origin;
         this.stateStartTime = System.currentTimeMillis();
 
-        if (origin == Origin.LEFT) this.dx = 100;
-        else this.dx = -100;
+        if (origin == Origin.LEFT) this.dx = 80;
+        else this.dx = -80;
     }
 
     @Override
     public void move(long delta) {
+        float deltaSeconds = delta / 1000.0f;
+
+        if (currentState == State.ENTERING || currentState == State.EXITING) {
+            x += dx * deltaSeconds;
+        }
+
+        if (x <= 50) {
+            x = 50;
+            dx = 0;
+        } else if (x >= game.getWidth() - 50 - sprite.getWidth()) {
+            x = game.getWidth() - 50 - sprite.getWidth();
+            dx = 0;
+        }
+
         long currentTime = System.currentTimeMillis();
         switch (currentState) {
             case ENTERING:
-                if ((origin == Origin.LEFT && x >= 100) || (origin == Origin.RIGHT && x <= 600)) {
-                    this.dx = 0;
+                if (currentTime - stateStartTime >= 1500) {
                     currentState = State.ATTACKING;
                     stateStartTime = currentTime;
                 }
                 break;
+
             case ATTACKING:
-                if (currentTime - stateStartTime > stayDuration) {
+                if (currentTime - stateStartTime >= stayDuration) {
                     currentState = State.EXITING;
-                    if (origin == Origin.LEFT) this.dx = -100;
-                    else this.dx = 100;
+                    dx = (origin == Origin.LEFT ? -100 : 100);
+                    return;
                 }
+                fireShots(currentTime);
                 break;
+
             case EXITING:
                 if (x < -100 || x > 900) game.getGamePlay().removeEntity(this);
                 break;
         }
-        super.move(delta);
-        if (currentState == State.ATTACKING) handleAttacks(currentTime);
     }
 
-    private void handleAttacks(long currentTime) {
-        if (currentTime - lastSpiralShotTime > spiralShotInterval) {
-            lastSpiralShotTime = currentTime;
-            fireSpiralShot();
-        }
+    private void fireShots(long currentTime) {
+        if (currentTime - lastShotTime >= shotInterval) {
+            lastShotTime = currentTime;
 
-        if (shotsToFireInBurst == 0 && currentTime - lastBurstStartTime > burstCycleDuration) {
-            shotsToFireInBurst = totalShotsInBurst;
-            lastBurstStartTime = currentTime;
-        }
+            ShipEntity player = findPlayer();
+            if (player == null) return;
 
-        if (shotsToFireInBurst > 0 && currentTime - lastShotInBurstTime > shotInBurstInterval) {
-            lastShotInBurstTime = currentTime;
-            fireGuidedFanShot();
-            shotsToFireInBurst--;
-        }
-    }
+            double dxToPlayer = player.getX() - (x + sprite.getWidth() / 2.0);
+            double dyToPlayer = player.getY() - (y + sprite.getHeight() / 2.0);
+            double distance = Math.sqrt(dxToPlayer * dxToPlayer + dyToPlayer * dyToPlayer);
+            if (distance == 0) distance = 1;
 
     private void fireSpiralShot() {
         double speed = 200;
@@ -97,8 +95,7 @@ public class EasyMidBossEntity extends Entity {
         Entity player = null;
         for (Object entity : game.getGamePlay().getEntities()) {
             if (entity instanceof ShipEntity) {
-                player = (Entity) entity;
-                break;
+                return (ShipEntity) entity;
             }
         }
         if (player != null) {

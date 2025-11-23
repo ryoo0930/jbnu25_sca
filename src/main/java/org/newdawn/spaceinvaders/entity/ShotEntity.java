@@ -31,6 +31,20 @@ public class ShotEntity extends Entity {
 		dy = moveSpeed;
 	}
 
+    public ShotEntity(Game game, String sprite, int x, int y, double dx, double dy) {
+        super(sprite, x, y);
+        this.game = game;
+
+        this.dx = dx;   // Entity 쪽 필드 (이미 존재)
+        this.dy = dy;
+    }
+    public ShotEntity(Game game, int x, int y, double dx, double dy) {
+        super("sprites/shot.gif", x, y);   // 기본 스프라이트
+        this.game = game;
+        this.dx = dx;
+        this.dy = dy;
+    }
+
 	/**
 	 * Request that this shot moved based on time elapsed
 	 * * @param delta The time that has elapsed since last move

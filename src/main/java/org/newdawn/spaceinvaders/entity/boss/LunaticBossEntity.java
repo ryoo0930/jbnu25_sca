@@ -43,6 +43,7 @@ public class LunaticBossEntity extends BossEntity {
     public LunaticBossEntity(Game game, int x, int y) {
         super("sprites/BossDark.gif", x, 100);
         this.game = game;
+        setCallbacks(game);
         this.sprites = new org.newdawn.spaceinvaders.Sprite[3];
         this.sprites[0] = sprite;
         this.sprites[1] = game.getSpriteStore().getSprite("sprites/BossDark2.gif");
@@ -53,9 +54,7 @@ public class LunaticBossEntity extends BossEntity {
         setNewTargetX();
     }
 
-    @Override
     public int getHealth() { return health; }
-    @Override
     public int getMaxHealth() { return maxHealth; }
 
     private void setNewTargetX() { targetX = 100 + random.nextInt(600); }

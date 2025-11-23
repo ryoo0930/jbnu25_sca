@@ -27,6 +27,8 @@ import org.newdawn.spaceinvaders.command.implement.ShiftCommand;
 import org.newdawn.spaceinvaders.input.InputMapper;
 
 import org.newdawn.spaceinvaders.entity.Entity;
+import org.newdawn.spaceinvaders.entity.boss.BossEntity;
+import org.newdawn.spaceinvaders.entity.boss.BossCallbacks;
 import org.newdawn.spaceinvaders.ui.DifficultyMenu;
 import org.newdawn.spaceinvaders.ui.MainMenu;
 import org.newdawn.spaceinvaders.ui.NicknameInputScreen;

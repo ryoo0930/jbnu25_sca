@@ -57,6 +57,7 @@ public class EasyBossEntity extends BossEntity {
     public EasyBossEntity(Game game, int x, int y) {
         super("sprites/Boss1.gif", x, 100);
         this.game = game;
+        setCallbacks(game);
         this.sprites = new org.newdawn.spaceinvaders.Sprite[3];
         this.sprites[0] = sprite;
         this.sprites[1] = game.getSpriteStore().getSprite("sprites/Boss2.gif");

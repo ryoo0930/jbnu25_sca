@@ -43,45 +43,65 @@ public class NormalMidBossEntity extends Entity {
 
     @Override
     public void move(long delta) {
+        float deltaSeconds = delta / 1000.0f;
+
+        if (currentState == State.ENTERING || currentState == State.EXITING) {
+            x += (dx * deltaSeconds);
+        }
+
+        if (x <= 50) {
+            x = 50;
+            dx = 0;
+        } else if (x >= game.getWidth() - 50 - sprite.getWidth()) {
+            x = game.getWidth() - 50 - sprite.getWidth();
+            dx = 0;
+        }
+
         long currentTime = System.currentTimeMillis();
         switch (currentState) {
             case ENTERING:
-                if ((origin == Origin.LEFT && x >= 100) || (origin == Origin.RIGHT && x <= 600)) {
-                    this.dx = 0;
-                    currentState = State.ATTACKING;
-                    stateStartTime = currentTime;
-                }
+                handleEnteringState(currentTime);
                 break;
             case ATTACKING:
-                if (currentTime - stateStartTime > stayDuration) {
-                    currentState = State.EXITING;
-                    if (origin == Origin.LEFT) this.dx = -100;
-                    else this.dx = 100;
-                }
+                handleAttackingState(currentTime);
                 break;
             case EXITING:
                 if (x < -100 || x > 900) game.getGamePlay().removeEntity(this);
                 break;
         }
-        super.move(delta);
-        if (currentState == State.ATTACKING) handleAttacks(currentTime);
     }
 
-    private void handleAttacks(long currentTime) {
-        if (currentTime - lastSpiralShotTime > spiralShotInterval) {
+    private void handleEnteringState(long currentTime) {
+        if (currentTime - stateStartTime >= 2000) {
+            currentState = State.ATTACKING;
+            stateStartTime = currentTime;
             lastSpiralShotTime = currentTime;
-            fireSpiralShot();
-        }
-
-        if (shotsToFireInBurst == 0 && currentTime - lastBurstStartTime > burstCycleDuration) {
-            shotsToFireInBurst = totalShotsInBurst;
             lastBurstStartTime = currentTime;
+            lastShotInBurstTime = currentTime;
+            shotsToFireInBurst = totalShotsInBurst;
+            spiralAngle = 0;
+        }
+    }
+
+    private void handleAttackingState(long currentTime) {
+        long elapsedTime = currentTime - stateStartTime;
+
+        if (elapsedTime >= stayDuration) {
+            currentState = State.EXITING;
+            dx = (origin == Origin.LEFT) ? -100 : 100;
+            return;
         }
 
-        if (shotsToFireInBurst > 0 && currentTime - lastShotInBurstTime > shotInBurstInterval) {
-            lastShotInBurstTime = currentTime;
-            fireGuidedFanShot();
-            shotsToFireInBurst--;
+        fireSpiralShots(currentTime);
+        fireBurstShots(currentTime);
+    }
+
+    private void handleExitingState(long currentTime) {
+        if (origin == Origin.LEFT && x + sprite.getWidth() < 0) {
+            game.removeEntity(this);
+        }
+        if (origin == Origin.RIGHT && x > game.getWidth()) {
+            game.removeEntity(this);
         }
     }
 
@@ -100,6 +120,8 @@ public class NormalMidBossEntity extends Entity {
                 player = (Entity) entity;
                 break;
             }
+
+            shotsToFireInBurst--;
         }
         if (player != null) {
             double targetDx = player.getX() - this.x;
@@ -115,6 +137,7 @@ public class NormalMidBossEntity extends Entity {
                 game.getGamePlay().addEntity(new GuidedBossShotEntity(game, "sprites/GuidedShot3.gif", (int)(x + sprite.getWidth()/2), (int)(y + sprite.getHeight()/2), shotDx, shotDy));
             }
         }
+        return null;
     }
 
     public void takeDamage(int damage) {

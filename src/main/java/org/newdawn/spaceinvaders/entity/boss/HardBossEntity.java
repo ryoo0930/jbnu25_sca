@@ -66,6 +66,7 @@ public class HardBossEntity extends BossEntity {
     public HardBossEntity(Game game, int x, int y) {
         super("sprites/Boss1.gif", x, 100);
         this.game = game;
+        setCallbacks(game);
 
         // Load normal sprites
         this.normalSprites = new org.newdawn.spaceinvaders.Sprite[3];
@@ -89,9 +90,7 @@ public class HardBossEntity extends BossEntity {
         setNewTargetX();
     }
 
-    @Override
     public int getHealth() { return health; }
-    @Override
     public int getMaxHealth() { return maxHealth; }
 
     private void setNewTargetX() { targetX = 100 + random.nextInt(600); }
