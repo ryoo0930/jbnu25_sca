@@ -193,7 +193,7 @@ public class GamePlay implements EventListener {
     public void tryToFire() {
         if (System.currentTimeMillis() - lastFire < firingInterval) return;
         lastFire = System.currentTimeMillis();
-        ShotEntity shot = new ShotEntity(this, "sprites/shot.gif", ship.getX() + 10, ship.getY() - 30);
+        ShotEntity shot = new ShotEntity(this, "sprites/shot.gif", ship.getX() + 10, ship.getY() - 30, ship);
         entityManager.addEntity(shot);
         SoundManager.get().playSound("sounds/alienshoot2.wav");
     }

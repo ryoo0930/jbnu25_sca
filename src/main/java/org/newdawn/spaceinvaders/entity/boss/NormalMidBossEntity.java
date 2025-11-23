@@ -40,6 +40,16 @@ public class NormalMidBossEntity extends Entity {
         if (origin == Origin.LEFT) this.dx = 100;
         else this.dx = -100;
     }
+    
+    private ShipEntity findPlayer() {
+        if (game.getGamePlay() == null) return null;
+        for (Object entity : game.getGamePlay().getEntities()) {
+            if (entity instanceof ShipEntity) {
+                return (ShipEntity) entity;
+            }
+        }
+        return null;
+    }
 
     @Override
     public void move(long delta) {
@@ -66,7 +76,7 @@ public class NormalMidBossEntity extends Entity {
                 handleAttackingState(currentTime);
                 break;
             case EXITING:
-                if (x < -100 || x > 900) game.getGamePlay().removeEntity(this);
+                handleExitingState(currentTime);
                 break;
         }
     }
@@ -97,11 +107,30 @@ public class NormalMidBossEntity extends Entity {
     }
 
     private void handleExitingState(long currentTime) {
-        if (origin == Origin.LEFT && x + sprite.getWidth() < 0) {
-            game.removeEntity(this);
+        if ((origin == Origin.LEFT && x + sprite.getWidth() < 0) || (origin == Origin.RIGHT && x > game.getWidth())) {
+             if(game.getGamePlay() != null) game.getGamePlay().removeEntity(this);
         }
-        if (origin == Origin.RIGHT && x > game.getWidth()) {
-            game.removeEntity(this);
+    }
+    
+    private void fireSpiralShots(long currentTime) {
+        if (currentTime - lastSpiralShotTime > spiralShotInterval) {
+            fireSpiralShot();
+            lastSpiralShotTime = currentTime;
+        }
+    }
+
+    private void fireBurstShots(long currentTime) {
+        if (shotsToFireInBurst > 0) {
+            if (currentTime - lastShotInBurstTime > shotInBurstInterval) {
+                fireGuidedFanShot();
+                shotsToFireInBurst--;
+                lastShotInBurstTime = currentTime;
+            }
+        } else {
+            if (currentTime - lastBurstStartTime > burstCycleDuration) {
+                shotsToFireInBurst = totalShotsInBurst;
+                lastBurstStartTime = currentTime;
+            }
         }
     }
 
@@ -114,15 +143,7 @@ public class NormalMidBossEntity extends Entity {
     }
 
     private void fireGuidedFanShot() {
-        Entity player = null;
-        for (Object entity : game.getGamePlay().getEntities()) {
-            if (entity instanceof ShipEntity) {
-                player = (Entity) entity;
-                break;
-            }
-
-            shotsToFireInBurst--;
-        }
+        ShipEntity player = findPlayer();
         if (player != null) {
             double targetDx = player.getX() - this.x;
             double targetDy = player.getY() - this.y;
@@ -137,7 +158,6 @@ public class NormalMidBossEntity extends Entity {
                 game.getGamePlay().addEntity(new GuidedBossShotEntity(game, "sprites/GuidedShot3.gif", (int)(x + sprite.getWidth()/2), (int)(y + sprite.getHeight()/2), shotDx, shotDy));
             }
         }
-        return null;
     }
 
     public void takeDamage(int damage) {
@@ -151,8 +171,11 @@ public class NormalMidBossEntity extends Entity {
     @Override
     public void collidedWith(Entity other) {
         if (other instanceof ShotEntity) {
-            takeDamage(30);
-            game.getGamePlay().removeEntity(other);
+            Entity owner = ((ShotEntity) other).getOwner();
+            if (owner instanceof ShipEntity) {
+                takeDamage(30);
+                game.getGamePlay().removeEntity(other);
+            }
         }
     }
 }

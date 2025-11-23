@@ -73,27 +73,19 @@ public class LaserEntity extends Entity {
             // 기존 충돌 판정 그대로 사용
             for (Object o : game.getGamePlay().getEntities()) {
                 Entity e = (Entity) o;
+                
+                if (e == this || e == ship) continue;
 
-                if (e instanceof AlienEntity) {
-                    if (this.collidesWith(e)) {
-                        ((AlienEntity) e).takeDamage(damagePerTick); // 에일리언 HP 기반 피해
-                        AlienEntity a = (AlienEntity) e;
-                        if (a.getHealth() <= 0) {                    // 체력 0이하가 될 경우 처치
-                            game.getGamePlay().notifyAlienKilled(a);               // 점수 상태 갱신
-                            game.getGamePlay().removeEntity(a);                    // 엔티티 제거
-                            continue;                                // 제거된 엔티티는 이후 로직에서 생략
-                        }
-                    }
-                }
+                if (this.collidesWith(e)) {
+                    if (e instanceof Damageable) {
+                        ((Damageable) e).takeDamage(damagePerTick);
 
-                if (e instanceof Damageable && this.collidesWith(e)) {
-                    ((Damageable) e).takeDamage(damagePerTick);
-
-                    if (e instanceof AlienEntity) {
-                        AlienEntity a = (AlienEntity) e;
-                        if (a.getHealth() <= 0) {
-                            game.notifyAlienKilled(a);
-                            game.removeEntity(a);
+                        if (e instanceof AlienEntity) {
+                            AlienEntity a = (AlienEntity) e;
+                            if (a.getHealth() <= 0) {
+                                game.getGamePlay().removeEntity(a);
+                                game.getGamePlay().notifyAlienKilled(a);
+                            }
                         }
                     }
                 }

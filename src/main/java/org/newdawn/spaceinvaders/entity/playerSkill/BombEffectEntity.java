@@ -128,29 +128,14 @@ public class BombEffectEntity extends Entity {
 
     //데미지 처리
     private void applyHit(Entity target) {
-        //  체력0 이하 시 처치/삭제까지 수행
-        if (target instanceof AlienEntity) {
-            AlienEntity a = (AlienEntity) target;
-            try {
-                a.takeDamage(damagePerHit);
+        if (target instanceof Damageable) {
+            ((Damageable) target).takeDamage(damagePerHit);
+            if (target instanceof AlienEntity) {
+                AlienEntity a = (AlienEntity) target;
                 if (a.getHealth() <= 0) {
-                    game.getGamePlay().notifyAlienKilled(a);
                     game.getGamePlay().removeEntity(a);
+                    game.getGamePlay().notifyAlienKilled(a);
                 }
-            }catch (Throwable ignore) {}
-            return;
-        }
-        Damageable d = (Damageable) target;
-            try {
-                d.takeDamage(damagePerHit);
-        } catch (Throwable ignore) {}
-
-        // Alien인 경우에만 사망/점수 처리까지 수행
-        if (target instanceof AlienEntity) {
-            AlienEntity a = (AlienEntity) target;
-            if (a.getHealth() <= 0) {
-                game.notifyAlienKilled(a);
-                game.removeEntity(a);
             }
         }
     }

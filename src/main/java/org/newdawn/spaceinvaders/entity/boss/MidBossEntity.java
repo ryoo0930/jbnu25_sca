@@ -4,6 +4,7 @@ import org.newdawn.spaceinvaders.Game;
 import org.newdawn.spaceinvaders.entity.Entity;
 import org.newdawn.spaceinvaders.entity.ShipEntity;
 import org.newdawn.spaceinvaders.entity.ShotEntity;
+import org.newdawn.spaceinvaders.entity.BossSkill.GuidedBossShotEntity;
 
 public class MidBossEntity extends Entity {
     private final Game game;
@@ -20,6 +21,8 @@ public class MidBossEntity extends Entity {
 
     private long lastShotTime = 0;
     private final long shotInterval = 500;
+    
+    private double spiralAngle = 0;
 
     public MidBossEntity(Game game, int x, int y, Origin origin) {
         super("sprites/Boss2.gif", x, y);
@@ -29,6 +32,16 @@ public class MidBossEntity extends Entity {
 
         if (origin == Origin.LEFT) this.dx = 100;
         else this.dx = -100;
+    }
+
+    private ShipEntity findPlayer() {
+        if (game.getGamePlay() == null) return null;
+        for (Object entity : game.getGamePlay().getEntities()) {
+            if (entity instanceof ShipEntity) {
+                return (ShipEntity) entity;
+            }
+        }
+        return null;
     }
 
     @Override
@@ -73,7 +86,6 @@ public class MidBossEntity extends Entity {
         }
     }
 
-    // 발사 패턴 (원래 기능 유지)
     private void fireShots(long currentTime) {
         if (currentTime - lastShotTime >= shotInterval) {
             lastShotTime = currentTime;
@@ -90,7 +102,7 @@ public class MidBossEntity extends Entity {
             double vx = (dxToPlayer / distance) * speed;
             double vy = (dyToPlayer / distance) * speed;
 
-            game.addEntity(new ShotEntity(game, (int)x + sprite.getWidth()/2, (int)y + sprite.getHeight()/2, vx, vy));
+            game.getGamePlay().addEntity(new ShotEntity(game, (int)x + sprite.getWidth()/2, (int)y + sprite.getHeight()/2, vx, vy, this));
         }
     }
 
@@ -103,13 +115,7 @@ public class MidBossEntity extends Entity {
     }
 
     private void fireGuidedFanShot() {
-        Entity player = null;
-        for (Object entity : game.getGamePlay().getEntities()) {
-            if (entity instanceof ShipEntity) {
-                player = (Entity) entity;
-                break;
-            }
-        }
+        ShipEntity player = findPlayer();
 
         if (player != null) {
             double targetDx = player.getX() - this.x;
@@ -126,7 +132,6 @@ public class MidBossEntity extends Entity {
                 game.getGamePlay().addEntity(new GuidedBossShotEntity(game, "sprites/GuidedShot3.gif", (int)(x + sprite.getWidth()/2), (int)(y + sprite.getHeight()/2), shotDx, shotDy));
             }
         }
-        return null;
     }
 
     public void takeDamage(int damage) {
@@ -140,8 +145,11 @@ public class MidBossEntity extends Entity {
     @Override
     public void collidedWith(Entity other) {
         if (other instanceof ShotEntity) {
-            takeDamage(30);
-            game.getGamePlay().removeEntity(other);
+            Entity owner = ((ShotEntity) other).getOwner();
+            if (owner instanceof ShipEntity) {
+                takeDamage(30);
+                game.getGamePlay().removeEntity(other);
+            }
         }
     }
 }

@@ -55,7 +55,7 @@ public class NormalBossEntity extends BossEntity {
     private long p3_lastAimedTime = 0;
     private final long p3_aimedCooldown = 1500;
     private ShipEntity findPlayer() {
-        for (Object entity : game.getEntities()) {
+        for (Object entity : game.getGamePlay().getEntities()) {
             if (entity instanceof ShipEntity) {
                 return (ShipEntity) entity;
             }
