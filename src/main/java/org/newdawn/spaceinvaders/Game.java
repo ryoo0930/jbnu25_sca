@@ -38,7 +38,7 @@ import org.newdawn.spaceinvaders.utility.ScoreManager;
 import org.newdawn.spaceinvaders.utility.SoundManager;
 import org.newdawn.spaceinvaders.utility.SpriteStore;
 
-public class Game extends Canvas {
+public class Game extends Canvas implements BossCallbacks {
     // (추가) Serializable 경고 해결을 위한 serialVersionUID
     private static final long serialVersionUID = 1L;
 
@@ -394,6 +394,16 @@ public class Game extends Canvas {
         gamePlay.startGame();
         currentGameState = GameState.GAME_PLAY;
         currentInputMapper = gamePlayMapper; // (매퍼 교체)
+    }
+
+    @Override
+    public void onBossDamaged(BossEntity boss, int damage) {
+        // For now, this is not used.
+    }
+
+    @Override
+    public void onBossDead(BossEntity boss) {
+        // For now, this is not used.
     }
 
     /**
