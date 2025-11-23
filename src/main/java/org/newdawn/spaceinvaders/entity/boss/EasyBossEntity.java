@@ -57,6 +57,7 @@ public class EasyBossEntity extends BossEntity {
     public EasyBossEntity(Game game, int x, int y) {
         super("sprites/Boss1.gif", x, 100);
         this.game = game;
+        setCallbacks(game);
         this.sprites = new org.newdawn.spaceinvaders.Sprite[3];
         this.sprites[0] = sprite;
         this.sprites[1] = game.getSpriteStore().getSprite("sprites/Boss2.gif");
@@ -269,14 +270,6 @@ public class EasyBossEntity extends BossEntity {
         }
     }
 
-    public void takeDamage(int damage) {
-        health -= damage;
-        game.addScore(damage * 10);
-        if (health <= 0) {
-            game.removeEntity(this);
-            game.notifyWin();
-        }
-    }
     public boolean collidesWith(Entity other) {
         Rectangle me = new Rectangle((int) (x + sprite.getWidth() * 0.125), (int) (y + sprite.getHeight() * 0.125), (int) (sprite.getWidth() * 0.75), (int) (sprite.getHeight() * 0.75));
         Rectangle him = new Rectangle((int) other.getX(), (int) other.getY(), other.getSprite().getWidth(), other.getSprite().getHeight());

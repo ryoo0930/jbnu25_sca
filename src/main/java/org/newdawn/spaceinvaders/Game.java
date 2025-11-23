@@ -16,6 +16,8 @@ import javax.swing.JPanel;
 import javax.sound.sampled.Clip;
 
 import org.newdawn.spaceinvaders.entity.Entity;
+import org.newdawn.spaceinvaders.entity.boss.BossEntity;
+import org.newdawn.spaceinvaders.entity.boss.BossCallbacks;
 import org.newdawn.spaceinvaders.ui.DifficultyMenu;
 import org.newdawn.spaceinvaders.ui.MainMenu;
 import org.newdawn.spaceinvaders.ui.NicknameInputScreen;
@@ -40,7 +42,7 @@ import org.newdawn.spaceinvaders.utility.SpriteStore;
  * 
  * @author Kevin Glass
  */
-public class Game extends Canvas {
+public class Game extends Canvas implements BossCallbacks {
 	/** 게임 상태. 현재 Game class는 화면만 보여줄 뿐, GameState를 통해 화면의 구성을 변경시킵니다. */
 	private enum GameState {
 		MAIN_MENU, DIFFICULTY_MENU, GAME_PLAY, NICKNAME_INPUT, SCORE, OPTION, EXIT
@@ -173,12 +175,24 @@ public class Game extends Canvas {
 	}
 
 	public void removeEntity(Object entity) {
-		if (gamePlay != null)
+        if (gamePlay != null)
             gamePlay.removeEntity((Entity) entity);
-	}
+    }
 
     public void increaseLife() {
         if (gamePlay != null) gamePlay.increaseLife();
+    }
+
+    @Override
+    public void onBossDamaged(BossEntity boss, int damage) {
+        addScore(damage * 10); // 점수 정책은 나중에 바꿔도 됨
+    }
+
+    @Override
+    public void onBossDead(BossEntity boss) {
+        addScore(boss.getScore());  // 보스 점수
+        removeEntity(boss);
+        notifyWin();
     }
     public void increaseLaserCharges() {
         if (gamePlay != null) gamePlay.increaseLaserCharges();
