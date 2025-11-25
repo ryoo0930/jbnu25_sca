@@ -11,28 +11,7 @@ import org.newdawn.spaceinvaders.entity.boss.NormalMidBossEntity;
 
 import java.util.ArrayList;
 
-public class NormalStage implements Stage {
-    private boolean finalBossSpawned = false;
-
-    private enum StagePhase {
-        ALIEN_WAVES,
-        WAIT_FOR_ALIENS_TO_CLEAR,
-        PAUSE_BEFORE_MID_BOSS,
-        MID_BOSS_RIGHT,
-        PAUSE_BETWEEN_MID_BOSSES,
-        MID_BOSS_LEFT,
-        FINAL_BOSS
-    }
-    private StagePhase currentPhase;
-
-    private int wavesCompleted = 0;
-    private int pairsSpawnedInWave = 0;
-    private long lastPairSpawnTime = 0;
-    private final long pairSpawnDelay = 400;
-    private long wavePauseStartTime = 0;
-    private final long wavePauseDuration = 4000;
-    private boolean isPausedBetweenWaves = false;
-    private long phaseTransitionTime = 0;
+public class NormalStage extends AbstractStage {
 
     @Override
     public void initEntities(GamePlay gamePlay) {
