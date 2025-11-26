@@ -110,7 +110,7 @@ public class EasyStage extends AbstractStage {
                         gamePlay.getGame(),
                         150,
                         -50,
-                        true   // 왼쪽에서 등장
+                        true
                 );
                 gamePlay.addEntity(left);
 
@@ -119,7 +119,7 @@ public class EasyStage extends AbstractStage {
                         gamePlay.getGame(),
                         650,
                         -50,
-                        false  // 오른쪽에서 등장
+                        false
                 );
                 gamePlay.addEntity(right);
 

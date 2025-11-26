@@ -3,15 +3,13 @@ package org.newdawn.spaceinvaders.entity;
 import org.newdawn.spaceinvaders.Game;
 import org.newdawn.spaceinvaders.stage.Difficulty;
 
-/**
- * 난이도와 방향에 따라 적절한 PassingAlienEntity를 생성하는 팩토리.
- * Stage에서는 구체 Enemy 클래스 이름을 알지 않고
- * 이 팩토리를 통해 PassingAlien을 생성한다.
- */
+
+
+
 public final class AlienFactory {
 
     private AlienFactory() {
-        // 유틸리티 클래스이므로 인스턴스화 방지
+        // 유틸리티 클래스이므로 인스턴스화 예방
     }
 
     /**
@@ -51,8 +49,6 @@ public final class AlienFactory {
                                 : NormalPassingAlienEntity.Origin.RIGHT
                 );
             case HARD:
-            case LUNATIC:
-                // Lunatic 난이도에서도 HardPassingAlien 재사용 (필요 시 분리 가능)
                 return new HardPassingAlienEntity(
                         game,
                         x,
