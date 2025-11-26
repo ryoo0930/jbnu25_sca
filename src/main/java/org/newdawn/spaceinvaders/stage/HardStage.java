@@ -111,10 +111,7 @@ public class HardStage extends AbstractStage {
 
         if (pairsSpawnedInWave < 5) {
             if (currentTime - lastPairSpawnTime > pairSpawnDelay) {
-//                lastPairSpawnTime = currentTime;
-//                gamePlay.addEntity(new HardPassingAlienEntity(gamePlay.getGame(), 150, -50, HardPassingAlienEntity.Origin.LEFT));
-//                gamePlay.addEntity(new HardPassingAlienEntity(gamePlay.getGame(), 650, -50, HardPassingAlienEntity.Origin.RIGHT));
-//                pairsSpawnedInWave++;
+
                 lastPairSpawnTime = currentTime;
 
                 Entity left = AlienFactory.createPassingAlien(

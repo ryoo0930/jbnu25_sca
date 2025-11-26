@@ -102,11 +102,7 @@ public class EasyStage extends AbstractStage {
 
         if (pairsSpawnedInWave < 5) {
             if (currentTime - lastPairSpawnTime > pairSpawnDelay) {
-//                lastPairSpawnTime = currentTime;
-//                gamePlay.addEntity(new EasyPassingAlienEntity(gamePlay.getGame(), 150, -50, EasyPassingAlienEntity.Origin.LEFT));
-//                gamePlay.addEntity(new EasyPassingAlienEntity(gamePlay.getGame(), 650, -50, EasyPassingAlienEntity.Origin.RIGHT));
-//                pairsSpawnedInWave++;
-                // --- After (Factory 사용) ---
+
                 lastPairSpawnTime = currentTime;
 
                 Entity left = AlienFactory.createPassingAlien(

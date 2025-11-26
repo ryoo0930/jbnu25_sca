@@ -102,10 +102,7 @@ public class NormalStage extends AbstractStage {
 
         if (pairsSpawnedInWave < 5) {
             if (currentTime - lastPairSpawnTime > pairSpawnDelay) {
-//                lastPairSpawnTime = currentTime;
-//                gamePlay.addEntity(new NormalPassingAlienEntity(gamePlay.getGame(), 150, -50, NormalPassingAlienEntity.Origin.LEFT));
-//                gamePlay.addEntity(new NormalPassingAlienEntity(gamePlay.getGame(), 650, -50, NormalPassingAlienEntity.Origin.RIGHT));
-//                pairsSpawnedInWave++;
+
                 lastPairSpawnTime = currentTime;
 
                 Entity left = AlienFactory.createPassingAlien(
