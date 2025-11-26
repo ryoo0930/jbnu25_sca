@@ -1,6 +1,5 @@
 package org.newdawn.spaceinvaders.stage;
 
-import org.newdawn.spaceinvaders.Game;
 import org.newdawn.spaceinvaders.GamePlay;
 import org.newdawn.spaceinvaders.entity.Entity;
 import org.newdawn.spaceinvaders.entity.NormalPassingAlienEntity;
@@ -8,8 +7,7 @@ import org.newdawn.spaceinvaders.entity.HardPassingAlienEntity;
 import org.newdawn.spaceinvaders.entity.ShipEntity;
 import org.newdawn.spaceinvaders.entity.boss.NormalBossEntity;
 import org.newdawn.spaceinvaders.entity.boss.NormalMidBossEntity;
-
-import java.util.ArrayList;
+import org.newdawn.spaceinvaders.entity.AlienFactory;
 
 public class NormalStage extends AbstractStage {
 
@@ -104,10 +102,32 @@ public class NormalStage extends AbstractStage {
 
         if (pairsSpawnedInWave < 5) {
             if (currentTime - lastPairSpawnTime > pairSpawnDelay) {
+//                lastPairSpawnTime = currentTime;
+//                gamePlay.addEntity(new NormalPassingAlienEntity(gamePlay.getGame(), 150, -50, NormalPassingAlienEntity.Origin.LEFT));
+//                gamePlay.addEntity(new NormalPassingAlienEntity(gamePlay.getGame(), 650, -50, NormalPassingAlienEntity.Origin.RIGHT));
+//                pairsSpawnedInWave++;
                 lastPairSpawnTime = currentTime;
-                gamePlay.addEntity(new NormalPassingAlienEntity(gamePlay.getGame(), 150, -50, NormalPassingAlienEntity.Origin.LEFT));
-                gamePlay.addEntity(new NormalPassingAlienEntity(gamePlay.getGame(), 650, -50, NormalPassingAlienEntity.Origin.RIGHT));
+
+                Entity left = AlienFactory.createPassingAlien(
+                        Difficulty.NORMAL,
+                        gamePlay.getGame(),
+                        150,
+                        -50,
+                        true
+                );
+                gamePlay.addEntity(left);
+
+                Entity right = AlienFactory.createPassingAlien(
+                        Difficulty.NORMAL,
+                        gamePlay.getGame(),
+                        650,
+                        -50,
+                        false
+                );
+                gamePlay.addEntity(right);
+
                 pairsSpawnedInWave++;
+
             }
         } else {
             wavesCompleted++;

@@ -1,6 +1,5 @@
 package org.newdawn.spaceinvaders.stage;
 
-import org.newdawn.spaceinvaders.Game;
 import org.newdawn.spaceinvaders.GamePlay;
 import org.newdawn.spaceinvaders.entity.EasyPassingAlienEntity;
 import org.newdawn.spaceinvaders.entity.Entity;
@@ -8,8 +7,7 @@ import org.newdawn.spaceinvaders.entity.HardPassingAlienEntity;
 import org.newdawn.spaceinvaders.entity.ShipEntity;
 import org.newdawn.spaceinvaders.entity.boss.EasyBossEntity;
 import org.newdawn.spaceinvaders.entity.boss.EasyMidBossEntity;
-
-import java.util.ArrayList;
+import org.newdawn.spaceinvaders.entity.AlienFactory;
 
 public class EasyStage extends AbstractStage {
 
@@ -104,10 +102,33 @@ public class EasyStage extends AbstractStage {
 
         if (pairsSpawnedInWave < 5) {
             if (currentTime - lastPairSpawnTime > pairSpawnDelay) {
+//                lastPairSpawnTime = currentTime;
+//                gamePlay.addEntity(new EasyPassingAlienEntity(gamePlay.getGame(), 150, -50, EasyPassingAlienEntity.Origin.LEFT));
+//                gamePlay.addEntity(new EasyPassingAlienEntity(gamePlay.getGame(), 650, -50, EasyPassingAlienEntity.Origin.RIGHT));
+//                pairsSpawnedInWave++;
+                // --- After (Factory 사용) ---
                 lastPairSpawnTime = currentTime;
-                gamePlay.addEntity(new EasyPassingAlienEntity(gamePlay.getGame(), 150, -50, EasyPassingAlienEntity.Origin.LEFT));
-                gamePlay.addEntity(new EasyPassingAlienEntity(gamePlay.getGame(), 650, -50, EasyPassingAlienEntity.Origin.RIGHT));
+
+                Entity left = AlienFactory.createPassingAlien(
+                        Difficulty.EASY,
+                        gamePlay.getGame(),
+                        150,
+                        -50,
+                        true   // 왼쪽에서 등장
+                );
+                gamePlay.addEntity(left);
+
+                Entity right = AlienFactory.createPassingAlien(
+                        Difficulty.EASY,
+                        gamePlay.getGame(),
+                        650,
+                        -50,
+                        false  // 오른쪽에서 등장
+                );
+                gamePlay.addEntity(right);
+
                 pairsSpawnedInWave++;
+
             }
         } else {
             wavesCompleted++;
