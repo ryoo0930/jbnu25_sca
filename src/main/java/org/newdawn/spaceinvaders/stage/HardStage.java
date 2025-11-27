@@ -1,14 +1,12 @@
 package org.newdawn.spaceinvaders.stage;
 
-import org.newdawn.spaceinvaders.Game;
 import org.newdawn.spaceinvaders.GamePlay;
 import org.newdawn.spaceinvaders.entity.Entity;
 import org.newdawn.spaceinvaders.entity.HardPassingAlienEntity;
 import org.newdawn.spaceinvaders.entity.ShipEntity;
 import org.newdawn.spaceinvaders.entity.boss.HardBossEntity;
 import org.newdawn.spaceinvaders.entity.boss.MidBossEntity;
-
-import java.util.ArrayList;
+import org.newdawn.spaceinvaders.entity.AlienFactory;
 
 public class HardStage extends AbstractStage {
 
@@ -113,10 +111,29 @@ public class HardStage extends AbstractStage {
 
         if (pairsSpawnedInWave < 5) {
             if (currentTime - lastPairSpawnTime > pairSpawnDelay) {
+
                 lastPairSpawnTime = currentTime;
-                gamePlay.addEntity(new HardPassingAlienEntity(gamePlay.getGame(), 150, -50, HardPassingAlienEntity.Origin.LEFT));
-                gamePlay.addEntity(new HardPassingAlienEntity(gamePlay.getGame(), 650, -50, HardPassingAlienEntity.Origin.RIGHT));
+
+                Entity left = AlienFactory.createPassingAlien(
+                        Difficulty.HARD,
+                        gamePlay.getGame(),
+                        150,
+                        -50,
+                        true
+                );
+                gamePlay.addEntity(left);
+
+                Entity right = AlienFactory.createPassingAlien(
+                        Difficulty.HARD,
+                        gamePlay.getGame(),
+                        650,
+                        -50,
+                        false
+                );
+                gamePlay.addEntity(right);
+
                 pairsSpawnedInWave++;
+
             }
         } else {
             wavesCompleted++;

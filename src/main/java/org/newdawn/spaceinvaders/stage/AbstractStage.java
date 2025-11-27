@@ -1,6 +1,8 @@
 package org.newdawn.spaceinvaders.stage;
 
 public abstract class AbstractStage implements Stage {
+    // Stage 인터페이스의 메서드(update, initEntities, getAlienCount)는
+    // 하위 클래스에서 그대로 구현하게 두면 됨.
 
     // stage별 공통 플래그
     protected boolean finalBossSpawned = false;
@@ -27,8 +29,5 @@ public abstract class AbstractStage implements Stage {
     protected long wavePauseDuration = 4000;
     protected boolean isPausedBetweenWaves = false;
     protected long phaseTransitionTime = 0;
-
-    // Stage 인터페이스의 메서드(update, initEntities, getAlienCount)는
-    // 하위 클래스에서 그대로 구현하게 두면 됨.
 
 }
