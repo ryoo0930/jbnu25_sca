@@ -11,18 +11,25 @@ import org.newdawn.spaceinvaders.entity.playerSkill.LaserEntity;
 import java.util.Random;
 import java.awt.Rectangle;
 
+/**
+ * Lunatic 난이도 보스 엔티티
+ * 빠른 이동과 강력한 패턴을 사용한다.
+ * 해바라기 탄막, 회전 바퀴, 유도탄
+ */
 public class LunaticBossEntity extends BossEntity {
     private Game game;
     private Random random = new Random();
     private int health = 15000; // Health reduced
     private int maxHealth = 15000;
 
+    // 간단한 3프레임 애니메이션
     private org.newdawn.spaceinvaders.Sprite[] sprites;
     private int currentFrame = 0;
     private long lastFrameChange = 0;
     private long frameDuration = 150;
 
     private int phase = 1;
+    // 이동, 공격, 휴식 상태
     private enum BossState { MOVING, ATTACKING, RESTING }
     private BossState currentState = BossState.MOVING;
     private long stateChangeTime = 0;
@@ -57,11 +64,13 @@ public class LunaticBossEntity extends BossEntity {
     public int getHealth() { return health; }
     public int getMaxHealth() { return maxHealth; }
 
+    // 보스가 좌우로 이동할 목표 위치 설정
     private void setNewTargetX() { targetX = 100 + random.nextInt(600); }
 
     private long restStartTime = 0;
     private long restDuration = 2000;
 
+    // Lunatic 보스의 상태 머신(이동, 공격, 휴식)과 애니메이션을 갱신한다.
     @Override
     public void move(long delta) {
         long currentTime = System.currentTimeMillis();
@@ -79,6 +88,7 @@ public class LunaticBossEntity extends BossEntity {
                 }
                 break;
             case ATTACKING:
+                // 페이즈별 패턴 실행
                 switch (phase) {
                     case 1: phase1Attack(currentTime); break;
                     case 2: phase2Attack(currentTime); break;
@@ -97,6 +107,7 @@ public class LunaticBossEntity extends BossEntity {
                 break;
         }
 
+        // 보스 애니메이션 프레임 전환
         if (currentTime - lastFrameChange > frameDuration) {
             lastFrameChange = currentTime;
             currentFrame = (currentFrame + 1) % sprites.length;
@@ -105,7 +116,7 @@ public class LunaticBossEntity extends BossEntity {
 
         super.move(delta);
 
-        // Phase transition
+        // Phase transition (체력 기반)
         int currentPhase = phase;
         if (health > 7500) { // Phase 2 at 1/2 health
             phase = 1;
@@ -113,6 +124,7 @@ public class LunaticBossEntity extends BossEntity {
             phase = 2;
         }
 
+        // 페이즈 변경 시 체력 아이템 다수 드랍 + 잠깐 휴식
         if (phase != currentPhase) {
             for (int i = -2; i <= 2; i++) {
                 game.getGamePlay().addEntity(new ItemEntity(game, "sprites/H.gif", (int)this.x + i*30, (int)this.y, ItemEntity.ItemType.HEALTH));
@@ -130,6 +142,7 @@ public class LunaticBossEntity extends BossEntity {
         fireCircular(p1_sunflowerAngle1, 4, 160, "sprites/GuidedShot2.gif");
         fireCircular(p1_sunflowerAngle2, 4, 160, "sprites/GuidedShot4.gif");
 
+        // 화면 상단에서 랜덤 위치로 떨어지는 직선 탄
         if (currentTime - p1_lastRainTime > 250) {
             p1_lastRainTime = currentTime;
             int rainX = 50 + random.nextInt(700);
@@ -142,13 +155,18 @@ public class LunaticBossEntity extends BossEntity {
     private void phase2Attack(long currentTime) {
         p2_wheelAngle += Math.PI / 70;
         double wheelRadius = 150;
+
+        // 일정 시간마다 원형 탄막 확산
         if(currentTime - p2_lastWheelExpandTime > 4000){
             p2_lastWheelExpandTime = currentTime;
             fireCircular(p2_wheelAngle, 8, 200, "sprites/GuidedShot3.gif");
         }
+
+        // 좌/우 바퀴 위치에서 회전 탄막 발사
         fireAtAngleFromPoint(x - wheelRadius, y, p2_wheelAngle, 150, "sprites/GuidedShot2.gif");
         fireAtAngleFromPoint(x + wheelRadius, y, -p2_wheelAngle, 150, "sprites/GuidedShot4.gif");
 
+        // 플레이어를 향한 유도성 탄막
         if (currentTime - p2_lastHomingTime > 2200) {
             p2_lastHomingTime = currentTime;
             Entity player = getPlayer();
@@ -159,6 +177,7 @@ public class LunaticBossEntity extends BossEntity {
         }
     }
 
+    // 현재 필드에서 존재하는 플레이어 찾기
     private Entity getPlayer() {
         for (Object entity : game.getGamePlay().getEntities()) {
             if (entity instanceof ShipEntity) {
@@ -172,6 +191,7 @@ public class LunaticBossEntity extends BossEntity {
         fireAtAngleFromPoint(x, y, angle, speed, sprite);
     }
 
+    // 지정 좌표에서 각도/속도 기반으로 탄막을 발사
     private void fireAtAngleFromPoint(double startX, double startY, double angle, double speed, String sprite){
         int fireX = (int) (startX + this.sprite.getWidth() / 2);
         int fireY = (int) (startY + this.sprite.getHeight() / 2);
@@ -180,6 +200,7 @@ public class LunaticBossEntity extends BossEntity {
         game.getGamePlay().addEntity(new GuidedBossShotEntity(game, sprite, fireX, fireY, dx, dy));
     }
 
+    // 원형으로 다수의 탄을 발사
     private void fireCircular(double angleOffset, int bulletCount, double speed, String sprite) {
         for (int i = 0; i < bulletCount; i++) {
             double angle = 2 * Math.PI * i / bulletCount + angleOffset;
@@ -187,6 +208,7 @@ public class LunaticBossEntity extends BossEntity {
         }
     }
 
+    // 중심각도를 기준으로 부채꼴 탄막을 발사.
     private void fireFan(double centerAngle, int bulletCount, double speed, double spread, String sprite) {
         for (int i = 0; i < bulletCount; i++) {
             double angle = centerAngle + (i - (bulletCount - 1) / 2.0) * spread;
@@ -194,6 +216,7 @@ public class LunaticBossEntity extends BossEntity {
         }
     }
 
+    // Lunatic 보스 피해 처리 및 사망 시 승리 처리
     public void takeDamage(int damage) {
         health -= damage;
         game.getGamePlay().addScore(damage * 20);
@@ -203,6 +226,7 @@ public class LunaticBossEntity extends BossEntity {
         }
     }
 
+    // 약간 축소된 히트박스를 사용한 충돌 판정
     @Override
     public boolean collidesWith(Entity other) {
         Rectangle me = new Rectangle((int) (x + sprite.getWidth() * 0.125), (int) (y + sprite.getHeight() * 0.125), (int) (sprite.getWidth() * 0.75), (int) (sprite.getHeight() * 0.75));
@@ -210,6 +234,7 @@ public class LunaticBossEntity extends BossEntity {
         return me.intersects(him);
     }
 
+    // 플레이어 탄,레이저와 충돌 시 데미지 처리
     @Override
     public void collidedWith(Entity other) {
         if (other instanceof ShotEntity) {

@@ -11,9 +11,10 @@ import org.newdawn.spaceinvaders.entity.ItemEntity;
 import org.newdawn.spaceinvaders.event.EventBus;
 import org.newdawn.spaceinvaders.event.PlayerHitEvent;
 
+
 /**
- * The entity that represents the players ship
- * 
+ * 플레이어가 직접 조종하는 기체 엔티티
+ * 이동, 화면 경계 클램핑, 히트 박스 기반 충돌 판정을 담당한다.
  * @author Kevin Glass
  */
 public class ShipEntity extends Entity {
@@ -24,18 +25,19 @@ public class ShipEntity extends Entity {
 	private Sprite hitboxSprite;
 	private Rectangle hitbox;
 
-	/**
-	 * Create a new entity to represent the players ship
-	 *  
-	 * @param game The game in which the ship is being created
-	 * @param ref The reference to the sprite to show for the ship
-	 * @param x The initial x location of the player's ship
-	 * @param y The initial y location of the player's ship
-	 */
+
+    /**
+     *
+     * @param gamePlay  The GamePlay instance the ship belongs to
+     * @param ref       The reference to the sprite to show for the ship
+     * @param x         The initial x location of the player's ship
+     * @param y         The initial y location of the player's ship
+     */
 	public ShipEntity(GamePlay gamePlay,String ref,int x,int y) {
 		super(ref,x,y);
 		this.game = gamePlay.getGame();
 
+        // 기체 중앙에 위치하는 작은 히트박스 스프라이트 로드
 		this.hitboxSprite = SpriteStore.get().getSprite("sprites/hitbox.gif");
 		this.hitbox = new Rectangle();
 		updateHitboxPosition();
@@ -58,10 +60,10 @@ public class ShipEntity extends Entity {
 	 * @param delta The time that has elapsed since last move (ms)
 	 */
 	public void move(long delta) {
-		// apply the movement
+		// 기본 이동 처리
 		super.move(delta);
 
-		// check boundaries and clamp position
+		// 화면 경계 밖으로 나가지 않도록 위치를 클램핑
 		if (x < 10) {
 			x = 10;
 		}
@@ -81,14 +83,15 @@ public class ShipEntity extends Entity {
 
 	@Override
 	public void draw(Graphics g) {
-		// TODO Auto-generated method stub
+		// 기체 스프라이트를 먼저 그린뒤,
 		super.draw(g);
+        // 히트 박스 시각화
 		if(hitboxSprite != null) {
 			hitboxSprite.draw(g, hitbox.x, hitbox.y);
 		}
 	}
 
-
+    // ShipEntity는 기본 사격형이 아닌 별도의 작은 히트박스를 기준으로 충돌을 판정한다.
 	@Override
 	public boolean collidesWith(Entity other) {
 		// 다른 엔티티의 경계 사각형을 가져옵니다.
@@ -116,6 +119,7 @@ public class ShipEntity extends Entity {
 			EventBus.getInstance().publish(new PlayerHitEvent());
 		}
 
+        // 아이템과 충돌시 각 아이템 타입에 따른 효과 적용
 		if (other instanceof ItemEntity) {
 			ItemEntity item = (ItemEntity) other;
 			switch (item.getType()) {

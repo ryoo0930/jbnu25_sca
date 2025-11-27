@@ -6,23 +6,32 @@ import org.newdawn.spaceinvaders.entity.ShipEntity;
 import org.newdawn.spaceinvaders.entity.ShotEntity;
 import org.newdawn.spaceinvaders.entity.BossSkill.GuidedBossShotEntity;
 
+/**
+ * Normal 난이도의 Mid Boss 엔티티
+ * 좌/우에서 진입한 뒤 일정 시간 동안 스파이럴 탄 + 유도 부채꼴 탄을 사용
+ */
 public class NormalMidBossEntity extends Entity {
     private final Game game;
     private int health = 720; // 24 hits
 
+    // 어느 쪽에서 등장 했는지 구분
     public enum Origin { LEFT, RIGHT }
     private final Origin origin;
 
+    // 상태 머신 (진입 -> 공격 -> 퇴장)
     private enum State { ENTERING, ATTACKING, EXITING }
     private State currentState = State.ENTERING;
 
+    // 필드에 머무는 시간 (ATTACKING 상태 유지 시간)
     private final long stayDuration = 10000;
     private long stateStartTime;
 
+    // 스파이럴 패턴 관련 타이밍
     private long lastSpiralShotTime = 0;
-    private final long spiralShotInterval = 150; // Slower
+    private final long spiralShotInterval = 150; // Hard 보다 느리게 조정
     private double spiralAngle = 0;
 
+    // 유도 부채꼴 탄(버스트) 관련 타이밍
     private long lastBurstStartTime = 0;
     private final long shotInBurstInterval = 300;
     private final long burstCooldown = 1000;
@@ -37,10 +46,12 @@ public class NormalMidBossEntity extends Entity {
         this.origin = origin;
         this.stateStartTime = System.currentTimeMillis();
 
+        // 등장 방향에 따라 초기 이동 방향 설정
         if (origin == Origin.LEFT) this.dx = 100;
         else this.dx = -100;
     }
-    
+
+    // 현재 필드에서 플레이어를 검색
     private ShipEntity findPlayer() {
         if (game.getGamePlay() == null) return null;
         for (Object entity : game.getGamePlay().getEntities()) {
@@ -51,14 +62,17 @@ public class NormalMidBossEntity extends Entity {
         return null;
     }
 
+    // 상태에 따라 이동 및 패턴을 업데이트 한다.
     @Override
     public void move(long delta) {
         float deltaSeconds = delta / 1000.0f;
 
+        // 진입/ 퇴장 상태일 때만 좌우 이동
         if (currentState == State.ENTERING || currentState == State.EXITING) {
             x += (dx * deltaSeconds);
         }
 
+        // 화면 경계에서 멈추도록 제한
         if (x <= 50) {
             x = 50;
             dx = 0;
@@ -81,6 +95,7 @@ public class NormalMidBossEntity extends Entity {
         }
     }
 
+    // ENTERING 상태 처리 : 일정 시간 후 ATTACKING으로 전환 및 타이머 초기화
     private void handleEnteringState(long currentTime) {
         if (currentTime - stateStartTime >= 2000) {
             currentState = State.ATTACKING;
@@ -93,6 +108,7 @@ public class NormalMidBossEntity extends Entity {
         }
     }
 
+    // ATTACKING 상태 처리 : 스파이럴 + 버스트 패턴 실행, 일정 시간 경과시 퇴장
     private void handleAttackingState(long currentTime) {
         long elapsedTime = currentTime - stateStartTime;
 
@@ -106,12 +122,14 @@ public class NormalMidBossEntity extends Entity {
         fireBurstShots(currentTime);
     }
 
+    // EXITING 상태 처리 : 화면 밖으로 나가면 엔티티 제거
     private void handleExitingState(long currentTime) {
         if ((origin == Origin.LEFT && x + sprite.getWidth() < 0) || (origin == Origin.RIGHT && x > game.getWidth())) {
              if(game.getGamePlay() != null) game.getGamePlay().removeEntity(this);
         }
     }
-    
+
+    // 일정 간격으로 스파이럴 탄을 한 발씩 발사
     private void fireSpiralShots(long currentTime) {
         if (currentTime - lastSpiralShotTime > spiralShotInterval) {
             fireSpiralShot();
@@ -119,6 +137,7 @@ public class NormalMidBossEntity extends Entity {
         }
     }
 
+    // 버스트 (짧은 유도 부채꼴 연사) 패턴 관리
     private void fireBurstShots(long currentTime) {
         if (shotsToFireInBurst > 0) {
             if (currentTime - lastShotInBurstTime > shotInBurstInterval) {
@@ -134,6 +153,7 @@ public class NormalMidBossEntity extends Entity {
         }
     }
 
+    // 스파이렅 탄막 1발 발사
     private void fireSpiralShot() {
         double speed = 200;
         double shotDx = Math.cos(spiralAngle) * speed;
@@ -142,6 +162,7 @@ public class NormalMidBossEntity extends Entity {
         spiralAngle += Math.PI / 6;
     }
 
+    // 플레이어 방향을 기준으로 3발 부채꼴 유도탄 발사
     private void fireGuidedFanShot() {
         ShipEntity player = findPlayer();
         if (player != null) {
@@ -160,6 +181,7 @@ public class NormalMidBossEntity extends Entity {
         }
     }
 
+    // Normal Mid Boss가 피해를 받았을 때 체력을 감소시키고 체력이 0 이하가 되면 제거 및 점수를 부여
     public void takeDamage(int damage) {
         health -= damage;
         if (health <= 0) {
@@ -168,6 +190,7 @@ public class NormalMidBossEntity extends Entity {
         }
     }
 
+    // 플레이어 탄과 충돌했을 때 데미지를 적용한다.
     @Override
     public void collidedWith(Entity other) {
         if (other instanceof ShotEntity) {

@@ -5,38 +5,36 @@ import org.newdawn.spaceinvaders.Sprite;
 import org.newdawn.spaceinvaders.utility.SpriteStore;
 
 /**
- * An entity which represents one of our space invader aliens.
- * 
- * @author Kevin Glass
+ * 기본 적 엔티티
+ * 좌우로 이동하면서 화면 가장자리에 도달하면 방향을 바꾸고, 플레이어가 있는 쪽으로 조금씩 내려온다.
  */
 public class AlienEntity extends Entity implements Damageable {
-	/** The speed at which the alient moves horizontally */
+	// 적의 기본 이동 속도
 	private double moveSpeed = 75;
-	/** The game in which the entity exists */
+	// 적이 속한 게임 인스턴스
 	private Game game;
-	/** The animation frames */
+    // 애니메이션에 사용되는 프레임 배열
 	private Sprite[] frames = new Sprite[4];
-	/** The time since the last frame change took place */
+	// 마지막 프레임이 변경된 이후 경과 시간
 	private long lastFrameChange;
-	/** The frame duration in milliseconds, i.e. how long any given frame of animation lasts */
+	// 한 프레임이 유지되는 시간
 	private long frameDuration = 250;
-	/** The current frame of animation being displayed */
+	// 현재 표시 중인 프레임 인덱스
 	private int frameNumber;
 
-	/** 적 체력 추가 */
+	// 적 체력
 	private int health;
-	
-	/**
-	 * Create a new alien entity
-	 * 
-	 * @param game The game in which this entity is being created
-	 * @param x The intial x location of this alien
-	 * @param y The intial y location of this alient
-	 */
-	public AlienEntity(Game game,int x,int y) {
+
+    /**
+     *  새로운 ALienEntity 생성
+     * @param game  이 적이 속한 Game 인스턴스
+     * @param x     적의 초기 x 좌표
+     * @param y     적의 초기 y 좌표
+     */
+    public AlienEntity(Game game,int x,int y) {
 		super("sprites/Boss1.gif",x,y);
 		
-		// setup the animatin frames
+		// 애니메이션 프레임 설정
 		frames[0] = sprite;
 		frames[1] = SpriteStore.get().getSprite("sprites/Boss1.gif");
 		frames[2] = sprite;
@@ -47,7 +45,7 @@ public class AlienEntity extends Entity implements Damageable {
 		this.health = 100; // 체력 초기화
 	}
 
-	/** 데미지 관련 메서드 */
+	// 데미지 처리 : 체력을 감소시킴
 	public void takeDamage(int damage) {
 		this.health -= damage;
 	}
@@ -56,25 +54,14 @@ public class AlienEntity extends Entity implements Damageable {
 		return health;
 	}
 
-
-	/**
-	 * Request that this alien moved based on time elapsed
-	 * 
-	 * @param delta The time that has elapsed since last move
-	 */
-	public void move(long delta) {
-		// since the move tells us how much time has passed
-		// by we can use it to drive the animation, however
-		// its the not the prettiest solution
+    // 적의 이동 및 애니메이션을 처리
+    	public void move(long delta) {
+		// 경과 시간을 기반으로 애니메이션 프레임 변경
 		lastFrameChange += delta;
-		
-		// if we need to change the frame, update the frame number
-		// and flip over the sprite in use
+
 		if (lastFrameChange > frameDuration) {
-			// reset our frame change time counter
 			lastFrameChange = 0;
-			
-			// update the frame
+
 			frameNumber++;
 			if (frameNumber >= frames.length) {
 				frameNumber = 0;
@@ -82,37 +69,34 @@ public class AlienEntity extends Entity implements Damageable {
 			
 			sprite = frames[frameNumber];
 		}
-		
-		// if we have reached the left hand side of the screen and
-		// are moving left then request a logic update 
+
+        // 왼쪽 끝에 도달하면 GamePlay에 로직 업데이트 요청
 		if ((dx < 0) && (x < 10)) {
 			if (game.getGamePlay() != null) {
 				game.getGamePlay().updateLogic();
 			}
 		}
-		// and vice vesa, if we have reached the right hand side of 
-		// the screen and are moving right, request a logic update
+		// 오른쪽 끝에 도달하면 마찬가지로 로직 업데이트 요청
 		if ((dx > 0) && (x > 750)) {
 			if (game.getGamePlay() != null) {
 				game.getGamePlay().updateLogic();
 			}
 		}
 		
-		// proceed with normal move
+		// 기본 이동 처리
 		super.move(delta);
 	}
 	
-	/**
-	 * Update the game logic related to aliens
-	 */
+
+    // 외부에서 호출되는 Alien 전용 로직
+    // 이동 방향을 반전시키고 화면 아래로 한 칸 내려간다.
+    // 바닥에 도달하면 플레이어 사망 처리
 	public void doLogic() {
-		// swap over horizontal movement and move down the
-		// screen a bit
+		// 수평 이동 방향 반전 + 약간 아래로 이동
 		dx = -dx;
 		y += 10;
 		
-		// if we've reached the bottom of the screen then the player
-		// dies
+		// 화면 아래로 내려가면 플레이어 사망
 		if (y > 570) {
 			if (game.getGamePlay() != null) {
 				game.getGamePlay().notifyDeath();
@@ -120,12 +104,9 @@ public class AlienEntity extends Entity implements Damageable {
 		}
 	}
 	
-	/**
-	 * Notification that this alien has collided with another entity
-	 * 
-	 * @param other The other entity
-	 */
+	// 다른 엔티티와 충동했을 때 호출된다.
 	public void collidedWith(Entity other) {
+        // 플레이어 레이저 스킬과 충돌 시 체력 1 감소
 		if (other instanceof org.newdawn.spaceinvaders.entity.playerSkill.LaserEntity) {
 			takeDamage(1);
 		}

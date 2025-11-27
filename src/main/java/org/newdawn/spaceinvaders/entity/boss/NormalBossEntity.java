@@ -13,17 +13,23 @@ import java.util.Random;
 import java.awt.Rectangle;
 import org.newdawn.spaceinvaders.entity.BossSkill.BossLaserEntity;
 
+/**
+ * Normal 난이도 보스 엔티티
+ * Hard 보스보다 체력과 탄막 밀도가 약간 낮은 중간 수준 난이도
+ */
 public class NormalBossEntity extends BossEntity {
     private Game game;
     private Random random = new Random();
     private int health = 12000; // Health: 4/5 of Hard
     private int maxHealth = 12000;
 
+    // 간단한 3프레임 애니메이션
     private org.newdawn.spaceinvaders.Sprite[] sprites;
     private int currentFrame = 0;
     private long lastFrameChange = 0;
     private long frameDuration = 150;
 
+    // 페이즈 및 패턴 제어 변수
     private int phase = 1;
     private int phase1AttackStep = 0;
     private int attackCounter = 0;
@@ -32,6 +38,7 @@ public class NormalBossEntity extends BossEntity {
     private long lastSubAttackTime = 0;
     private double phase1BurstAngle;
 
+    // 이동, 공격, 휴식 상태
     private enum BossState { MOVING, ATTACKING, RESTING }
     private BossState currentState = BossState.MOVING;
     private long stateChangeTime = 0;
@@ -39,7 +46,7 @@ public class NormalBossEntity extends BossEntity {
     private long attackDuration = 4000;
     private double targetX;
 
-    // Phase 2
+    // 2페이즈
     private int phase2AttackStep = 0;
     private double phase3BurstAngle; // Corrected variable
     private long warningStartTime = 0;
@@ -47,13 +54,15 @@ public class NormalBossEntity extends BossEntity {
     private long phase2SpiralCooldown = 200;
     private int spiralAngleIndex = 0;
 
-    // Phase 3
+    // 3페이즈
     private double p3_spiralAngle1 = 0;
     private double p3_spiralAngle2 = 0;
     private long p3_lastRingTime = 0;
     private final long p3_ringCooldown = 2000;
     private long p3_lastAimedTime = 0;
     private final long p3_aimedCooldown = 1500;
+
+    // 현재 필드의 플레이어를 검색하는 유틸 메서드
     private ShipEntity findPlayer() {
         for (Object entity : game.getGamePlay().getEntities()) {
             if (entity instanceof ShipEntity) {
@@ -80,11 +89,13 @@ public class NormalBossEntity extends BossEntity {
     public int getHealth() { return health; }
     public int getMaxHealth() { return maxHealth; }
 
+    // 보스가 좌우로 이동할 목표 위치를 랜덤으로 설정
     private void setNewTargetX() { targetX = 100 + random.nextInt(600); }
 
     private long restStartTime = 0;
     private long restDuration = 3000;
 
+    // 보스의 상태, 페이즈 전환, 애니메이션을 갱싱한다.
     @Override
     public void move(long delta) {
         long currentTime = System.currentTimeMillis();
@@ -102,6 +113,7 @@ public class NormalBossEntity extends BossEntity {
                 }
                 break;
             case ATTACKING:
+                // 페이즈별 패턴 실행
                 switch (phase) {
                     case 1: phase1Attack(currentTime); break;
                     case 2:
@@ -126,6 +138,7 @@ public class NormalBossEntity extends BossEntity {
                 break;
         }
 
+        // 애니메이션 프레임 전환
         if (currentTime - lastFrameChange > frameDuration) {
             lastFrameChange = currentTime;
             currentFrame = (currentFrame + 1) % sprites.length;
@@ -134,12 +147,13 @@ public class NormalBossEntity extends BossEntity {
 
         super.move(delta);
 
+        // 체력 기반 페이즈 전환 (12000 HP 기준)
         int currentPhase = phase;
-        // Adjusted phase thresholds for 12000 HP
         if (health > 8000) phase = 1;
         else if (health > 4000) phase = 2;
         else phase = 3;
 
+        // 페이즈가 바뀌면 아이템 드랍 및 패턴 상태 초기화
         if (phase != currentPhase) {
             int dropX = (int) this.x + this.sprite.getWidth() / 2;
             int dropY = (int) this.y + this.sprite.getHeight() / 2;
@@ -155,6 +169,9 @@ public class NormalBossEntity extends BossEntity {
         }
     }
 
+    /**
+     * 페이즈1 : 조준 연발 샷 + 회전형 원형 탄막 패턴
+     */
     private void phase1Attack(long currentTime) {
         if (phase1AttackStep == 0 && currentTime - lastAttackTime > attackCooldown) {
             phase1AttackStep = 1;
@@ -193,16 +210,19 @@ public class NormalBossEntity extends BossEntity {
         }
     }
 
+    // 플레이어 방향으로 부채꼴 탄막 발사
     private void patternAimedBurst(double angle) {
         fireFan(angle, 3, 220, 0.1, "sprites/GuidedShot.gif"); // 3 shots
     }
 
+    // 회전하는 원형 탄막 패턴
     private void patternCircleShot(int shotIndex) {
         double rotationPerShot = Math.PI / 30.0;
         double angleOffset = (20 - shotIndex) * rotationPerShot;
         fireCircular(angleOffset, 22, 140, "sprites/GuidedShot.gif"); // 22 bullets
     }
 
+    // 2페이즈 : 경고선 -> 레이저 연타 패턴
     private void phase2LaserAttack(long currentTime) {
         if (phase2AttackStep == 0) {
             Entity player = null;
@@ -232,6 +252,7 @@ public class NormalBossEntity extends BossEntity {
         }
     }
 
+    // 2페이즈 : 회전하는 스파이럴 탄막 패턴
     private void phase2SpiralAttack(long currentTime) {
         if (currentTime - lastPhase2SpiralTime > phase2SpiralCooldown) {
             lastPhase2SpiralTime = currentTime;
@@ -241,6 +262,7 @@ public class NormalBossEntity extends BossEntity {
         }
     }
 
+    // 3페이즈 : 양방향 스파이럴 + 링 탄막 + 조준 샷 패턴
     private void phase3TouhouAttack(long currentTime) {
         p3_spiralAngle1 += Math.PI / 35; // Slightly slower
         p3_spiralAngle2 -= Math.PI / 35;
@@ -268,6 +290,7 @@ public class NormalBossEntity extends BossEntity {
         }
     }
 
+    // 특정 각도로 탄막 한 발 발사
     private void fireAtAngle(double angle, double speed, String sprite) {
         int fireX = (int) (x + this.sprite.getWidth() / 2);
         int fireY = (int) (y + this.sprite.getHeight() / 2);
@@ -276,6 +299,7 @@ public class NormalBossEntity extends BossEntity {
         game.getGamePlay().addEntity(new GuidedBossShotEntity(game, sprite, fireX, fireY, dx, dy));
     }
 
+    // 원형으로 여러 발 발사
     private void fireCircular(double angleOffset, int bulletCount, double speed, String sprite) {
         for (int i = 0; i < bulletCount; i++) {
             double angle = 2 * Math.PI * i / bulletCount + angleOffset;
@@ -283,6 +307,7 @@ public class NormalBossEntity extends BossEntity {
         }
     }
 
+    // 중심 각도를 기준으로 부채꼴 탄막 발사
     private void fireFan(double centerAngle, int bulletCount, double speed, double spread, String sprite) {
         for (int i = 0; i < bulletCount; i++) {
             double angle = centerAngle + (i - (bulletCount - 1) / 2.0) * spread;
@@ -290,6 +315,7 @@ public class NormalBossEntity extends BossEntity {
         }
     }
 
+    // Normal 보스 피해 처리 및 사망 시 승리 처리
     public void takeDamage(int damage) {
         health -= damage;
         game.getGamePlay().addScore(damage * 10);
@@ -299,6 +325,7 @@ public class NormalBossEntity extends BossEntity {
         }
     }
 
+    // 약간 축소된 히트박스를 사용한 충돌 판정
     @Override
     public boolean collidesWith(Entity other) {
         Rectangle me = new Rectangle((int) (x + sprite.getWidth() * 0.125), (int) (y + sprite.getHeight() * 0.125), (int) (sprite.getWidth() * 0.75), (int) (sprite.getHeight() * 0.75));
@@ -306,6 +333,7 @@ public class NormalBossEntity extends BossEntity {
         return me.intersects(him);
     }
 
+    // 플레이어 탄/ 레이저와 충돌 시 데미지를 적용한다.
     @Override
     public void collidedWith(Entity other) {
         if (other instanceof ShotEntity) {

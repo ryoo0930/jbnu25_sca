@@ -12,12 +12,27 @@ import java.awt.Rectangle;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Area;
 
+/**
+ * 보스가 발사하는 회전형 레이저 엔티티
+ * 일정 시간 동안 유지되며, 회전된 히트박스로 플레이어와의 충돌을 판정한다.
+ */
+
 public class BossLaserEntity extends Entity {
     private final Game game;
     private final long endTimeMillis;
     private boolean used = false;
     private final double angle;
 
+    /**
+     *
+     * @param game                  게임 인스턴스
+     * @param boss                  레이저를 발사하는 보스
+     * @param laserSpriteRef        레이저 스프라이트 경로
+     * @param durationMillis        레이저 유지 시간
+     * @param damageIntervalMillis  데미지 간격
+     * @param damagePerTick         틱당 데미지
+     * @param angle                 레이저 발사 각도
+     */
     public BossLaserEntity(
             Game game,
             Entity boss,
@@ -33,11 +48,13 @@ public class BossLaserEntity extends Entity {
         this.endTimeMillis = System.currentTimeMillis() + durationMillis;
         this.angle = angle;
 
+        // 각도 기반으로 레이저 진행 방향 설정
         double speed = 800;
         this.dx = (float) (Math.cos(angle) * speed);
         this.dy = (float) (Math.sin(angle) * speed);
     }
 
+    // 레이저가 수명을 초과했는지 여부
     private boolean isExpired() {
         return System.currentTimeMillis() > endTimeMillis;
     }
@@ -50,6 +67,7 @@ public class BossLaserEntity extends Entity {
         }
     }
 
+    // 스파라이트 중심이 (x, y)가 되도록 보정하고, 각도를 이용해 회전된 레이저를 그림
     @Override
     public void draw(Graphics g) {
         // 스프라이트의 중심이 (x, y)에 오도록 위치를 보정하여 그림
@@ -58,6 +76,7 @@ public class BossLaserEntity extends Entity {
         sprite.draw(g, drawX, drawY, angle + Math.PI / 2);
     }
 
+    // 회전된 레이저 히트박스와 ShipEntity의 히트박스를 Area 기반으로 판정
     @Override
     public boolean collidesWith(Entity other) {
         if (used || !(other instanceof ShipEntity)) {
@@ -80,11 +99,12 @@ public class BossLaserEntity extends Entity {
         // 2. 상대방의 히트박스 Area 생성 (ShipEntity는 회전하지 않음)
         Area otherArea = new Area(other.getHitbox());
 
-        // 3. 충돌 검사
+        // 3. 충돌 검사(충돌 영역이 비어있지 않으면 충돌)
         laserArea.intersect(otherArea);
         return !laserArea.isEmpty();
     }
 
+    // 플레이어와 실제로 충돌했을 때 한 번만 판정하고, 레이저를 제거한 뒤 PlayHitEvent를 발행한다.
     public void collidedWith(Entity other) {
         if (used) {
             return;

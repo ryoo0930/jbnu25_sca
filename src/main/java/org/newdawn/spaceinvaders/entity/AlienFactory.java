@@ -3,9 +3,10 @@ package org.newdawn.spaceinvaders.entity;
 import org.newdawn.spaceinvaders.Game;
 import org.newdawn.spaceinvaders.stage.Difficulty;
 
-
-
-
+/**
+ * 난이도벼롤 서로 다른 PassingAlienEntity를 생성해 주는 팩토리 클래스
+ * 인스턴스를 만들지 않고 정적 메서드만 사용한다.
+ */
 public final class AlienFactory {
 
     private AlienFactory() {
@@ -58,6 +59,7 @@ public final class AlienFactory {
                                 : HardPassingAlienEntity.Origin.RIGHT
                 );
             default:
+                // 현재는 Easy/Normal/Hard만 지원
                 throw new IllegalArgumentException("Unknown difficulty: " + difficulty);
         }
     }

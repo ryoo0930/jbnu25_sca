@@ -5,9 +5,15 @@ import org.newdawn.spaceinvaders.Sprite;
 import org.newdawn.spaceinvaders.entity.BossSkill.GuidedBossShotEntity;
 import org.newdawn.spaceinvaders.entity.playerSkill.LaserEntity;
 
+/**
+ * Hard 난이도에서 등장하는 패싱형 에일리언
+ * 일정 y위치까지 내려온 뒤 방향을 꺾어 이동하면서 플레이어를 향해 3번의 부채꼴 탄막을 발사한다.
+ */
 public class HardPassingAlienEntity extends Entity implements Damageable {
 
+    // 적이 속한 게임 인스턴스
     private final Game game;
+    // 5회 피격정도를 가짐
     private int health = 150;
 
     // Animation
@@ -48,7 +54,7 @@ public class HardPassingAlienEntity extends Entity implements Damageable {
 
     @Override
     public void move(long delta) {
-        // State-based movement logic
+        // 일정 높이까지 내려온 후, 좌/우로 빠져나가는 패턴으로 전환
         if (currentState == State.DESCENDING && y > turnY) {
             currentState = State.EXITING;
             isFiringBurst = true; // Start the burst fire sequence
@@ -60,9 +66,10 @@ public class HardPassingAlienEntity extends Entity implements Damageable {
             setVerticalMovement(0); // Stop moving down
         }
 
+        // 기본 위치 업데이트
         super.move(delta);
 
-        // Animate
+        // 애니메이션 프레임 업데이트
         long currentTime = System.currentTimeMillis();
         if (currentTime - lastFrameChange > frameDuration) {
             lastFrameChange = currentTime;
@@ -70,19 +77,20 @@ public class HardPassingAlienEntity extends Entity implements Damageable {
             this.sprite = sprites[currentFrame];
         }
 
-        // Handle burst firing
+        // 부채꼴 탄막을 일정 간격으로 3번 발사
         if (isFiringBurst && burstsFired < totalBursts && currentTime - lastBurstTime > burstInterval) {
             lastBurstTime = currentTime;
             fireFanShot();
             burstsFired++;
         }
 
-        // Remove if it goes off screen
+        // 화면 밖으로 완전히 나가면 엔티티 제거
         if (x > 850 || x < -50 || y > 650 || y < -50) {
             game.getGamePlay().removeEntity(this);
         }
     }
 
+    // 플레이어를 향해 중심 각도를 잡고, 좌/우로 조금식 퍼지는 부채꼴 탄막을 발사
     private void fireFanShot() {
         Entity player = null;
         for (Object entity : game.getGamePlay().getEntities()) {
@@ -118,6 +126,7 @@ public class HardPassingAlienEntity extends Entity implements Damageable {
 
     @Override
     public void collidedWith(Entity other) {
+        // 플레이어 탄에 피격되면 체력 감소 후 탄 제거
         if (other instanceof ShotEntity) {
             takeDamage(30);
             game.getGamePlay().removeEntity(other);
