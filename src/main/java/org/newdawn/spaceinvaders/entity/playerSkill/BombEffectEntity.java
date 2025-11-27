@@ -3,9 +3,7 @@ package org.newdawn.spaceinvaders.entity.playerSkill;
 import org.newdawn.spaceinvaders.Game;
 import org.newdawn.spaceinvaders.entity.AlienEntity;
 import org.newdawn.spaceinvaders.entity.Entity;
-import org.newdawn.spaceinvaders.entity.boss.HardBossEntity;
-import org.newdawn.spaceinvaders.entity.boss.NormalBossEntity;
-import org.newdawn.spaceinvaders.entity.boss.EasyBossEntity;
+import org.newdawn.spaceinvaders.entity.Damageable;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -58,7 +56,7 @@ public class BombEffectEntity extends Entity {
 
         // 수명 종료
         if (now - startTs >= lifeMs) {
-            game.removeEntity(this);
+            game.getGamePlay().removeEntity(this);
             return;
         }
 
@@ -67,13 +65,11 @@ public class BombEffectEntity extends Entity {
         int cy = (int) (y + (sprite != null ? sprite.getHeight() : 0) * scale / 2.0);
 
         // 게임의 엔티티 전체 순회 (Game.getEntities 필요)
-        java.util.List list = game.getEntities();
+        java.util.List list = game.getGamePlay().getEntities();
         for (int i = 0; i < list.size(); i++) {
             Entity e = (Entity) list.get(i);
-            if (!(e instanceof AlienEntity
-                    || e instanceof HardBossEntity
-                    || e instanceof NormalBossEntity
-                    || e instanceof EasyBossEntity)) continue;
+            if (e == this) continue;
+            if (!(e instanceof Damageable)) continue;
 
             int ex = (int) (e.getX() + (e.getSprite() != null ? e.getSprite().getWidth() : 0) / 2.0);
             int ey = (int) (e.getY() + (e.getSprite() != null ? e.getSprite().getHeight() : 0) / 2.0);
@@ -132,32 +128,18 @@ public class BombEffectEntity extends Entity {
 
     //데미지 처리
     private void applyHit(Entity target) {
-        //  체력0 이하 시 처치/삭제까지 수행
-        if (target instanceof AlienEntity) {
-            AlienEntity a = (AlienEntity) target;
-            try {
-                a.takeDamage(damagePerHit);
+        if (target instanceof Damageable) {
+            ((Damageable) target).takeDamage(damagePerHit);
+            if (target instanceof AlienEntity) {
+                AlienEntity a = (AlienEntity) target;
                 if (a.getHealth() <= 0) {
-                    game.notifyAlienKilled(a);
-                    game.removeEntity(a);
+                    game.getGamePlay().removeEntity(a);
+                    game.getGamePlay().notifyAlienKilled(a);
                 }
-            }catch (Throwable ignore) {}
-            return;
-        }
-
-        if (target instanceof HardBossEntity) {
-            ((HardBossEntity) target).takeDamage(damagePerHit);
-            return;
-        }
-        if (target instanceof NormalBossEntity) {
-            ((NormalBossEntity) target).takeDamage(damagePerHit);
-            return;
-        }
-        if (target instanceof EasyBossEntity) {
-            ((EasyBossEntity) target).takeDamage(damagePerHit);
-            return;
+            }
         }
     }
+
 
     public void collidedWith(Entity other) {
         // 고정 이펙트: 추가 충돌 처리 없음 (기존 유지)

@@ -4,6 +4,8 @@ import org.newdawn.spaceinvaders.Game;
 import org.newdawn.spaceinvaders.entity.Entity;
 import org.newdawn.spaceinvaders.entity.ShipEntity;
 import org.newdawn.spaceinvaders.entity.boss.HardBossEntity;
+import org.newdawn.spaceinvaders.event.EventBus;
+import org.newdawn.spaceinvaders.event.PlayerHitEvent;
 
 import java.awt.Graphics;
 import java.awt.Rectangle;
@@ -44,7 +46,7 @@ public class BossLaserEntity extends Entity {
         super.move(delta);
 
         if (isExpired() || y > 600 || y < 0 || x < 0 || x > 800) {
-            game.removeEntity(this);
+            game.getGamePlay().removeEntity(this);
         }
     }
 
@@ -89,8 +91,8 @@ public class BossLaserEntity extends Entity {
         }
         if (other instanceof ShipEntity) {
             used = true;
-            game.removeEntity(this);
-            game.notifyDeath();
+            game.getGamePlay().removeEntity(this);
+            EventBus.getInstance().publish(new PlayerHitEvent());
         }
     }
 }

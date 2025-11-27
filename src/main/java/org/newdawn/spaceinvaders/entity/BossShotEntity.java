@@ -3,10 +3,13 @@ package org.newdawn.spaceinvaders.entity;
 import java.awt.Rectangle;
 
 import org.newdawn.spaceinvaders.Game;
+import org.newdawn.spaceinvaders.event.EventBus;
+import org.newdawn.spaceinvaders.event.PlayerHitEvent;
 
 public class BossShotEntity extends Entity {
-    private Game game;
-
+    	private Game game;
+    	/** True if this shot has been "used", i.e. its hit something */
+    	private boolean used = false;
     public BossShotEntity(Game game, String sprite, int x, int y, double dx, double dy) {
         super(sprite, x, y);
         this.game = game;
@@ -14,26 +17,35 @@ public class BossShotEntity extends Entity {
         this.dy = dy;
     }
 
-    @Override
-    public void move(long delta) {
-        super.move(delta);
-        if (y > 600 || x < -100 || x > 800) {
-            game.removeEntity(this);
-        }
-    }
-
-    @Override
-    public void collidedWith(Entity other) {
-        // 충돌한 대상이 ShipEntity인지 확인합니다.
-        if (other instanceof ShipEntity) {
-            ShipEntity ship = (ShipEntity) other;
-            // 이제 기체 전체가 아닌, ShipEntity의 작은 히트박스와 충돌했는지 검사합니다.
-            Rectangle myBounds = new Rectangle((int) this.x, (int) this.y, this.sprite.getWidth(), this.sprite.getHeight());
-
-            if (myBounds.intersects(ship.getHitbox())) {
-                game.removeEntity(this);
-                game.notifyDeath();
-            }
-        }
-    }
+	public void move(long delta) {
+		// proceed with normal move
+		super.move(delta);
+		
+		// if we shot off the screen, remove ourselfs
+		if (y < -100) {
+			game.getGamePlay().removeEntity(this);
+		}
+	}
+	
+	/**
+	 * Notification that this shot has collided with another
+	 * entity
+	 * 
+	 * @parma other The other entity with which we've collided
+	 */
+	public void collidedWith(Entity other) {
+		// prevents double kills, if we've already hit something,
+		// don't collide
+		if (used) {
+			return;
+		}
+		
+		// if we've hit an alien, kill it!
+		if (other instanceof ShipEntity) {
+			// remove the affected entities
+			used = true;
+			game.getGamePlay().removeEntity(this);
+			EventBus.getInstance().publish(new PlayerHitEvent());
+		}
+	}
 }

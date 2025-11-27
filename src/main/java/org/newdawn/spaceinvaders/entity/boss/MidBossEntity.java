@@ -8,7 +8,7 @@ import org.newdawn.spaceinvaders.entity.BossSkill.GuidedBossShotEntity;
 
 public class MidBossEntity extends Entity {
     private final Game game;
-    private int health = 900;
+    private int health = 720;
 
     public enum Origin { LEFT, RIGHT }
     private final Origin origin;
@@ -16,23 +16,13 @@ public class MidBossEntity extends Entity {
     private enum State { ENTERING, ATTACKING, EXITING }
     private State currentState = State.ENTERING;
 
-    private final long stayDuration = 10000; // 10 seconds
+    private final long stayDuration = 10000;
     private long stateStartTime;
 
-    // Spiral Attack Pattern
-    private long lastSpiralShotTime = 0;
-    private final long spiralShotInterval = 100;
+    private long lastShotTime = 0;
+    private final long shotInterval = 500;
+    
     private double spiralAngle = 0;
-
-    // Guided Fan Burst Attack Pattern
-    private long lastBurstStartTime = 0;
-    private final long shotInBurstInterval = 300;   // Time between each of the 3 fan shots
-    private final long burstCooldown = 1000;        // 1-second pause after the burst
-    private final long burstCycleDuration = (shotInBurstInterval * (totalShotsInBurst -1)) + burstCooldown; // Total time for one cycle
-    private int shotsToFireInBurst = 0;
-    private static final int totalShotsInBurst = 3;
-    private long lastShotInBurstTime = 0;
-
 
     public MidBossEntity(Game game, int x, int y, Origin origin) {
         super("sprites/Boss2.gif", x, y);
@@ -40,69 +30,79 @@ public class MidBossEntity extends Entity {
         this.origin = origin;
         this.stateStartTime = System.currentTimeMillis();
 
-        if (origin == Origin.LEFT) {
-            this.dx = 100; // Move right to enter
-        } else {
-            this.dx = -100; // Move left to enter
+        if (origin == Origin.LEFT) this.dx = 100;
+        else this.dx = -100;
+    }
+
+    private ShipEntity findPlayer() {
+        if (game.getGamePlay() == null) return null;
+        for (Object entity : game.getGamePlay().getEntities()) {
+            if (entity instanceof ShipEntity) {
+                return (ShipEntity) entity;
+            }
         }
+        return null;
     }
 
     @Override
     public void move(long delta) {
-        long currentTime = System.currentTimeMillis();
+        float deltaSeconds = delta / 1000.0f;
 
-        // State transition logic
+        if (currentState == State.ENTERING || currentState == State.EXITING) {
+            x += dx * deltaSeconds;
+        }
+
+        if (x <= 50) {
+            x = 50;
+            dx = 0;
+        } else if (x >= game.getWidth() - 50 - sprite.getWidth()) {
+            x = game.getWidth() - 50 - sprite.getWidth();
+            dx = 0;
+        }
+
+        long currentTime = System.currentTimeMillis();
         switch (currentState) {
             case ENTERING:
-                if ((origin == Origin.LEFT && x >= 100) || (origin == Origin.RIGHT && x <= 600)) {
-                    this.dx = 0;
+                if (currentTime - stateStartTime >= 2000) {
                     currentState = State.ATTACKING;
                     stateStartTime = currentTime;
                 }
                 break;
+
             case ATTACKING:
-                if (currentTime - stateStartTime > stayDuration) {
+                if (currentTime - stateStartTime >= stayDuration) {
                     currentState = State.EXITING;
-                    if (origin == Origin.LEFT) {
-                        this.dx = -100; // Move left to exit
-                    } else {
-                        this.dx = 100; // Move right to exit
-                    }
+                    dx = (origin == Origin.LEFT ? -100 : 100);
+                    return;
                 }
+                fireShots(currentTime);
                 break;
+
             case EXITING:
                 if (x < -100 || x > 900) {
-                    game.removeEntity(this);
+                    game.getGamePlay().removeEntity(this);
                 }
                 break;
-        }
-
-        super.move(delta);
-
-        if (currentState == State.ATTACKING) {
-            handleAttacks(currentTime);
         }
     }
 
-    private void handleAttacks(long currentTime) {
-        // --- Continuous Spiral Shot ---
-        if (currentTime - lastSpiralShotTime > spiralShotInterval) {
-            lastSpiralShotTime = currentTime;
-            fireSpiralShot();
-        }
+    private void fireShots(long currentTime) {
+        if (currentTime - lastShotTime >= shotInterval) {
+            lastShotTime = currentTime;
 
-        // --- Guided Fan Burst Logic ---
-        // Check if it's time to start a new 3-shot burst cycle
-        if (shotsToFireInBurst == 0 && currentTime - lastBurstStartTime > burstCycleDuration) {
-            shotsToFireInBurst = totalShotsInBurst;
-            lastBurstStartTime = currentTime;
-        }
+            ShipEntity player = findPlayer();
+            if (player == null) return;
 
-        // Fire the shots that are part of the current burst
-        if (shotsToFireInBurst > 0 && currentTime - lastShotInBurstTime > shotInBurstInterval) {
-            lastShotInBurstTime = currentTime;
-            fireGuidedFanShot();
-            shotsToFireInBurst--;
+            double dxToPlayer = player.getX() - (x + sprite.getWidth() / 2.0);
+            double dyToPlayer = player.getY() - (y + sprite.getHeight() / 2.0);
+            double distance = Math.sqrt(dxToPlayer * dxToPlayer + dyToPlayer * dyToPlayer);
+            if (distance == 0) distance = 1;
+
+            double speed = 200;
+            double vx = (dxToPlayer / distance) * speed;
+            double vy = (dyToPlayer / distance) * speed;
+
+            game.getGamePlay().addEntity(new ShotEntity(game, (int)x + sprite.getWidth()/2, (int)y + sprite.getHeight()/2, vx, vy, this));
         }
     }
 
@@ -110,18 +110,12 @@ public class MidBossEntity extends Entity {
         double speed = 200;
         double shotDx = Math.cos(spiralAngle) * speed;
         double shotDy = Math.sin(spiralAngle) * speed;
-        game.addEntity(new GuidedBossShotEntity(game, "sprites/GuidedShot2.gif", (int)(x + sprite.getWidth()/2), (int)(y + sprite.getHeight()/2), shotDx, shotDy));
+        game.getGamePlay().addEntity(new GuidedBossShotEntity(game, "sprites/GuidedShot2.gif", (int)(x + sprite.getWidth()/2), (int)(y + sprite.getHeight()/2), shotDx, shotDy));
         spiralAngle += Math.PI / 6;
     }
 
     private void fireGuidedFanShot() {
-        Entity player = null;
-        for (Object entity : game.getEntities()) {
-            if (entity instanceof ShipEntity) {
-                player = (Entity) entity;
-                break;
-            }
-        }
+        ShipEntity player = findPlayer();
 
         if (player != null) {
             double targetDx = player.getX() - this.x;
@@ -135,7 +129,7 @@ public class MidBossEntity extends Entity {
                 double angle = centerAngle + (i * spreadAngle);
                 double shotDx = Math.cos(angle) * speed;
                 double shotDy = Math.sin(angle) * speed;
-                game.addEntity(new GuidedBossShotEntity(game, "sprites/GuidedShot3.gif", (int)(x + sprite.getWidth()/2), (int)(y + sprite.getHeight()/2), shotDx, shotDy));
+                game.getGamePlay().addEntity(new GuidedBossShotEntity(game, "sprites/GuidedShot3.gif", (int)(x + sprite.getWidth()/2), (int)(y + sprite.getHeight()/2), shotDx, shotDy));
             }
         }
     }
@@ -143,16 +137,19 @@ public class MidBossEntity extends Entity {
     public void takeDamage(int damage) {
         health -= damage;
         if (health <= 0) {
-            game.removeEntity(this);
-            game.addScore(5000);
+            game.getGamePlay().removeEntity(this);
+            game.getGamePlay().addScore(5000);
         }
     }
 
     @Override
     public void collidedWith(Entity other) {
         if (other instanceof ShotEntity) {
-            takeDamage(30);
-            game.removeEntity(other);
+            Entity owner = ((ShotEntity) other).getOwner();
+            if (owner instanceof ShipEntity) {
+                takeDamage(30);
+                game.getGamePlay().removeEntity(other);
+            }
         }
     }
 }

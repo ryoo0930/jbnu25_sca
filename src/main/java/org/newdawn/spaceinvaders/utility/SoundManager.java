@@ -41,7 +41,8 @@ public class SoundManager {
         try {
             URL url = this.getClass().getClassLoader().getResource(ref);
             if (url == null) {
-                fail("Can't find ref: " + ref);
+                System.err.println("[WARN] Sound file not found: " + ref);
+                return null; // 게임 계속 진행
             }
             AudioInputStream audioIn = AudioSystem.getAudioInputStream(url);
             Clip clip = AudioSystem.getClip();
@@ -51,10 +52,10 @@ public class SoundManager {
             setClipVolume(clip, volume);
             return clip;
         } catch (UnsupportedAudioFileException | IOException | LineUnavailableException e) {
-            fail("Failed to load: " + ref);
+            System.err.println("[WARN] Failed to load sound: " + ref);
+            e.printStackTrace();
+            return null; // 게임 계속 진행
         }
-
-        return null;
     }
 
     public void playSound(String ref) {
@@ -89,10 +90,5 @@ public class SoundManager {
                 gainControl.setValue(dB);
             }
         }
-    }
-
-    private void fail(String message) {
-        System.err.println(message);
-        System.exit(0);
     }
 }

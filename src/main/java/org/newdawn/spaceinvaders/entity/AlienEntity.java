@@ -9,7 +9,7 @@ import org.newdawn.spaceinvaders.utility.SpriteStore;
  * 
  * @author Kevin Glass
  */
-public class AlienEntity extends Entity {
+public class AlienEntity extends Entity implements Damageable {
 	/** The speed at which the alient moves horizontally */
 	private double moveSpeed = 75;
 	/** The game in which the entity exists */
@@ -86,12 +86,16 @@ public class AlienEntity extends Entity {
 		// if we have reached the left hand side of the screen and
 		// are moving left then request a logic update 
 		if ((dx < 0) && (x < 10)) {
-			game.updateLogic();
+			if (game.getGamePlay() != null) {
+				game.getGamePlay().updateLogic();
+			}
 		}
 		// and vice vesa, if we have reached the right hand side of 
 		// the screen and are moving right, request a logic update
 		if ((dx > 0) && (x > 750)) {
-			game.updateLogic();
+			if (game.getGamePlay() != null) {
+				game.getGamePlay().updateLogic();
+			}
 		}
 		
 		// proceed with normal move
@@ -110,7 +114,9 @@ public class AlienEntity extends Entity {
 		// if we've reached the bottom of the screen then the player
 		// dies
 		if (y > 570) {
-			game.notifyDeath();
+			if (game.getGamePlay() != null) {
+				game.getGamePlay().notifyDeath();
+			}
 		}
 	}
 	

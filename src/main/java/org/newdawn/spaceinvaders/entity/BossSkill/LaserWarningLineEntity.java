@@ -26,7 +26,7 @@ public class LaserWarningLineEntity extends Entity {
     public void move(long delta) {
         // Automatically remove after duration
         if (System.currentTimeMillis() > endTimeMillis) {
-            game.removeEntity(this);
+            game.getGamePlay().removeEntity(this);
         }
     }
 

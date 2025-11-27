@@ -1,70 +1,72 @@
 package org.newdawn.spaceinvaders.entity;
 
 import org.newdawn.spaceinvaders.Game;
+import org.newdawn.spaceinvaders.GamePlay;
 
-/**
- * An entity representing a shot fired by the player's ship
- * 
- * @author Kevin Glass
- */
 public class ShotEntity extends Entity {
-	/** The vertical speed at which the players shot moves */
-	private double moveSpeed = -300;
-	/** The game in which this entity exists */
-	private Game game;
-	
-	/**
-	 * Create a new shot from the player
-	 * 
-	 * @param game The game in which the shot has been created
-	 * @param sprite The sprite representing this shot
-	 * @param x The initial x location of the shot
-	 * @param y The initial y location of the shot
-	 */
-	public ShotEntity(Game game,String sprite,int x,int y) {
-		super(sprite,x,y);
-		
-		this.game = game;
-		
-		dy = moveSpeed;
-	}
+    private double moveSpeed = -300;
+    private Game game;
+    private GamePlay gamePlay;
+    private Entity owner;
 
-	/**
-	 * Request that this shot moved based on time elapsed
-	 * 
-	 * @param delta The time that has elapsed since last move
-	 */
-	public void move(long delta) {
-		// proceed with normal move
-		super.move(delta);
-		
-		// if we shot off the screen, remove ourselfs
-		if (y < -100) {
-			game.removeEntity(this);
-		}
-	}
-	
-	/**
-	 * Notification that this shot has collided with another
-	 * entity
-	 * 
-	 * @parma other The other entity with which we've collided
-	 */
-	public void collidedWith(Entity other) {
-		// if we've hit an alien, kill it!
-		if (other instanceof AlienEntity) {
-			// notify the game that the alien has been killed
+    public ShotEntity(GamePlay gamePlay, String sprite, int x, int y, Entity owner) {
+        super(sprite, x, y);
+        this.gamePlay = gamePlay;
+        this.owner = owner;
+        this.dy = moveSpeed;
+    }
 
-			// 충돌이 일어날 때 처리
-			game.removeEntity(this);
+    public ShotEntity(Game game, String sprite, int x, int y, double dx, double dy) {
+        super(sprite, x, y);
+        this.game = game;
+        this.dx = dx;
+        this.dy = dy;
+    }
 
-			AlienEntity alien = (AlienEntity) other;
-			alien.takeDamage(30);
+    public ShotEntity(Game game, int x, int y, double dx, double dy) {
+        this(game, "sprites/shot.gif", x, y, dx, dy);
+    }
 
-			if(alien.getHealth() <= 0) {
-				game.notifyAlienKilled(other);
-				game.removeEntity(other);
-			}
-		}
-	}
+    public ShotEntity(Game game, int x, int y, double dx, double dy, Entity owner) {
+        this(game, "sprites/shot.gif", x, y, dx, dy);
+        this.owner = owner;
+    }
+
+    public Entity getOwner() {
+        return owner;
+    }
+
+    public void move(long delta) {
+        super.move(delta);
+        if (y < -100) {
+            if (gamePlay != null) {
+                gamePlay.removeEntity(this);
+            } else if (game != null) {
+                game.getGamePlay().removeEntity(this);
+            }
+        }
+    }
+
+    public void collidedWith(Entity other) {
+        if (other instanceof AlienEntity) {
+            if (gamePlay != null) {
+                gamePlay.removeEntity(this);
+            } else if (game != null) {
+                game.getGamePlay().removeEntity(this);
+            }
+
+            AlienEntity alien = (AlienEntity) other;
+            alien.takeDamage(30);
+
+            if (alien.getHealth() <= 0) {
+                if (gamePlay != null) {
+                    gamePlay.notifyAlienKilled(other);
+                    gamePlay.removeEntity(other);
+                } else if (game != null) {
+                    game.getGamePlay().notifyAlienKilled(other);
+                    game.getGamePlay().removeEntity(other);
+                }
+            }
+        }
+    }
 }

@@ -1,6 +1,7 @@
 package org.newdawn.spaceinvaders.entity.playerSkill;
 
 import org.newdawn.spaceinvaders.Game;
+import org.newdawn.spaceinvaders.GamePlay;
 import org.newdawn.spaceinvaders.entity.AlienEntity;
 import org.newdawn.spaceinvaders.entity.Entity;
 import org.newdawn.spaceinvaders.entity.boss.HardBossEntity;
@@ -22,12 +23,9 @@ public class BombEntity extends Entity {
     private long  effectDurationMs   = 100;  //  지속시간
     private long  effectIntervalMs   = 100;  // 판전 간격
 
-    public BombEntity(Game game, String spriteRef, int x, int y, double vx, double vy) {
-        super(spriteRef, x, y);
-        this.game = game;
-        this.dx = vx;
-        this.dy = vy;
-        this.exploded = false;
+    public BombEntity(GamePlay gamePlay, String sprite, int x, int y, int dx, int dy) {
+        super(sprite, x, y);
+        this.game = gamePlay.getGame();
     }
 
     // 이동 처리
@@ -39,7 +37,7 @@ public class BombEntity extends Entity {
 
         // 화면 위로 벗어나면 제거 (ShotEntity와 유사)
         if (y < -100) {
-            game.removeEntity(this);
+            game.getGamePlay().removeEntity(this);
         }
     }
 
@@ -84,8 +82,8 @@ public class BombEntity extends Entity {
         );
 
         // Game → GamePlay에 추가 위임 (Game.addEntity 필요)
-        game.addEntity(boom);
+        game.getGamePlay().addEntity(boom);
         // 자신 제거
-        game.removeEntity(this);
+        game.getGamePlay().removeEntity(this);
     }
 }

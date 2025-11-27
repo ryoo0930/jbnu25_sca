@@ -1,42 +1,17 @@
 package org.newdawn.spaceinvaders.stage;
 
-import org.newdawn.spaceinvaders.Game;
+import org.newdawn.spaceinvaders.GamePlay;
 import org.newdawn.spaceinvaders.entity.Entity;
 import org.newdawn.spaceinvaders.entity.HardPassingAlienEntity;
 import org.newdawn.spaceinvaders.entity.ShipEntity;
 import org.newdawn.spaceinvaders.entity.boss.HardBossEntity;
 import org.newdawn.spaceinvaders.entity.boss.MidBossEntity;
+import org.newdawn.spaceinvaders.entity.AlienFactory;
 
-import java.util.ArrayList;
-
-public class HardStage implements Stage {
-    private boolean finalBossSpawned = false;
-
-    private enum StagePhase {
-        ALIEN_WAVES,
-        WAIT_FOR_ALIENS_TO_CLEAR,
-        PAUSE_BEFORE_MID_BOSS,
-        MID_BOSS_RIGHT,
-        PAUSE_BETWEEN_MID_BOSSES,
-        MID_BOSS_LEFT,
-        FINAL_BOSS
-    }
-    private StagePhase currentPhase;
-
-    // Alien wave management
-    private int wavesCompleted = 0;
-    private int pairsSpawnedInWave = 0;
-    private long lastPairSpawnTime = 0;
-    private final long pairSpawnDelay = 400;
-    private long wavePauseStartTime = 0;
-    private final long wavePauseDuration = 4000;
-    private boolean isPausedBetweenWaves = false;
-
-    // Phase timer
-    private long phaseTransitionTime = 0;
+public class HardStage extends AbstractStage {
 
     @Override
-    public void initEntities(Game game, ArrayList<Entity> entities) {
+    public void initEntities(GamePlay gamePlay) {
         finalBossSpawned = false;
         currentPhase = StagePhase.ALIEN_WAVES;
 
@@ -49,8 +24,8 @@ public class HardStage implements Stage {
     @Override
     public int getAlienCount() { return 0; }
 
-    private boolean isEntityOnScreen(Game game, Class<? extends Entity> entityType) {
-        for (Object entity : game.getEntities()) {
+    private boolean isEntityOnScreen(GamePlay gamePlay, Class<? extends Entity> entityType) {
+        for (Object entity : gamePlay.getEntities()) {
             if (entityType.isInstance(entity)) {
                 return true;
             }
@@ -59,20 +34,20 @@ public class HardStage implements Stage {
     }
 
     @Override
-    public void update(Game game) {
+    public void update(GamePlay gamePlay) {
         long currentTime = System.currentTimeMillis();
 
         // --- Phase Logic ---
         switch (currentPhase) {
             case ALIEN_WAVES:
-                updateAlienWaves(game, currentTime);
+                updateAlienWaves(gamePlay, currentTime);
                 if (wavesCompleted >= 2) {
                     currentPhase = StagePhase.WAIT_FOR_ALIENS_TO_CLEAR;
                 }
                 break;
 
             case WAIT_FOR_ALIENS_TO_CLEAR:
-                if (!isEntityOnScreen(game, HardPassingAlienEntity.class)) {
+                if (!isEntityOnScreen(gamePlay, HardPassingAlienEntity.class)) {
                     phaseTransitionTime = currentTime;
                     currentPhase = StagePhase.PAUSE_BEFORE_MID_BOSS;
                 }
@@ -80,13 +55,13 @@ public class HardStage implements Stage {
 
             case PAUSE_BEFORE_MID_BOSS:
                 if (currentTime - phaseTransitionTime > 2000) { // 2-second pause
-                    game.addEntity(new MidBossEntity(game, 850, 100, MidBossEntity.Origin.RIGHT));
+                    gamePlay.addEntity(new MidBossEntity(gamePlay.getGame(), 850, 100, MidBossEntity.Origin.RIGHT));
                     currentPhase = StagePhase.MID_BOSS_RIGHT;
                 }
                 break;
 
             case MID_BOSS_RIGHT:
-                if (!isEntityOnScreen(game, MidBossEntity.class)) {
+                if (!isEntityOnScreen(gamePlay, MidBossEntity.class)) {
                     phaseTransitionTime = currentTime;
                     currentPhase = StagePhase.PAUSE_BETWEEN_MID_BOSSES;
                 }
@@ -94,13 +69,13 @@ public class HardStage implements Stage {
 
             case PAUSE_BETWEEN_MID_BOSSES:
                 if (currentTime - phaseTransitionTime > 2000) { // 2-second pause
-                    game.addEntity(new MidBossEntity(game, -100, 100, MidBossEntity.Origin.LEFT));
+                    gamePlay.addEntity(new MidBossEntity(gamePlay.getGame(), -100, 100, MidBossEntity.Origin.LEFT));
                     currentPhase = StagePhase.MID_BOSS_LEFT;
                 }
                 break;
 
             case MID_BOSS_LEFT:
-                if (!isEntityOnScreen(game, MidBossEntity.class)) {
+                if (!isEntityOnScreen(gamePlay, MidBossEntity.class)) {
                     // Transition directly to the final boss
                     currentPhase = StagePhase.FINAL_BOSS;
                 }
@@ -109,21 +84,21 @@ public class HardStage implements Stage {
             case FINAL_BOSS:
                 if (!finalBossSpawned) {
                     // Clear any remaining projectiles before the final boss
-                    java.util.List entities = game.getEntities();
+                    java.util.List entities = gamePlay.getEntities();
                     for (int i = entities.size() - 1; i >= 0; i--) {
                         Object entity = entities.get(i);
                         if (!(entity instanceof ShipEntity)) {
-                            game.removeEntity(entity);
+                            gamePlay.removeEntity((Entity) entity);
                         }
                     }
-                    game.addEntity(new HardBossEntity(game, 350, 50));
+                    gamePlay.addEntity(new HardBossEntity(gamePlay.getGame(), 350, 50));
                     finalBossSpawned = true;
                 }
                 break;
         }
     }
 
-    private void updateAlienWaves(Game game, long currentTime) {
+    private void updateAlienWaves(GamePlay gamePlay, long currentTime) {
         if (wavesCompleted >= 2) return;
 
         if (isPausedBetweenWaves) {
@@ -136,10 +111,29 @@ public class HardStage implements Stage {
 
         if (pairsSpawnedInWave < 5) {
             if (currentTime - lastPairSpawnTime > pairSpawnDelay) {
+
                 lastPairSpawnTime = currentTime;
-                game.addEntity(new HardPassingAlienEntity(game, 150, -50, HardPassingAlienEntity.Origin.LEFT));
-                game.addEntity(new HardPassingAlienEntity(game, 650, -50, HardPassingAlienEntity.Origin.RIGHT));
+
+                Entity left = AlienFactory.createPassingAlien(
+                        Difficulty.HARD,
+                        gamePlay.getGame(),
+                        150,
+                        -50,
+                        true
+                );
+                gamePlay.addEntity(left);
+
+                Entity right = AlienFactory.createPassingAlien(
+                        Difficulty.HARD,
+                        gamePlay.getGame(),
+                        650,
+                        -50,
+                        false
+                );
+                gamePlay.addEntity(right);
+
                 pairsSpawnedInWave++;
+
             }
         } else {
             wavesCompleted++;

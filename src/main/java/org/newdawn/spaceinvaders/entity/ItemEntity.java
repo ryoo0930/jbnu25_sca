@@ -23,12 +23,10 @@ public class ItemEntity extends Entity {
         return type;
     }
 
-    @Override
     public void move(long delta) {
         super.move(delta);
-        // Remove if it goes off screen
-        if (y > 600) {
-            game.removeEntity(this);
+        if (y > 650) {
+            game.getGamePlay().removeEntity(this);
         }
     }
 
